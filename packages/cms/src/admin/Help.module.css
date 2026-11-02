@@ -1,0 +1,163 @@
+/* The help drawer. Payload 4 semantic tokens throughout; the drawer is a
+   reading surface, so it keeps the admin's base background rather than the
+   page's. Motion is local and respects reduced motion. */
+.root {
+  --help-ink: var(--color-text);
+  --help-muted: var(--color-text-secondary);
+  --help-faint: var(--color-text-tertiary);
+  --help-line: var(--color-border);
+  --help-tint: var(--color-bg-hover);
+  --help-surface: var(--color-bg-secondary);
+  --help-card: var(--color-bg);
+  --help-motion: 160ms cubic-bezier(0.2, 0, 0, 1);
+  color: var(--help-ink);
+  font-family: var(--font-body, var(--font-family-sans));
+  font-size: 16px;
+  line-height: 1.65;
+  text-align: left;
+  -webkit-font-smoothing: antialiased;
+  background: var(--help-card);
+}
+.root *, .drawer { box-sizing: border-box; }
+.root button, .root input { font: inherit; }
+.root button, .root a { touch-action: manipulation; }
+.root button { color: inherit; cursor: pointer; }
+.root a { color: inherit; text-underline-offset: 3px; }
+.root :is(button, a, input):focus-visible { outline: var(--accessibility-outline, 2px solid currentColor); outline-offset: var(--accessibility-outline-offset, 2px); }
+
+.drawer {
+  position: fixed;
+  z-index: var(--z-modal, 50);
+  inset: 12px auto 12px 12px;
+  width: 460px;
+  min-width: 340px;
+  max-width: min(680px, calc(100vw - 24px));
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-large, 14px);
+  background: var(--color-bg);
+  box-shadow: var(--elevation-500-modal-window, 4px 8px 32px rgb(0 0 0 / 0.14));
+  overflow: hidden;
+  resize: horizontal;
+  opacity: 1;
+  transform: translateX(0);
+  transition: width var(--help-motion), transform 220ms ease, opacity 220ms ease, display 220ms allow-discrete;
+}
+.drawer[hidden] { display: none; opacity: 0; pointer-events: none; }
+/* Keep the exit frame and the article state without timers or unmounting. */
+@starting-style { .drawer:not([hidden]) { opacity: 0; } }
+@media (prefers-reduced-motion: no-preference) {
+  .drawer[hidden] { transform: translateX(calc(-100% - 24px)); }
+  @starting-style { .drawer:not([hidden]) { transform: translateX(calc(-100% - 24px)); } }
+}
+.drawer:focus { outline: none; }
+.inDrawer { height: 100%; display: flex; flex-direction: column; }
+/* Preserve a manually resized width when returning from expanded. */
+.drawer.expanded { width: min(1180px, calc(100vw - 24px)) !important; max-width: calc(100vw - 24px); resize: none; }
+
+.body { display: flex; flex: 1; min-height: 0; position: relative; }
+.scroll { min-width: 0; min-height: 0; flex: 1; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
+.content { padding: 28px 28px 32px; }
+.expandedPanel .content { max-width: 760px; margin-inline: auto; padding: 40px; }
+.expandedPanel .search { max-width: 620px; }
+
+.navigation { width: 260px; flex-shrink: 0; padding: 24px 16px; overflow-y: auto; overscroll-behavior: contain; border-right: 1px solid var(--help-line); background: var(--help-card); }
+.navigation[hidden] { display: none; }
+.navigation section { margin-top: 24px; }
+.root .navigation h2 { font-size: 13px; line-height: 1.5; font-weight: 500; text-transform: none; letter-spacing: 0; color: var(--help-muted); margin: 0 10px 8px; }
+.navigation button { display: block; width: 100%; border: 0; background: transparent; padding: 8px 10px; border-radius: var(--radius-small, 6px); font-size: 14px; line-height: 1.45; text-align: left; }
+.navigation button:hover, .navigation button[aria-current="page"] { background: var(--help-tint); }
+.navigationToggle { display: none; }
+
+.header { padding: 16px 24px 20px; background: var(--help-card); border-bottom: 1px solid var(--help-line); flex-shrink: 0; }
+.headerRow { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 14px; }
+.wordmark { display: flex; gap: 9px; align-items: center; font-weight: 500; font-size: 14px; }
+.tools { display: flex; gap: 4px; }
+.iconButton { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--radius-small, 6px); background: transparent; }
+.iconButton:hover { background: var(--help-tint); }
+
+.search { display: flex; align-items: center; gap: 10px; min-height: 44px; border: 1px solid var(--help-line); padding: 0 12px; border-radius: var(--radius-medium, 8px); background: var(--help-surface); }
+.search:hover { border-color: var(--color-border-strong); }
+.search:focus-within { border-color: var(--color-border-selected-strong, currentColor); box-shadow: 0 0 0 1px var(--color-border-selected-strong, currentColor); }
+.search svg { flex-shrink: 0; color: var(--help-muted); }
+.root .search input { min-width: 0; width: 100%; height: 42px; padding: 0; background: transparent; border: 0; border-radius: 0; color: inherit; outline: none; box-shadow: none; font-size: 16px; line-height: 1.3; }
+.root .search input:focus { outline: none; box-shadow: none; }
+.search input::placeholder { color: var(--help-muted); opacity: 1; }
+.search input::-webkit-search-cancel-button { appearance: none; }
+.root .clearSearch { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 28px; height: 28px; margin-right: -4px; padding: 0; border: 0; border-radius: 4px; background: transparent; }
+.clearSearch:hover { background: var(--help-tint); }
+.clearSearch:disabled { opacity: 0; pointer-events: none; }
+
+.breadcrumb { display: flex; gap: 16px; justify-content: space-between; align-items: center; margin-bottom: 24px; color: var(--help-muted); }
+.breadcrumb button { display: inline-flex; gap: 6px; align-items: center; padding: 4px 8px; margin-inline: -8px; border-radius: 5px; background: transparent; border: 0; font-size: 13px; min-height: 32px; }
+.breadcrumb .allArticles { margin-left: auto; }
+.breadcrumb button:hover { background: var(--help-tint); }
+
+.titleRow { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px 16px; margin-bottom: 28px; }
+.searchTitleRow { margin-bottom: 6px; }
+.root .title { font-family: inherit; font-size: 28px; line-height: 1.2; font-weight: 500; letter-spacing: -0.015em; margin: 0; text-transform: none; text-wrap: balance; outline: none; }
+.root .directoryTitle { font-size: 24px; }
+.filter { display: block; min-width: 0; max-width: 100%; margin-left: auto; color: var(--help-muted); }
+.topicTrigger { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; min-height: 36px; padding: 6px 8px; border-radius: var(--radius-small, 6px); color: var(--help-muted); font-size: 14px; line-height: 24px; }
+.topicTrigger:hover { background: var(--help-tint); }
+.topicTrigger > svg { flex-shrink: 0; }
+
+.directory { display: grid; gap: 28px; }
+.root .group h2 { font-family: inherit; font-size: 13px; font-weight: 500; line-height: 1.5; text-transform: none; color: var(--help-muted); margin: 0 0 8px; }
+.list { display: grid; }
+.root .row { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; margin: 0; padding: 12px 8px; border: 0; border-radius: 0; background: transparent; font-size: 16px; line-height: 1.45; font-weight: 400; text-align: left; }
+/* Dividers drawn separately, so control radii cannot curl their ends. */
+.row::after { content: ""; position: absolute; inset: auto 0 0; height: 1px; background: var(--help-line); pointer-events: none; }
+.root .row:hover { background: var(--help-tint); }
+.rowArrow { flex-shrink: 0; rotate: -90deg; opacity: 0; color: var(--help-muted); transition: opacity var(--help-motion); }
+.row:is(:hover, :focus-visible) .rowArrow, .related button:is(:hover, :focus-visible) .rowArrow { opacity: 1; }
+
+.article section { margin-bottom: 32px; }
+.root .article h2 { font-family: inherit; font-size: 18px; line-height: 1.4; font-weight: 500; letter-spacing: -0.005em; margin: 0 0 12px; text-transform: none; }
+.article p { margin: 0 0 14px; }
+.article h2:not(:first-child), .article h3 { margin-top: 28px; }
+.root .article h3 { font-family: inherit; font-size: 16px; line-height: 1.4; font-weight: 500; margin-bottom: 12px; text-transform: none; }
+.article ul { list-style: disc outside; padding-left: 22px; margin: 12px 0 18px; }
+.article img { display: block; max-width: 100%; height: auto; border-radius: var(--radius-small, 6px); margin: 20px 0; }
+.article a svg { display: inline-block; margin-left: 4px; vertical-align: baseline; }
+.article hr { border: 0; border-top: 1px solid var(--help-line); margin: 24px 0; }
+/* The admin resets native markers; restore simple, semantic ordered steps. */
+.article ol { list-style: decimal outside; padding-left: 22px; margin: 12px 0 0; }
+.article li { display: list-item; padding-left: 6px; margin: 0 0 14px; }
+.article li::marker { color: var(--help-muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+.article aside { display: flex; align-items: flex-start; gap: 10px; margin: 18px 0 0; padding: 16px; border: 0; border-radius: var(--radius-medium, 8px); background: var(--help-surface); color: var(--help-ink); font-size: 14px; line-height: 1.6; }
+.root .noteIcon { flex-shrink: 0; margin-top: 1px; color: var(--help-muted); }
+
+.related { border-top: 1px solid var(--help-line); padding-top: 24px; margin-top: 32px; }
+.root .related h2 { font-family: inherit; font-size: 13px; line-height: 1.5; font-weight: 500; color: var(--help-muted); margin: 0 0 8px; text-transform: none; }
+.related button { display: flex; width: 100%; justify-content: space-between; align-items: center; gap: 12px; border: 0; border-radius: 5px; background: transparent; padding: 8px; margin-inline: -8px; font-size: 14px; text-align: left; }
+.related button:hover { background: var(--help-tint); }
+
+.root .textButton { border: 0; background: transparent; padding: 4px 6px; margin-inline: -6px; border-radius: 4px; color: var(--help-muted); font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
+.root .textButton:hover { background: var(--help-tint); }
+.root :is(.iconButton, .clearSearch, .search, .breadcrumb button, .navigation button, .topicTrigger, .textButton, .related button, .row) { transition: background-color var(--help-motion), border-color var(--help-motion); }
+
+.meta { color: var(--help-muted); font-size: 13px; margin: 0 0 18px; }
+.footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; color: var(--help-muted); font-size: 12px; margin-top: 32px; padding-top: 16px; }
+.copyAddress { display: block; width: 100%; margin-top: 8px; padding: 8px; color: inherit; background: var(--help-card); border: 1px solid var(--help-line); border-radius: var(--radius-small, 6px); }
+.loading { padding: 24px; color: var(--color-text-secondary); }
+.empty { padding: 18px 0; }
+.srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* The Preview button on a help article's edit view. */
+.previewButton { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: var(--button-height, 36px); padding: 0 14px; border: 1px solid var(--color-border-strong); border-radius: var(--button-radius, 999px); background: transparent; color: var(--color-text); font-size: 14px; font-weight: 500; line-height: 1.3; text-decoration: none; }
+.previewButton:hover { background: var(--color-bg-hover); }
+.previewButton:focus-visible { outline: var(--accessibility-outline, 2px solid currentColor); outline-offset: 2px; }
+
+@media (max-width: 800px) {
+  .navigationToggle { display: flex; gap: 8px; align-items: center; margin-top: 12px; padding: 6px 0; border: 0; background: transparent; font-size: 13px; }
+  .body { flex-direction: column; }
+  .navigation { display: none; width: 100%; max-height: 48%; border-right: 0; border-bottom: 1px solid var(--help-line); }
+  .navigation.navigationOpen:not([hidden]) { display: block; }
+  .expandedPanel .content { padding: 28px; }
+}
+@media (max-width: 600px) {
+  .drawer { inset: 0; width: 100%; min-width: 0; max-width: 100%; border-radius: 0; resize: none; }
+  .header { padding: 16px 20px; }
+  .content, .expandedPanel .content { padding: 24px 20px; }
+  .drawer.expanded { width: 100% !important; max-width: 100%; }
+}

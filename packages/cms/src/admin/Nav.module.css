@@ -1,0 +1,500 @@
+/* The admin sidebar (Nav.tsx / NavClient.tsx). Payload 4's semantic tokens
+   (--color-*, --spacer-*, --font-family-sans) and the site's --sk-accent;
+   no Payload class names. Rows are an icon and a label in one weight,
+   36px tall; areas carry a down chevron that turns up when open, with
+   their links indented under the label (no icons, no guide line); the page
+   you're on is a filled row, and a closed area holding it reads darker.
+   The shell around it (width, sticky, scroll, mobile open/close) is
+   Payload's NavWrapper, untouched. */
+.nav {
+  --nav-ui: var(--font-family-sans, system-ui, sans-serif);
+  --nav-row: 36px;
+  --nav-icon: 18px;
+  --nav-radius: var(--radius-medium, 8px);
+  --nav-hover: var(--color-bg-hover, var(--color-bg-secondary));
+  --nav-current: var(--color-bg-selected, var(--color-bg-secondary));
+  --nav-current-fg: var(--color-text);
+  --nav-muted: var(--color-text-tertiary);
+  --nav-rule: var(--color-border);
+  --nav-foot-pad: var(--nav-padding-block-end, var(--spacer-5, 20px));
+  --sk-accent: var(--sk-accent, var(--color-text-brand, var(--color-text)));
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  width: 100%;
+  padding: var(--nav-padding-block-start, var(--spacer-2-5, 12px)) var(--nav-padding-inline-end, 12px) var(--nav-foot-pad)
+    var(--nav-padding-inline-start, 12px);
+  color: var(--color-text);
+  font-family: var(--nav-ui);
+}
+
+/* ---- The brand row, in NavWrapper's header slot: logo or wordmark,
+   the site's name, "Admin", and Payload's collapse toggle. ---- */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: var(--app-header-height, 56px);
+  padding: 0 var(--spacer-2, 8px) 0 var(--spacer-2-5, 12px);
+  border-bottom: 1px solid var(--nav-rule);
+  background: var(--color-bg);
+  font-family: var(--nav-ui);
+}
+.brandLink {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  padding: 4px 6px 4px 2px;
+  border-radius: var(--nav-radius);
+  color: var(--color-text);
+  text-decoration: none;
+}
+.brandLink:hover {
+  background: var(--nav-hover);
+}
+.brandLink:focus-visible {
+  outline: var(--accessibility-outline, 2px solid currentColor);
+  outline-offset: var(--accessibility-outline-offset, 1px);
+}
+.brandLogo {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
+/* No logo: the first letter on a circle of the site's accent. */
+.brandMark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--sk-accent);
+  color: var(--color-text-onbrand, #fff);
+  font: 600 12px/1 var(--nav-ui);
+}
+.brandName {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--color-text);
+  font: 500 15px/1 var(--nav-ui);
+  letter-spacing: 0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* "Admin" beside the name: plain text, set close so the two read as one */
+.brandBadge {
+  margin-inline-start: -4px;
+  color: var(--nav-muted);
+  font: 400 15px/1 var(--nav-ui);
+  letter-spacing: 0.01em;
+}
+/* Payload's own collapse toggle (NavSidebarToggle with our baseClass, so
+   the class is ours: sk-nav__close) at the row's right end. */
+.brand :global(.sk-nav__close) {
+  display: grid;
+  place-items: center;
+  margin-inline-start: auto;
+  border: 0;
+  border-radius: var(--button-radius, 6px);
+  background: none;
+  color: var(--color-icon);
+  cursor: pointer;
+}
+.brand :global(.sk-nav__close:hover) {
+  background: var(--nav-hover);
+}
+.brand :global(.sk-nav__close:focus-visible) {
+  outline: var(--accessibility-outline, 2px solid currentColor);
+  outline-offset: var(--accessibility-outline-offset, 1px);
+}
+
+.list {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ---- Blocks (Pinned, Recent, the areas): a quiet section title, not a
+   row. Each starts on a hairline. ---- */
+.block {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--nav-rule);
+}
+.blockLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 4px;
+  padding: 0 10px;
+  color: var(--nav-muted);
+  font: 500 11px/1.3 var(--nav-ui);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: default;
+  user-select: none;
+}
+.blockIcon {
+  flex: none;
+  width: 12px;
+  height: 12px;
+}
+
+/* ---- Rows ---- */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: var(--nav-row);
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--nav-radius);
+  background: none;
+  color: var(--color-text);
+  font: 400 14px/1.2 var(--nav-ui);
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+}
+a.row:hover,
+button.row:hover {
+  background: var(--nav-hover);
+  color: var(--color-text);
+  text-decoration: none;
+}
+a.row:hover .icon,
+button.row:hover .icon {
+  color: var(--color-text);
+}
+.row[aria-current='page'] {
+  background: var(--nav-current);
+  color: var(--nav-current-fg);
+  font-weight: 500;
+  cursor: default;
+}
+.row[aria-current='page'] .icon {
+  color: var(--sk-accent);
+}
+/* A closed area holding the page you're on: darker, so you can tell where you are. */
+.row[data-holds] {
+  color: var(--color-text);
+  font-weight: 500;
+}
+.row[data-holds] .icon {
+  color: var(--sk-accent);
+}
+.row:focus-visible,
+.kid:focus-visible,
+.pin:focus-visible,
+.accountButton:focus-visible,
+.menu a:focus-visible {
+  outline: var(--accessibility-outline, 2px solid currentColor);
+  outline-offset: var(--accessibility-outline-offset, 1px);
+}
+.icon {
+  flex: none;
+  width: var(--nav-icon);
+  height: var(--nav-icon);
+  color: var(--color-icon-secondary, var(--color-icon));
+}
+.label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chev {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin-inline-start: auto;
+  color: var(--color-icon-tertiary, var(--color-icon-secondary));
+  transition: transform 240ms cubic-bezier(0.2, 0, 0, 1);
+}
+.row:hover .chev {
+  color: var(--color-icon);
+}
+.row[aria-expanded='true'] .chev {
+  transform: rotate(180deg);
+}
+
+/* An area's links: indented to the label, no icons, no guide line.
+   Opening and closing ease the height: a one-row grid going 0fr → 1fr,
+   the links fading with it. */
+.kidsWrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 240ms cubic-bezier(0.2, 0, 0, 1),
+    opacity 180ms ease;
+}
+.kidsWrap[data-open='true'] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.kids {
+  display: grid;
+  gap: 1px;
+  min-height: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0 0 0 calc(var(--nav-icon) + 12px);
+  list-style: none;
+}
+.kids > li:first-child {
+  padding-top: 2px;
+}
+.kids > li:last-child {
+  padding-bottom: 6px;
+}
+.kid {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: calc(var(--nav-radius) - 2px);
+  color: var(--color-text-secondary);
+  font: 13.5px/1.25 var(--nav-ui);
+  text-decoration: none;
+}
+a.kid:hover {
+  background: var(--nav-hover);
+  color: var(--color-text);
+  text-decoration: none;
+}
+.kid[aria-current='page'] {
+  background: var(--nav-current);
+  color: var(--nav-current-fg);
+  font-weight: 500;
+}
+
+/* Pinned and recent documents: a kid row with a pin toggle that shows on
+   hover or focus (always, on a touch screen). */
+.docRow {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.docRow .kid {
+  padding-right: 32px;
+}
+.pin {
+  position: absolute;
+  inset-inline-end: 4px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: calc(var(--nav-radius) - 2px);
+  background: none;
+  color: var(--color-icon-secondary, var(--color-icon));
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 120ms ease;
+}
+.docRow:hover .pin,
+.docRow:focus-within .pin,
+.pin[aria-pressed='true'] {
+  opacity: 1;
+}
+.pin:hover {
+  background: var(--nav-hover);
+  color: var(--color-text);
+}
+.pin[aria-pressed='true'] {
+  color: var(--sk-accent);
+}
+.pin:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.pinIcon {
+  width: 14px;
+  height: 14px;
+}
+@media (hover: none) {
+  .pin {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kidsWrap,
+  .chev,
+  .pin {
+    transition: none;
+  }
+}
+
+/* ---- Get help and the account, pinned to the sidebar's foot: the list
+   scrolls behind them. Like the brand row, the foot reaches past the
+   sidebar's side padding (and down over its bottom padding) in the
+   sidebar's own colour, under a rule. While more of the list is hidden
+   behind it (NavClient sets data-more), the list fades out above the rule. */
+.foot {
+  --foot-bg: var(--color-bg);
+  position: sticky;
+  bottom: calc(var(--nav-foot-pad) * -1);
+  z-index: 1;
+  margin: auto calc(var(--nav-padding-inline-end, 12px) * -1) calc(var(--nav-foot-pad) * -1) calc(var(--nav-padding-inline-start, 12px) * -1);
+  padding: 0 var(--nav-padding-inline-end, 12px) var(--spacer-2-5, 12px) var(--nav-padding-inline-start, 12px);
+  border-top: 1px solid var(--nav-rule);
+  background: var(--foot-bg);
+}
+.foot::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 1px);
+  inset-inline: 0;
+  height: 40px;
+  background: linear-gradient(to bottom, transparent, var(--foot-bg));
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+.foot[data-more]::before {
+  opacity: 1;
+}
+.help {
+  padding: 8px 0;
+}
+.account {
+  position: relative;
+  padding-top: 8px;
+}
+.help + .account::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  border-top: 1px solid var(--nav-rule);
+}
+.accountButton {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--nav-radius);
+  background: none;
+  color: var(--color-text);
+  font-family: var(--nav-ui);
+  text-align: start;
+  cursor: pointer;
+}
+.accountButton:hover {
+  background: var(--nav-hover);
+}
+/* Initials in a quiet round badge (no fake photo) */
+.initials {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--color-bg-tertiary, var(--color-bg-secondary));
+  color: var(--color-text);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.accountWho {
+  display: grid;
+  min-width: 0;
+  padding-block: 6px;
+  line-height: 1.25;
+}
+.accountName,
+.accountEmail {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.accountName {
+  font-size: 14px;
+  font-weight: 500;
+}
+.accountEmail {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+.accountMore {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-inline-start: auto;
+  color: var(--color-icon-secondary, var(--color-icon));
+}
+.menu {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  inset-inline: 0;
+  z-index: 2;
+  display: grid;
+  padding: 6px;
+  border: 1px solid var(--nav-rule);
+  border-radius: var(--radius-large, 12px);
+  background: var(--color-bg-elevated, var(--color-bg));
+  box-shadow: 0 10px 28px rgb(0 0 0 / 0.12);
+}
+.menu a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 9px;
+  border-radius: calc(var(--nav-radius) - 2px);
+  color: var(--color-text);
+  font: 13.5px var(--nav-ui);
+  text-decoration: none;
+}
+.menu a:hover {
+  background: var(--nav-hover);
+  text-decoration: none;
+}
+.menuIcon {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  color: var(--color-icon-secondary, var(--color-icon));
+}
+.menu hr {
+  width: 100%;
+  margin: 4px 0;
+  border: 0;
+  border-top: 1px solid var(--nav-rule);
+}
+
+/* ---- The filter-count badge on a filtered list's Filters button.
+   EXCEPTION: targets Payload's `#toggle-list-filters` id (the only handle
+   the list controls expose; NavClient also clicks it). If a release renames
+   it the badge simply disappears. */
+:global(#toggle-list-filters[data-sk-filter-count])::after {
+  content: attr(data-sk-filter-count);
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  margin-inline-start: 6px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--sk-accent);
+  color: var(--color-text-onbrand, #fff);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+}

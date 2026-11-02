@@ -1,0 +1,30 @@
+/**
+ * Every admin component the plugin references by import-map path lives here as
+ * `@sitekick/cms/admin#<Name>`. Client components carry 'use client' in their own file.
+ */
+// Conventions
+export { AutoRowLabel } from './RowLabel'
+export { RelationshipCell } from './RelationshipCell'
+export { MetaImageWithPreview, UploadPreview } from './UploadPreview'
+export { CallLink, EmailLink, OpenLink } from './OpenLink'
+export { SEODescription, SEOImage, SEOOverview, SEOPreview, SEOTitle } from './SEOFields'
+export { SEOAutofill, SEOAutofillNote } from './SEOAutofill'
+export { StatusCell, StatusTag, Tag } from './StatusTag'
+export { CheckboxesField } from './CheckboxesField'
+// Auth and users
+export { AuthView } from './AuthView'
+export { Icon } from './Icon'
+export { InviteButton } from './InviteButton'
+export { InviteUser } from './InviteUser'
+export { Logo } from './Logo'
+export { SetPassword } from './SetPassword'
+export { SigningIn } from './SigningIn'
+// Help
+export { HelpProvider, useHelp } from './HelpProvider'
+export { HelpView } from './HelpView'
+export { HelpPreviewButton } from './HelpPreviewButton'
+// Dashboard
+export { Dashboard } from './Dashboard'
+// Sidebar
+export { Nav } from './Nav'
+export { NavClient, NavHeader } from './NavClient'

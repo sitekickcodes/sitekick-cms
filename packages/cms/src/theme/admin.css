@@ -1,0 +1,1697 @@
+/*
+ * Sitekick admin polish. Tokens live in theme.css; this file is the second
+ * layer: the few places where tokens cannot reach and we name a Payload
+ * class on purpose.
+ *
+ * Policy (see README.md):
+ *  - Element and attribute selectors first (h1-h3, label, input:focus).
+ *  - Every rule that names an @payloadcms/ui class or id is marked
+ *    `EXCEPTION:` within the three lines above it. Those names are not a
+ *    public API; if an upgrade renames one, that spot falls back to stock
+ *    and nothing else breaks. `__tests__/exceptions.test.ts` enforces the
+ *    marker.
+ *  - Nothing client-specific. The sidebar (src/nav) and dashboard
+ *    (src/dashboard) carry their own CSS modules; only the sidebar hairline
+ *    lives here.
+ *  - Payload keeps its own rules in `@layer payload-default`, so these
+ *    unlayered rules win at equal specificity without !important.
+ *
+ * Verified against @payloadcms/ui 4.0.0-beta.6 (classes checked in its
+ * dist). Markup that changed since beta.3 is noted inline.
+ */
+
+/* ===========================================================================
+ * Sign-in frame (login, forgot, reset, logout: anything in .template-minimal)
+ * ======================================================================== */
+
+/* EXCEPTION: the auth screens sit on warm paper in the light theme. Payload
+   paints .template-minimal with --color-bg, which is already the paper; this
+   pins it in case a client re-maps --color-bg for the main app. */
+html[data-theme='light'] .template-minimal {
+  background: var(--sk-base-50);
+}
+/* EXCEPTION: Payload v4 caps the normal auth shell at 400px including 48px
+   of gutters, leaving 352px for credentials. 480px of usable form width. */
+.template-minimal--width-normal > .template-minimal__wrap {
+  max-width: 528px;
+}
+
+/* EXCEPTION: field shadows and the focus ring for the sign-in fields. Values
+   on the template so the element rules below can read them. */
+.template-minimal {
+  --sk-field-rest: 0 1px 4px rgb(0 0 0 / 0.05), 0 1px 2px rgb(0 0 0 / 0.02);
+  --sk-field-lift:
+    0 1px 1px rgb(0 0 0 / 0.025), 0 4px 2px rgb(0 0 0 / 0.018), 0 9px 3px rgb(0 0 0 / 0.012),
+    0 17px 3.5px rgb(0 0 0 / 0.006), var(--sk-field-rest);
+  --sk-field-ring: var(--sk-base-900);
+}
+/* EXCEPTION: same terms. */
+html[data-theme='dark'] .template-minimal {
+  --sk-field-ring: var(--sk-base-0);
+}
+
+/* The fields: white, 12px corners, 48px tall, no border, a resting shadow
+   that lifts on hover, a crisp ink ring while focused, red when invalid.
+   EXCEPTION: scoped under .template-minimal; element selectors inside. */
+html[data-theme] .template-minimal form input:is([type='email'], [type='password'], [type='text']) {
+  height: 48px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  box-shadow: var(--sk-field-rest);
+  transition: box-shadow var(--sk-motion-hover);
+}
+/* EXCEPTION: same terms. */
+html[data-theme='light'] .template-minimal form input:is([type='email'], [type='password'], [type='text']) {
+  background: #fff;
+  color: var(--sk-base-900);
+}
+/* EXCEPTION: same terms. Password managers keep the field's own fill and
+   ink instead of the browser's autofill tint. */
+html[data-theme] .template-minimal form input:is([type='email'], [type='password'], [type='text']):autofill {
+  -webkit-text-fill-color: currentColor;
+  transition:
+    box-shadow var(--sk-motion-hover),
+    background-color 600000s 0s,
+    color 600000s 0s;
+}
+/* EXCEPTION: same terms. */
+html[data-theme] .template-minimal form input:is([type='email'], [type='password'], [type='text']):not(:disabled):hover {
+  box-shadow: var(--sk-field-lift);
+}
+/* EXCEPTION: same terms. */
+html[data-theme] .template-minimal form input:is([type='email'], [type='password'], [type='text']):focus {
+  border: 0;
+  outline: 0;
+  box-shadow: 0 0 0 1.5px var(--sk-field-ring), var(--sk-field-lift);
+}
+/* EXCEPTION: same terms. */
+html[data-theme] .template-minimal form .error input,
+html[data-theme] .template-minimal form input[aria-invalid='true'] {
+  box-shadow: 0 0 0 1.5px var(--sk-danger), var(--sk-field-rest);
+}
+
+/* EXCEPTION: the submit pill, 48px to sit with the fields. Colour comes from
+   the brand tokens (ink); on hover the label slides left and an arrow fades
+   in beside it (fine pointers only); presses to 0.98. */
+html[data-theme] .template-minimal form button[type='submit'] {
+  --sk-arrow: 18px;
+  --sk-arrow-gap: 6px;
+  min-height: 48px;
+  transition:
+    color var(--sk-motion-hover),
+    background-color var(--sk-motion-hover),
+    scale var(--sk-motion-press);
+}
+/* EXCEPTION: same terms. Dark: the light pill (paper fill, ink label). */
+html[data-theme='dark'] .template-minimal form button[type='submit']:not(:disabled) {
+  background-color: var(--sk-base-50);
+  color: var(--sk-base-900);
+}
+/* EXCEPTION: same terms. */
+html[data-theme='dark'] .template-minimal form button[type='submit']:not(:disabled):hover {
+  background-color: var(--sk-base-150);
+}
+/* EXCEPTION: same terms. */
+html[data-theme] .template-minimal form button[type='submit']:not(:disabled):active {
+  scale: var(--sk-scale-press);
+}
+/* EXCEPTION: same terms. */
+html[data-theme] .template-minimal form button[type='submit']:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--sk-field-ring) 50%, transparent);
+}
+/* EXCEPTION: same terms. The label (button > content > label) carries the
+   arrow so it sits beside the words in a full-width button. */
+.template-minimal form button[type='submit'] > span > span:last-child {
+  position: relative;
+  transition: translate var(--sk-motion-hover);
+}
+/* EXCEPTION: same terms. */
+.template-minimal form button[type='submit'] > span > span:last-child::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: calc(100% + var(--sk-arrow-gap));
+  width: var(--sk-arrow);
+  height: var(--sk-arrow);
+  background: currentColor;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14'/%3E%3Cpath d='m12 5 7 7-7 7'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  opacity: 0;
+  translate: -4px -50%;
+  transition:
+    opacity var(--sk-motion-hover),
+    translate var(--sk-motion-hover);
+}
+@media (hover: hover) and (pointer: fine) {
+  /* EXCEPTION: same terms. Half the arrow + gap: label and arrow centre together. */
+  .template-minimal form button[type='submit']:not(:disabled):is(:hover, :focus-visible) > span > span:last-child {
+    translate: calc(-0.5 * (var(--sk-arrow) + var(--sk-arrow-gap))) 0;
+  }
+  /* EXCEPTION: same terms. */
+  .template-minimal form button[type='submit']:not(:disabled):is(:hover, :focus-visible) > span > span:last-child::after {
+    opacity: 1;
+    translate: 0 -50%;
+  }
+}
+
+/* EXCEPTION: the forgot-password link uses Button markup. Match the sign-in
+   button's 48px target. (beta.3 `.login__form__forgotPassword` is
+   `.login__form__forgot` in beta.6; both named so either falls back.) */
+.template-minimal :is(.login__form__forgot, .login__form__forgotPassword) {
+  min-height: 48px;
+  color: var(--sk-admin-elevation-800);
+  text-decoration: none;
+}
+/* EXCEPTION: same terms. */
+.template-minimal :is(.login__form__forgot, .login__form__forgotPassword):is(:hover, :focus-visible) {
+  color: var(--sk-admin-text);
+  text-decoration: none;
+}
+/* EXCEPTION: plain text links on the auth screens: no rule at rest, a 1.5px
+   underline sweeps in. Scoped under .template-minimal, element selector. */
+.template-minimal a:not([class*='btn']) {
+  text-decoration: none;
+  color: var(--sk-admin-elevation-800);
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: left calc(100% - 1px);
+  background-size: 0% 1.5px;
+  transition:
+    background-size var(--sk-motion-hover),
+    color var(--sk-motion-hover);
+}
+/* EXCEPTION: same terms. */
+.template-minimal a:not([class*='btn']):is(:hover, :focus-visible) {
+  color: var(--sk-admin-text);
+  background-size: 100% 1.5px;
+}
+
+/* ===========================================================================
+ * Headings: the display face. Element selectors; rich-text content is left
+ * alone because an editor's own headings are content.
+ * ======================================================================== */
+:is(h1, h2, h3):not([contenteditable] *) {
+  font-family: var(--sk-font-display);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+h1:not([contenteditable] *) {
+  font-size: 28px;
+  line-height: 1.15;
+  /* long single-word titles (an email, a file name) break rather than overflow */
+  overflow-wrap: anywhere;
+}
+h2:not([contenteditable] *) {
+  font-size: 20px;
+  line-height: 1.25;
+}
+h3:not([contenteditable] *) {
+  font-size: 18px;
+  line-height: 1.3;
+  letter-spacing: -0.012em;
+  margin-bottom: 0;
+}
+
+/* ===========================================================================
+ * Section rhythm. One scale, every section header the same:
+ *   title -> its description        5px
+ *   header -> first field / row    24px
+ *   field -> field                 20px   (Payload stock)
+ *   section -> section             40px   (Payload stock)
+ * ======================================================================== */
+:root {
+  --sk-title-gap: 5px;
+  --sk-header-gap: 24px;
+}
+/* EXCEPTION: groups: title and description are siblings in a 5px column. */
+h3:not([contenteditable] *) + .field-description {
+  margin-top: 0;
+}
+/* EXCEPTION: group header spacing; falls back to stock if renamed. */
+.group-field__header {
+  margin-bottom: var(--sk-header-gap);
+}
+/* EXCEPTION: arrays and blocks: header, rows and Add share a 10px column
+   gap; the description is the header's own child after a 10px gap too. */
+:is(.array-field__header, .blocks-field__header) > .field-description {
+  margin-top: calc(var(--sk-title-gap) - 10px);
+}
+/* EXCEPTION: same terms. */
+:is(.array-field__header, .blocks-field__header) {
+  margin-bottom: calc(var(--sk-header-gap) - 10px);
+}
+/* EXCEPTION: the label inside a heading (field-group titles) inherits the
+   heading face. */
+:is(h1, h2, h3):not([contenteditable] *) .field-label {
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+/* ===========================================================================
+ * Colour: focus and selection in blue (--sk-focus), text selection.
+ * ======================================================================== */
+:root {
+  --accessibility-outline: 2px solid var(--sk-focus);
+}
+html[data-theme='light'] ::selection {
+  background: var(--sk-selection);
+  color: var(--sk-base-900);
+}
+/* EXCEPTION: Lexical supplies an !important selection background of its
+   own; keep selected editor text consistent with the other fields. */
+html[data-theme='light'] .rich-text-lexical :is(.ContentEditable__root, .ContentEditable__root *)::selection {
+  background: var(--sk-selection) !important;
+  color: var(--sk-base-900);
+}
+
+/* Focus in blue: the field you're typing in carries the "you are here"
+   colour. Element selectors for native fields; react-select (relationship /
+   select fields) is the one class below. */
+html[data-theme='light'] :is(input:not([type='checkbox'], [type='radio'], [type='hidden'], .rs__input), textarea):focus {
+  border-color: var(--sk-focus);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--sk-focus) 14%, transparent);
+}
+/* EXCEPTION: react-select's focused control (.rs__ is Payload's prefix). */
+html[data-theme='light'] .rs__control--is-focused {
+  border-color: var(--sk-focus);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--sk-focus) 14%, transparent);
+}
+
+/* ===========================================================================
+ * Buttons: pills. Primary is ink (brand tokens, theme.css); secondary and
+ * Payload's "pill" style are white with a hairline that lifts on hover.
+ * v4's Button paints from semantic tokens, so the per-style colours are set
+ * here rather than through the retired --bg-color/--hover-bg properties.
+ * ======================================================================== */
+/* EXCEPTION: pill radius and medium weight, scoped to real buttons so the
+   12px --button-radius stays on panels and collapsibles. */
+.btn {
+  border-radius: 999px;
+  font-weight: 500;
+  transition:
+    background-color 150ms ease,
+    box-shadow 150ms ease;
+}
+/* EXCEPTION: split buttons (Publish + its menu) stay one pill: flat where
+   they meet. */
+html:not([dir='RTL']) .btn--withPopup .btn {
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+}
+/* EXCEPTION: same terms. */
+html:not([dir='RTL']) .btn--withPopup .popup-button {
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+  border-start-end-radius: 999px;
+  border-end-end-radius: 999px;
+}
+/* EXCEPTION: secondary and "pill" buttons: a white hairline pill. */
+html[data-theme='light'] :is(.btn--style-secondary, .btn--style-pill):not(.btn--disabled) {
+  color: var(--sk-base-900);
+  background-color: #fff;
+  border: 1px solid var(--sk-base-200);
+}
+/* EXCEPTION: same terms. Hover lifts instead of changing colour. */
+html[data-theme='light'] :is(.btn--style-secondary, .btn--style-pill):not(.btn--disabled):hover {
+  background-color: #fff;
+  box-shadow: var(--sk-lift);
+}
+/* EXCEPTION: control spacing. (The beta.3 --btn-padding-* properties no
+   longer affect v4 buttons; beta.6 has no .btn--size-small either.) */
+.btn:is(.btn--size-medium, .btn--size-large):not(.btn--icon-only, .btn--round, .toolbar-popup__dropdown-item) {
+  padding-inline: 20px;
+}
+/* EXCEPTION: same terms. */
+.btn__content {
+  gap: 8px;
+}
+/* EXCEPTION: every button in a list's title row (Create New, Bulk Upload, a
+   collection's own) at 36px. */
+.list-header__title-actions .btn,
+.list-create-new-doc__create-new-button.btn {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding-inline: 16px;
+  font-size: 14px;
+}
+/* EXCEPTION: a list's Create New sits at the far right of the title row. */
+.list-header__title-actions {
+  margin-inline-start: auto;
+}
+@media (max-width: 360px) {
+  /* EXCEPTION: document controls on the narrowest phones. */
+  .doc-controls__controls-wrapper,
+  .doc-controls__controls {
+    gap: 4px;
+  }
+  /* EXCEPTION: same terms. */
+  .doc-controls .btn:is(.btn--size-medium, .btn--size-large):not(.btn--icon-only, .btn--round) {
+    padding-inline: 12px;
+  }
+}
+
+/* ===========================================================================
+ * Form hierarchy: label 14px medium ink / input stock / help 13px muted.
+ * ======================================================================== */
+/* EXCEPTION: field labels (Payload's .field-label, its .unstyled opt-out). */
+label.field-label:not(.unstyled) {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.005em;
+  color: var(--sk-base-900);
+  padding-bottom: 8px;
+}
+/* EXCEPTION: same terms. */
+html[data-theme='dark'] label.field-label:not(.unstyled) {
+  color: var(--sk-admin-text);
+}
+/* EXCEPTION: help text. */
+.field-description {
+  font-size: 13px;
+  line-height: 1.45;
+  margin-top: 6px;
+  max-width: 72ch;
+  text-wrap: pretty;
+}
+/* EXCEPTION: same terms. */
+html[data-theme='light'] .field-description {
+  color: var(--sk-base-650);
+}
+/* EXCEPTION: same terms. Dark: stock help text is ~3:1 on ink; 650 reads ~7:1. */
+html[data-theme='dark'] .field-description {
+  color: var(--sk-admin-elevation-650);
+}
+/* Table column heads take the label's weight so a list reads the same way. */
+thead th {
+  font-weight: 500;
+}
+html[data-theme='light'] thead th {
+  color: var(--sk-base-900);
+}
+/* Number inputs use the body face (Payload gives them the mono face). */
+input[type='number'] {
+  font-family: var(--sk-font-body);
+}
+
+/* ===========================================================================
+ * Publish state as a tag. Payload gives the status no state class, only its
+ * title ("Status: Published" / "Draft" / "Changed"), so colour keys on that
+ * English text: published green, unpublished changes gold, draft neutral.
+ * ======================================================================== */
+/* EXCEPTION: the document header's status value. */
+.status__value {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 9px;
+  margin-inline-start: 4px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--sk-tag-ink);
+  background: var(--sk-tag-neutral);
+}
+/* EXCEPTION: same terms. */
+.status[title$=': Published'] .status__value {
+  background: var(--sk-tag-published);
+}
+/* EXCEPTION: same terms. */
+.status[title$=': Changed'] .status__value {
+  background: var(--sk-tag-changed);
+}
+/* EXCEPTION: the same tags in list cells (beta.6 ships .status-cell--* with
+   its own soft fills; these make them match the header). */
+.status-cell {
+  min-height: 22px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--sk-tag-ink);
+  background: var(--sk-tag-neutral);
+}
+/* EXCEPTION: same terms. */
+.status-cell--published {
+  background: var(--sk-tag-published);
+  color: var(--sk-tag-ink);
+}
+/* EXCEPTION: same terms. */
+.status-cell--changed {
+  background: var(--sk-tag-changed);
+  color: var(--sk-tag-ink);
+}
+/* EXCEPTION: same terms. */
+.status-cell--draft,
+.status-cell--previously-published {
+  background: var(--sk-tag-neutral);
+  color: var(--sk-tag-ink);
+}
+
+/* ===========================================================================
+ * Sidebar: only the hairline. The sidebar itself is src/nav's CSS module.
+ * ======================================================================== */
+/* EXCEPTION: Payload gives .nav no background of its own and a transparent
+   1px end border. Page and sidebar one colour, a hairline between. */
+html[data-theme='light'] .nav {
+  background: var(--sk-admin-bg);
+  border-inline-end-color: var(--sk-base-150);
+}
+
+/* ===========================================================================
+ * Header breadcrumbs: compact links, not full-sized action pills.
+ * ======================================================================== */
+/* EXCEPTION: a long breadcrumb couldn't shrink and pushed the header's
+   controls off screen; it scrolls under its own fade instead. 4px of
+   padding cancelled by a negative margin leaves room for focus rings. */
+.app-header__step-nav-wrapper {
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin-block: 0;
+  padding-block: 4px;
+  min-height: 36px;
+}
+/* EXCEPTION: same terms. */
+.app-header__step-nav-wrapper > .app-header__step-nav-wrapper {
+  margin: 0;
+  padding: 0;
+  min-height: 28px;
+}
+/* EXCEPTION: breadcrumb items. */
+.step-nav .btn.step-nav__item,
+.step-nav__measurer .btn.step-nav__item {
+  height: 28px;
+  min-height: 28px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+}
+/* EXCEPTION: same terms. */
+.step-nav .btn.step-nav__item:not(.step-nav__last):hover {
+  background: var(--sk-admin-elevation-100);
+}
+/* EXCEPTION: same terms. */
+.step-nav .btn.step-nav__item:focus-visible {
+  outline-offset: -2px;
+}
+
+/* ===========================================================================
+ * Lists: page gutters, rounded search, white filter chips, Create New
+ * beside the page heading, the filtered-count badge.
+ * ======================================================================== */
+/* EXCEPTION: v4's list containers are full bleed; keep the page gutters. */
+.collection-list {
+  position: relative;
+}
+/* EXCEPTION: same terms. */
+.collection-list > .table-wrap {
+  margin-inline: var(--gutter-h);
+}
+/* EXCEPTION: same terms. */
+.collection-list > .list-header,
+.collection-list > .list-controls {
+  border-bottom: 0;
+}
+/* EXCEPTION: the search field takes the row; the stock spacer goes. */
+.list-controls__left {
+  flex: 1;
+  min-width: 140px;
+}
+/* EXCEPTION: same terms. */
+.list-controls__spacer {
+  display: none;
+}
+/* EXCEPTION: same terms. Wraps at any width so a tablet with the sidebar
+   open never scrolls sideways. */
+.list-controls__actions {
+  flex-wrap: wrap;
+  flex-shrink: 1;
+  min-width: 0;
+}
+/* EXCEPTION: the outer list owns the gutter; drop v4's duplicate cell inset. */
+.collection-list > .table-wrap .table :is(th, td):first-child {
+  padding-inline-start: 16px;
+}
+/* EXCEPTION: same terms. */
+.collection-list > .table-wrap .table :is(th, td):last-child {
+  padding-inline-end: 16px;
+}
+@media (min-width: 1025px) {
+  /* EXCEPTION: Create New (rendered in the controls row in v4) sits level
+     with the page heading. */
+  .collection-list > .list-controls #create-new-doc {
+    position: absolute;
+    top: 16px;
+    right: var(--gutter-h);
+  }
+  /* EXCEPTION: same terms. */
+  .collection-list > .list-header {
+    padding-right: calc(var(--gutter-h) + 140px);
+  }
+  /* EXCEPTION: same terms. An upload collection has a native Bulk Upload
+     action in the title row; align that row with Create New. (`media` is the
+     conventional upload slug; Payload adds `collection-list--<slug>`.) */
+  .collection-list--media > .list-header {
+    padding-top: 16px;
+    padding-right: calc(var(--gutter-h) + 124px);
+  }
+}
+@media (max-width: 768px) {
+  /* EXCEPTION: same terms, phones. */
+  .collection-list > .list-controls #create-new-doc {
+    position: absolute;
+    top: 16px;
+    right: var(--gutter-h);
+  }
+  /* EXCEPTION: same terms. */
+  .collection-list > .list-header {
+    padding-right: calc(var(--gutter-h) + 130px);
+  }
+}
+/* EXCEPTION: when the list has a description, the buttons drop to the
+   bottom of the header, level with it: title row and description stack in
+   the first column, the buttons span both rows. Drawers keep stock. */
+@media (min-width: 768px) {
+  /* EXCEPTION: same terms. */
+  .list-header:not(.list-drawer__header):has(.custom-view-description) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    column-gap: var(--spacer-2-5);
+    align-items: end;
+  }
+  /* EXCEPTION: same terms. */
+  .list-header:not(.list-drawer__header):has(.custom-view-description)
+    :is(.list-header__content, .list-header__title-and-actions) {
+    display: contents;
+  }
+  /* EXCEPTION: same terms. */
+  .list-header:not(.list-drawer__header):has(.custom-view-description) .list-header__title {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  /* EXCEPTION: same terms. */
+  .list-header:not(.list-drawer__header):has(.custom-view-description) .list-header__after-header-content {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  /* EXCEPTION: same terms. */
+  .list-header:not(.list-drawer__header):has(.custom-view-description) .list-header__title-actions {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    margin-bottom: 0;
+  }
+  /* EXCEPTION: same terms. */
+  .list-header:not(.list-drawer__header):has(.custom-view-description) .list-header__actions {
+    grid-column: 3;
+    grid-row: 1 / 3;
+    margin-bottom: 0;
+  }
+}
+
+/* EXCEPTION: the search field as a white pill on a hairline, 40px tall. */
+.list-controls .search-input {
+  width: 100%;
+  min-height: 40px;
+  border-radius: 999px;
+  border-color: transparent;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+}
+/* EXCEPTION: same terms. */
+.list-controls .search-input .icon--search {
+  inset-inline-start: 12px;
+  width: 24px;
+}
+/* EXCEPTION: same terms. */
+.list-controls .search-input__input {
+  padding-inline: 42px 36px;
+  height: 38px;
+  border-radius: 999px;
+}
+/* EXCEPTION: same terms. The ring sits on the pill, not the inner input. */
+html[data-theme] .list-controls .search-input__input:focus {
+  border: 0;
+  box-shadow: none;
+}
+/* EXCEPTION: same terms. */
+.list-controls .search-input:focus-within {
+  border-color: var(--sk-focus);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--sk-focus) 14%, transparent);
+}
+/* EXCEPTION: Filters / Sort / Group by as white chips, lifting on hover.
+   (beta.3's .columns-button__button and .group-by-control__trigger are
+   .list-controls__toggle-group-by and .group-by-control__select-trigger in
+   beta.6; the old names are kept so either falls back harmlessly.) */
+html[data-theme] .list-controls :is(.list-controls__toggle-where, .list-controls__toggle-sort, .list-controls__toggle-group-by, .group-by-control__select-trigger, .group-by-control__trigger, .columns-button__button) {
+  height: 40px;
+  padding-inline: 18px 14px;
+  border-radius: 999px;
+  border-color: transparent;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  font-size: 14px;
+}
+/* EXCEPTION: same terms. */
+html[data-theme] .list-controls :is(.list-controls__toggle-where, .list-controls__toggle-sort, .list-controls__toggle-group-by, .group-by-control__select-trigger, .group-by-control__trigger, .columns-button__button):is(:hover, [aria-expanded='true']) {
+  box-shadow: var(--sk-lift);
+}
+/* EXCEPTION: the list overflow menu uses Popup's trigger rather than
+   Button. Same 40px surface as the adjacent controls, as a circle. */
+.list-controls #list-menu .popup-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--field-color-bg);
+  color: var(--color-icon);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+}
+/* EXCEPTION: same terms. */
+.list-controls #list-menu .popup-button:is(:hover, [aria-expanded='true']) {
+  box-shadow: var(--sk-lift);
+}
+/* EXCEPTION: same terms. */
+.list-controls #list-menu .popup-button:focus-visible {
+  outline: var(--accessibility-outline);
+  outline-offset: 2px;
+}
+/* EXCEPTION: the layout switch (list / grid): a 40px white track with an
+   ink selection. Native radios and arrow keys stay Payload's. */
+.list-controls .segmented-control__options {
+  border-radius: 999px;
+  background: var(--field-color-bg);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+}
+/* EXCEPTION: same terms. */
+.list-controls .segmented-control__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+}
+/* EXCEPTION: same terms. */
+.list-controls .segmented-control__input:checked + .segmented-control__icon {
+  background: var(--color-bg-brand);
+  color: var(--color-text-onbrand);
+  box-shadow: none;
+}
+/* EXCEPTION: same terms. */
+.list-controls .segmented-control__input:focus-visible + .segmented-control__icon {
+  outline: 2px solid var(--sk-focus);
+  outline-offset: 2px;
+}
+
+/* A filtered list says so. The host sets <html data-list-filters="n"> while
+   the URL carries filters (the nav module's FilterFlag); the Filters button
+   takes the blue outline and shows the count. EXCEPTION: Payload's button
+   id; if renamed it falls back to stock. */
+html[data-list-filters] #toggle-list-filters {
+  box-shadow: inset 0 0 0 1.5px var(--sk-focus);
+  color: var(--sk-focus);
+}
+/* EXCEPTION: same terms. The count, in a small blue circle after the label
+   (a Button in beta.6, a Pill in beta.3: both label classes named). */
+html[data-list-filters] #toggle-list-filters :is(.btn__label, .pill__label)::after {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  margin-inline-start: 6px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--sk-focus);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  vertical-align: 1px;
+  box-sizing: border-box;
+}
+/* EXCEPTION: same terms. */
+:root[data-theme='dark'][data-list-filters] #toggle-list-filters :is(.btn__label, .pill__label)::after {
+  color: var(--sk-base-1000);
+}
+/* EXCEPTION: same terms. */
+html[data-list-filters='1'] #toggle-list-filters :is(.btn__label, .pill__label)::after {
+  content: '1';
+}
+/* EXCEPTION: same terms. */
+html[data-list-filters='2'] #toggle-list-filters :is(.btn__label, .pill__label)::after {
+  content: '2';
+}
+/* EXCEPTION: same terms. */
+html[data-list-filters='3'] #toggle-list-filters :is(.btn__label, .pill__label)::after {
+  content: '3';
+}
+/* EXCEPTION: same terms. */
+html[data-list-filters='4'] #toggle-list-filters :is(.btn__label, .pill__label)::after {
+  content: '4';
+}
+/* EXCEPTION: same terms. */
+html[data-list-filters='5'] #toggle-list-filters :is(.btn__label, .pill__label)::after {
+  content: '5';
+}
+/* EXCEPTION: same terms. */
+html[data-list-filters='6'] #toggle-list-filters :is(.btn__label, .pill__label)::after {
+  content: '6';
+}
+/* EXCEPTION: same terms. */
+html[data-list-filters='7'] #toggle-list-filters :is(.btn__label, .pill__label)::after {
+  content: '7';
+}
+/* EXCEPTION: same terms. */
+html[data-list-filters='8'] #toggle-list-filters :is(.btn__label, .pill__label)::after {
+  content: '8';
+}
+/* EXCEPTION: same terms. */
+html[data-list-filters='9'] #toggle-list-filters :is(.btn__label, .pill__label)::after {
+  content: '9';
+}
+/* EXCEPTION: same terms. */
+html[data-list-filters]:not([data-list-filters='1'], [data-list-filters='2'], [data-list-filters='3'], [data-list-filters='4'], [data-list-filters='5'], [data-list-filters='6'], [data-list-filters='7'], [data-list-filters='8'], [data-list-filters='9']) #toggle-list-filters :is(.btn__label, .pill__label)::after {
+  content: '9+';
+}
+
+/* ===========================================================================
+ * Tables. No alternating fills: a hairline under each row (an inset shadow
+ * on the cells, so the layout doesn't move); the record's link reads as a
+ * name, underlined only on hover; square corners so the hairline never
+ * curls at a striped row's ends. Join-field tables (condensed) below.
+ * ======================================================================== */
+/* EXCEPTION: list tables. */
+.table:not(.table--appearance-condensed) tbody tr,
+.table:not(.table--appearance-condensed) tbody tr:nth-child(odd) {
+  background: none;
+  border-radius: 0;
+}
+/* EXCEPTION: same terms. */
+.table:not(.table--appearance-condensed) :is(th, td) {
+  box-shadow: inset 0 -1px 0 var(--sk-admin-elevation-150);
+}
+/* EXCEPTION: a row's checkbox sits in the middle of the row, not at its top. */
+.table td.cell-_select {
+  vertical-align: middle;
+}
+/* EXCEPTION: same terms. */
+.table:not(.table--appearance-condensed) tbody td a:not(.btn) {
+  color: var(--sk-admin-text);
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: text-decoration-color 150ms ease;
+}
+/* EXCEPTION: same terms. */
+.table:not(.table--appearance-condensed) tbody td a:not(.btn):hover {
+  text-decoration-color: currentColor;
+}
+/* EXCEPTION: inset join tables (the ones join fields render). Payload paints
+   the header and odd rows and rounds each striped row inside the rounded
+   frame; at 8px that notches. Body rows go white and square. */
+.table--appearance-condensed tbody tr,
+.table--appearance-condensed tbody tr:nth-child(odd) {
+  background: var(--sk-admin-elevation-0);
+  border-radius: 0;
+}
+/* EXCEPTION: the join-field header: title matches a group section title
+   (the h3 style) and sits on one line with Add new / Columns. */
+.relationship-table__header {
+  align-items: center;
+  margin-bottom: var(--sk-header-gap);
+}
+/* EXCEPTION: same terms (names the element and :not() to outrank the
+   field-label rule above). */
+.relationship-table__header label.field-label:not(.unstyled) {
+  padding-bottom: 0;
+  font-family: var(--sk-font-display);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.012em;
+}
+/* EXCEPTION: same terms. */
+.relationship-table__header .btn {
+  margin-block: 0;
+}
+
+/* ===========================================================================
+ * Checkboxes, Material-style: 15px square, 4px corners, ink tick, a soft
+ * halo on hover and focus. v4 renders a separate visual element.
+ * ======================================================================== */
+/* EXCEPTION: the checkbox input wrapper. */
+.checkbox-input__input {
+  width: 15px;
+  height: 15px;
+  isolation: isolate;
+}
+/* EXCEPTION: same terms. Payload's own checkbox custom properties. */
+.checkbox-input__visuals {
+  --checkbox-bg: transparent;
+  --checkbox-border-color: var(--sk-admin-elevation-300);
+  --checkbox-mark-halo-color: transparent;
+  border-width: 1.5px;
+  border-radius: 4px;
+  box-shadow: none;
+}
+/* EXCEPTION: same terms. */
+.checkbox-input__control:not(:disabled):is(:hover, :focus-visible) + .checkbox-input__visuals {
+  --checkbox-bg: transparent;
+  --checkbox-border-color: var(--sk-admin-elevation-700);
+}
+/* EXCEPTION: same terms. The halo. */
+.checkbox-input__input::before {
+  content: '';
+  position: absolute;
+  inset: -10px;
+  z-index: -1;
+  border-radius: 50%;
+  background: transparent;
+  pointer-events: none;
+  transition: background-color 150ms ease;
+}
+/* EXCEPTION: same terms. */
+.checkbox-input__input:has(input:not(:disabled):hover)::before {
+  background: color-mix(in oklch, var(--sk-admin-text) 7%, transparent);
+}
+/* EXCEPTION: same terms. */
+.checkbox-input__input:has(input:not(:disabled):active)::before {
+  background: color-mix(in oklch, var(--sk-admin-text) 13%, transparent);
+}
+/* EXCEPTION: same terms. */
+.checkbox-input__input:has(input:focus-visible)::before {
+  background: color-mix(in oklch, var(--sk-focus) 22%, transparent);
+}
+/* EXCEPTION: same terms. */
+.checkbox-input__control:not(:disabled):is(:checked, :indeterminate) + .checkbox-input__visuals {
+  --checkbox-bg: var(--sk-admin-text);
+  --checkbox-border-color: var(--sk-admin-text);
+  --checkbox-mark-color: var(--sk-admin-bg);
+}
+/* EXCEPTION: same terms. */
+.checkbox-input__control:focus-visible + .checkbox-input__visuals {
+  --checkbox-focus-ring-color: var(--sk-focus);
+}
+/* EXCEPTION: same terms. */
+.checkbox-input__visuals :is(.checkbox-input__check, .checkbox-input__mixed) {
+  width: 13px;
+  height: 13px;
+}
+/* EXCEPTION: same terms. */
+.checkbox-input__mark {
+  stroke-width: 2;
+}
+/* EXCEPTION: checkbox labels share a row with the control; no label
+   padding or second description gap. */
+.field-type.checkbox {
+  gap: 4px;
+}
+/* EXCEPTION: same terms. */
+.field-type.checkbox .checkbox-input label.field-label {
+  margin-block: 0;
+  padding-bottom: 0;
+}
+/* EXCEPTION: same terms. */
+.field-type.checkbox .checkbox-input__input {
+  margin-block: 2px;
+}
+/* EXCEPTION: same terms. */
+.field-type.checkbox > .field-description {
+  margin-top: 0;
+  padding-inline-start: calc(15px + var(--spacer-2));
+}
+
+/* ===========================================================================
+ * Overflow fixes, audited at 375px: the Payload layouts that run off the
+ * right edge.
+ * ======================================================================== */
+/* EXCEPTION: block rows: a long section name ends in "..." instead of
+   clipping mid-word; the pill can't shrink below its text without min-width. */
+.blocks-field__block-header {
+  max-width: 100%;
+}
+/* EXCEPTION: same terms. */
+.blocks-field__block-pill {
+  min-width: 0;
+}
+@media (max-width: 1024px) {
+  /* EXCEPTION: Status / Last Modified / Created wrap instead of scrolling
+     sideways under a fade that always cut "Created" off. */
+  .doc-controls__meta {
+    flex-wrap: wrap;
+    row-gap: 2px;
+    min-width: 0;
+  }
+  /* EXCEPTION: same terms. */
+  .doc-controls__meta::after {
+    content: none;
+  }
+  /* EXCEPTION: same terms. */
+  .doc-controls__value-wrap {
+    max-width: 100%;
+  }
+  /* EXCEPTION: account page: the rules around "Payload Settings" are drawn
+     60px past a phone's edge. Gutter to gutter instead. */
+  .payload-settings::before,
+  .payload-settings::after {
+    width: calc(100% + var(--gutter-h) * 2);
+  }
+  /* EXCEPTION: Edit / Versions / API: the scroll fade sat after the last tab
+     as a stray square. */
+  .doc-tabs::after {
+    content: none;
+  }
+}
+@media (max-width: 768px) {
+  /* EXCEPTION: the bulk-selection bar, fixed at the bottom with width: 100%
+     from its in-flow left edge, so the last actions sat past the viewport.
+     Edge to edge with the page gutter, actions wrap. */
+  .collection-list__list-selection {
+    inset-inline: 0;
+    width: auto;
+    padding-inline: var(--gutter-h);
+    border-top: 1px solid var(--sk-admin-elevation-100);
+  }
+  /* EXCEPTION: same terms. */
+  .list-selection,
+  .list-selection__actions {
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+  /* EXCEPTION: same terms. */
+  .list-selection > span:first-child {
+    white-space: nowrap;
+  }
+  /* EXCEPTION: images inside rich text: Payload fixes landscape images at a
+     450px minimum width (portraits at 450px tall), wider than a phone. */
+  .LexicalEditorTheme__upload__contents--landscape :is(img, svg) {
+    min-width: 0;
+    max-width: 100%;
+  }
+  /* EXCEPTION: same terms. */
+  .LexicalEditorTheme__upload__contents--portrait :is(img, svg) {
+    min-height: 0;
+    max-height: 320px;
+  }
+  /* EXCEPTION: same terms. */
+  .LexicalEditorTheme__upload__media,
+  .LexicalEditorTheme__upload__metaOverlay,
+  .LexicalEditorTheme__upload__doc-drawer-toggler {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+/* ===========================================================================
+ * Account: Force Unlock hidden. Payload shows it on every account, locked or
+ * not; a lock (5 wrong passwords) lifts itself after 10 minutes.
+ * ======================================================================== */
+/* EXCEPTION: Payload's button id inside the auth fields. */
+.document-fields__edit > .auth-fields #force-unlock {
+  display: none;
+}
+
+/* ===========================================================================
+ * Read-only fields are for reading. Payload greys their text along with the
+ * box; the box keeps its grey, the text goes full strength.
+ * ======================================================================== */
+/* EXCEPTION: `.field-type.read-only` is Payload's own marker; covers inputs,
+   text areas, dates and selects. */
+.field-type.read-only :is(input, textarea):disabled,
+.field-type.read-only .rs__single-value,
+.field-type.read-only .rs__multi-value__label {
+  color: var(--sk-admin-text);
+  -webkit-text-fill-color: var(--sk-admin-text);
+}
+
+/* ===========================================================================
+ * v4 dialogs: the stock 280px small window cannot fit medium action pills
+ * plus its footer padding. Actions stay inside the clipped surface, with
+ * room for focus rings; long labels wrap instead of cropping.
+ * ======================================================================== */
+/* EXCEPTION: Payload's own --dialog-width property on the small size. */
+.dialog--small {
+  --dialog-width: 400px;
+}
+/* EXCEPTION: same terms. */
+.dialog-title {
+  overflow-wrap: anywhere;
+}
+/* EXCEPTION: same terms. */
+.dialog__footer {
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 16px;
+}
+/* EXCEPTION: same terms. */
+.dialog__footer .btn {
+  min-width: 0;
+  max-width: 100%;
+  min-height: 44px;
+  height: auto;
+  padding-block: 10px;
+  justify-content: center;
+  text-align: center;
+}
+/* EXCEPTION: same terms. */
+.dialog__footer .btn__content {
+  min-width: 0;
+}
+/* EXCEPTION: same terms. */
+.dialog__footer .btn__label {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+/* EXCEPTION: the image editor opts out of DialogBody's scrolling for its
+   crop mask, and its canvas can paint over the footer on short screens. */
+.edit-upload__body {
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+@media (max-width: 480px) {
+  /* EXCEPTION: same terms. */
+  .dialog__footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  /* EXCEPTION: same terms. */
+  .dialog__footer .btn {
+    width: 100%;
+  }
+}
+
+/* ===========================================================================
+ * Date picker: its own elevated surface and room to read and select dates.
+ * Payload's selects, day grid and keyboard behaviour stay.
+ * ======================================================================== */
+/* EXCEPTION: react-datepicker's classes, as Payload ships them. */
+.react-datepicker {
+  --sk-calendar-surface: var(--field-color-bg);
+  background: var(--sk-calendar-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow:
+    0 4px 8px rgb(0 0 0 / 0.06),
+    0 16px 32px rgb(0 0 0 / 0.12);
+}
+/* EXCEPTION: same terms. */
+html[data-theme='light'] .react-datepicker {
+  --sk-calendar-surface: #fff;
+}
+/* EXCEPTION: same terms. */
+.react-datepicker__header__dropdown--select {
+  padding: 12px 0;
+  margin-inline: 40px;
+}
+/* EXCEPTION: same terms. */
+.react-datepicker__year-dropdown-container--select {
+  flex: 0 0 auto;
+}
+/* EXCEPTION: same terms. */
+.react-datepicker :is(.react-datepicker__month-select, .react-datepicker__year-select) {
+  height: 32px;
+  padding-inline: 12px 28px;
+  font-size: 14px;
+  line-height: 20px;
+  border-radius: 8px;
+  background-color: var(--sk-calendar-surface);
+}
+/* EXCEPTION: same terms. */
+.react-datepicker__year-select {
+  min-inline-size: calc(4ch + 42px);
+  font-variant-numeric: tabular-nums;
+}
+/* EXCEPTION: same terms. */
+.react-datepicker__navigation:not(.react-datepicker__navigation--years) {
+  width: 32px;
+  height: 32px;
+  margin: 12px 8px;
+  border-radius: 8px;
+}
+/* EXCEPTION: same terms. */
+.react-datepicker__day-names {
+  padding: 8px 16px 0;
+}
+/* EXCEPTION: same terms. */
+.react-datepicker__month:has(.react-datepicker__week) {
+  padding: 4px 16px 12px;
+}
+/* EXCEPTION: same terms. */
+.react-datepicker :is(.react-datepicker__day, .react-datepicker__day-name) {
+  width: 36px;
+  height: 36px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 36px;
+}
+/* EXCEPTION: same terms. */
+.react-datepicker__day {
+  border-radius: 8px;
+}
+/* These overlays are portalled outside .date-time-picker, so Payload's
+   ancestor-scoped mobile rules do not reach the calendar/time columns. */
+@media (max-width: 600px) {
+  /* EXCEPTION: same terms. */
+  .react-datepicker {
+    flex-direction: column;
+  }
+  /* EXCEPTION: same terms. The combined picker can be taller than the space
+     above or below its input: centre it on phones, scroll it when short. */
+  .react-datepicker-popper:has(.react-datepicker__time-container) {
+    position: fixed !important;
+    inset: 50% auto auto 50% !important;
+    transform: translate(-50%, -50%) !important;
+  }
+  /* EXCEPTION: same terms. */
+  .react-datepicker-popper:has(.react-datepicker__time-container) .react-datepicker {
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+  }
+  /* EXCEPTION: same terms. */
+  .react-datepicker__time-container {
+    float: none;
+    align-self: stretch;
+    width: auto;
+    border-left: 0;
+    border-top: 1px solid var(--color-border);
+  }
+  /* EXCEPTION: same terms. */
+  .react-datepicker__header--time {
+    border-radius: 0;
+  }
+  /* EXCEPTION: same terms. */
+  .react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box {
+    width: 100%;
+  }
+}
+/* EXCEPTION: the calendar icon and clear button centre against the actual
+   input height rather than a fixed spacer. */
+.date-time-picker__input-wrapper {
+  position: relative;
+}
+/* EXCEPTION: same terms. */
+.date-time-picker .icon--calendar {
+  top: 50%;
+  right: 12px;
+  width: 20px;
+  height: 20px;
+  transform: translateY(-50%);
+}
+/* EXCEPTION: same terms. */
+.date-time-picker__clear-button {
+  top: 50%;
+  right: 40px;
+  transform: translateY(-50%);
+}
+
+/* ===========================================================================
+ * Media card: an attached file is a visual card, not a tiny filename row.
+ * Payload's Edit and Remove actions stay, with full-sized targets.
+ * ======================================================================== */
+/* EXCEPTION: the upload field card at its medium size. */
+.upload-field-card--size-medium {
+  padding: 12px;
+}
+/* EXCEPTION: same terms. */
+.upload-field-card--size-medium .upload-relationship-details__imageAndDetails {
+  gap: 16px;
+}
+/* EXCEPTION: same terms. */
+.upload-field-card--size-medium .thumbnail {
+  width: 96px;
+  height: 72px;
+  border-radius: 8px;
+  background: var(--color-bg-secondary);
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--color-text) 10%, transparent);
+}
+/* EXCEPTION: same terms. */
+.upload-field-card--size-medium .thumbnail img {
+  object-fit: contain;
+}
+/* EXCEPTION: same terms. */
+.upload-relationship-details__action-btn.btn {
+  width: 36px;
+  height: 36px;
+}
+/* EXCEPTION: same terms. */
+.upload-relationship-details__action-btn.btn:hover {
+  background: var(--color-bg-secondary);
+}
+/* EXCEPTION: stretch Payload's own Edit button across the card, so the
+   image, filename and surrounding space all open its drawer. Remove stays
+   above that target; read-only cards have no Edit. The visible label is
+   Payload's own translated accessible name. */
+.upload-field-card:has(.upload-relationship-details__action-btn .icon--write) {
+  position: relative;
+}
+/* EXCEPTION: same terms. */
+.upload-field-card .upload-relationship-details {
+  overflow: visible;
+}
+/* EXCEPTION: same terms. */
+.upload-field-card .upload-relationship-details__action-btn:has(.icon--write) {
+  position: static;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: auto;
+  min-width: 76px;
+  padding-inline: 10px;
+}
+/* EXCEPTION: same terms. */
+.upload-field-card .upload-relationship-details__action-btn:has(.icon--write)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  cursor: pointer;
+}
+/* EXCEPTION: same terms. */
+.upload-field-card .upload-relationship-details__action-btn:has(.icon--write)::after {
+  content: attr(aria-label);
+  font: inherit;
+}
+/* EXCEPTION: same terms. */
+.upload-field-card .upload-relationship-details__action-btn:not(:has(.icon--write)) {
+  position: relative;
+  z-index: 2;
+}
+/* EXCEPTION: same terms. */
+.upload-field-card:has(.upload-relationship-details__action-btn:hover .icon--write) {
+  border-color: var(--field-color-border-hover);
+}
+/* EXCEPTION: same terms. */
+.upload-field-card:has(.upload-relationship-details__action-btn:hover .icon--write) .upload-relationship-details__filename {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+/* EXCEPTION: same terms. */
+.upload-field-card:has(.upload-relationship-details__action-btn:focus-visible .icon--write) {
+  outline: 2px solid var(--sk-focus);
+  outline-offset: 2px;
+}
+@media (max-width: 600px) {
+  /* EXCEPTION: same terms. */
+  .upload-field-card--size-medium .thumbnail {
+    width: 64px;
+    height: 56px;
+  }
+  /* EXCEPTION: same terms. */
+  .upload-field-card--size-medium .upload-relationship-details__imageAndDetails {
+    gap: 10px;
+  }
+  /* EXCEPTION: same terms. */
+  .upload-relationship-details {
+    flex-wrap: wrap;
+  }
+}
+/* EXCEPTION: the media canvas is a viewing surface: a soft warm neutral
+   instead of the bright white used for editable fields. */
+html[data-theme='light'] :is(.file-manager, .file-preview__main) {
+  background: var(--sk-base-100);
+}
+/* EXCEPTION: icon-only relationship "add new" actions are circles. */
+html[data-theme] .relationship-add-new__add-button.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  box-sizing: border-box;
+  width: 40px;
+  min-width: 40px;
+  max-width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+}
+/* EXCEPTION: same terms. */
+html[data-theme] .relationship-add-new__add-button.btn:not(:disabled) {
+  background: var(--color-bg-brand);
+  color: var(--color-text-onbrand);
+  border-color: transparent;
+}
+/* EXCEPTION: same terms. */
+html[data-theme] .relationship-add-new__add-button.btn:hover:not(:disabled) {
+  background: var(--color-bg-brand-hover);
+}
+
+/* ===========================================================================
+ * Document header: Content / History links compact and right-aligned above
+ * the publishing controls; the description stays with the title.
+ * ======================================================================== */
+/* EXCEPTION: the document header's slots. */
+.doc-header__after-header {
+  order: 1;
+}
+/* EXCEPTION: same terms. */
+.doc-header > .doc-tabs {
+  order: 2;
+  flex-basis: auto;
+  width: auto;
+  min-width: 0;
+  align-self: flex-end;
+  margin-inline-start: auto;
+}
+/* EXCEPTION: same terms. */
+.doc-tabs__tabs-container {
+  width: auto;
+}
+/* EXCEPTION: same terms. */
+.doc-tabs__tabs {
+  width: auto;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+}
+/* EXCEPTION: same terms. */
+.doc-tabs .doc-tab.btn {
+  height: 32px;
+  padding-inline: 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+/* EXCEPTION: same terms. */
+.doc-tabs .doc-tab--active.btn {
+  color: var(--color-text);
+  background: var(--color-bg-secondary);
+  font-weight: 500;
+}
+/* EXCEPTION: same terms. */
+.doc-tab--active::after {
+  display: none;
+}
+/* EXCEPTION: same terms. A lone tab is no navigation; hide the row. */
+.doc-tabs:not(:has(.doc-tab:nth-child(2))) {
+  display: none;
+}
+/* EXCEPTION: same terms. */
+.pill-version-count {
+  border-radius: 999px;
+  min-width: 22px;
+  font-size: 12px;
+}
+/* EXCEPTION: same terms. */
+.doc-tabs .pill-version-count {
+  min-width: 18px;
+  font-size: 11px;
+}
+@media (min-width: 769px) {
+  /* EXCEPTION: same terms. */
+  .doc-header__title {
+    flex-basis: 100%;
+  }
+  /* EXCEPTION: same terms. */
+  .doc-header__after-header {
+    flex: 1 1 320px;
+    width: auto;
+    min-width: 0;
+  }
+}
+@media (max-width: 768px) {
+  /* EXCEPTION: same terms. The header is a column here; a 100% basis would
+     push the tabs beyond the phone's edge. */
+  .doc-header > .doc-tabs {
+    overflow: visible;
+    flex-basis: auto;
+  }
+  /* EXCEPTION: same terms. */
+  .doc-tabs::after {
+    display: none;
+  }
+  /* EXCEPTION: same terms. */
+  .doc-tabs .doc-tab.btn {
+    height: 40px;
+  }
+}
+
+/* ===========================================================================
+ * Field tabs: a segmented switch, ink selected pill on white. The
+ * tablist/tabpanel relationship stays Payload's. (beta.3's
+ * `.tabs-field__tab-button--active` is `[aria-selected="true"]` in beta.6.)
+ * ======================================================================== */
+/* EXCEPTION: Payload's tabs field and its own edge-bleed properties. */
+.tabs-field {
+  --field-border-bleed: 0;
+  --field-tabs-edge-display: none;
+  margin-inline: 0;
+}
+/* EXCEPTION: same terms. */
+.tabs-field__tabs-wrap {
+  margin-bottom: 24px;
+}
+/* EXCEPTION: same terms. */
+.tabs-field__tabs {
+  min-width: 0;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--field-color-bg);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+}
+/* EXCEPTION: same terms. */
+.tabs-field__tab-button {
+  min-height: 36px;
+  margin: 0;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+}
+/* EXCEPTION: same terms. */
+.tabs-field__tab-button::after {
+  display: none;
+}
+/* EXCEPTION: same terms. */
+html[data-theme] .tabs-field__tab-button:is([aria-selected='true'], .tabs-field__tab-button--active) {
+  color: var(--color-text-onbrand);
+  background: var(--color-bg-brand);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+}
+/* EXCEPTION: same terms. */
+.tabs-field__tab-button:hover:not([aria-selected='true'], .tabs-field__tab-button--active) {
+  background: var(--color-bg-secondary-hover);
+}
+/* EXCEPTION: same terms. */
+.tabs-field__tab-button--has-error {
+  color: var(--color-text-danger);
+}
+@media (max-width: 600px) {
+  /* EXCEPTION: same terms. */
+  .tabs-field__tab-button {
+    padding-inline: 14px;
+  }
+}
+
+/* ===========================================================================
+ * Drawers and the media toolbar share the field inset and usable hit areas.
+ * ======================================================================== */
+/* EXCEPTION: the document drawer's header bar. */
+.doc-drawer__header-bar {
+  min-height: 64px;
+  padding: 12px 24px;
+  gap: 12px;
+}
+/* EXCEPTION: same terms. */
+.doc-drawer__header-content {
+  gap: 8px;
+}
+/* EXCEPTION: same terms. */
+.doc-drawer__header-text {
+  font-size: 18px;
+  line-height: 1.3;
+}
+/* EXCEPTION: same terms. */
+.doc-drawer__header-actions {
+  gap: 8px;
+}
+/* EXCEPTION: same terms. */
+.doc-drawer__header-close {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+/* EXCEPTION: same terms. */
+.doc-drawer__header-close:hover {
+  background: var(--color-bg-secondary-hover);
+}
+/* EXCEPTION: same terms. */
+.doc-drawer__header-close:focus-visible {
+  outline: var(--accessibility-outline);
+}
+/* EXCEPTION: same terms. */
+.doc-drawer__title-bar {
+  padding: 20px 24px;
+  gap: 8px;
+}
+/* EXCEPTION: same terms. */
+.doc-drawer__title {
+  font-size: 16px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+/* EXCEPTION: the media toolbar. */
+.file-toolbar {
+  padding: 12px 24px;
+  gap: 12px;
+}
+/* EXCEPTION: same terms. */
+.file-toolbar__left {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+/* EXCEPTION: same terms. */
+.file-toolbar__left :is(.popup, .popup__trigger-wrap, .popup-button--custom) {
+  width: 100%;
+  min-width: 0;
+}
+/* EXCEPTION: same terms. */
+.file-toolbar__filename-btn {
+  width: 100%;
+  max-width: 100%;
+  min-height: 40px;
+  padding: 7px 12px;
+  border-radius: 8px;
+}
+/* EXCEPTION: same terms. */
+html[data-theme='light'] .file-toolbar__filename-btn {
+  background: var(--field-color-bg);
+}
+/* EXCEPTION: same terms. Match the toolbar's 24px icon; long filenames
+   must not shrink it. */
+.file-toolbar__filename-btn .icon--chevron {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+/* EXCEPTION: same terms. */
+.file-toolbar__filename-text {
+  flex: 1;
+  min-width: 0;
+}
+/* EXCEPTION: same terms. */
+.file-toolbar__right {
+  gap: 4px;
+}
+/* EXCEPTION: same terms. */
+.file-toolbar__right :is(.btn--icon-only, .file-toolbar__icon-link) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 50%;
+}
+@media (max-width: 600px) {
+  /* EXCEPTION: same terms. */
+  .doc-drawer__header-bar {
+    padding-inline: 16px;
+  }
+  /* EXCEPTION: same terms. */
+  .doc-drawer__title-bar,
+  .file-toolbar {
+    padding-inline: 16px;
+  }
+}
+
+/* ===========================================================================
+ * White long-form inputs: expanded array rows share their white header
+ * surface; rich text reads as a white input with a consistent inset.
+ * ======================================================================== */
+/* EXCEPTION: expanded array rows keep the header's white instead of
+   splitting into a paper field area. */
+html[data-theme='light'] .array-field .collapsible__content {
+  background: var(--field-color-bg);
+}
+/* EXCEPTION: Lexical's own padding properties (border, focus, typography
+   and toolbar behaviour stay Payload's). */
+.rich-text-lexical,
+.rich-text-lexical .editor {
+  --content-editable-padding-block-start: var(--spacer-3);
+  --content-editable-padding-inline-start: var(--spacer-3);
+}
+/* EXCEPTION: same terms. */
+.rich-text-lexical .ContentEditable__root {
+  padding: var(--spacer-3);
+}
+/* EXCEPTION: same terms. */
+html[data-theme='light'] .rich-text-lexical :is(.editor-container, .fixed-toolbar) {
+  background: #fff;
+}
+/* EXCEPTION: same terms. */
+html[data-theme='light'] .rich-text-lexical .fixed-toolbar::before {
+  background: #fff;
+  opacity: 1;
+}
+
+/* ===========================================================================
+ * Pagination: a compact field shape. v4 sizes the page input to one
+ * character and the button styling above would make the per-page selector
+ * a wide pill.
+ * ======================================================================== */
+/* EXCEPTION: the paginator. */
+.page-controls .paginator,
+.page-controls .paginator__page-input-wrapper {
+  gap: 8px;
+}
+/* EXCEPTION: same terms. */
+.page-controls .paginator__page-input {
+  box-sizing: border-box;
+  min-width: 40px;
+  height: var(--control-height);
+  min-height: var(--control-height);
+  padding-inline: 8px;
+  border-radius: var(--field-border-radius);
+  background: var(--field-color-bg);
+  font-variant-numeric: tabular-nums;
+}
+/* EXCEPTION: same terms. */
+.page-controls .clickable-arrow {
+  width: var(--control-height);
+  height: var(--control-height);
+  flex-shrink: 0;
+  border-radius: var(--field-border-radius);
+}
+/* EXCEPTION: same terms. */
+.page-controls .per-page .btn {
+  min-width: 64px;
+  height: var(--control-height);
+  padding-inline: 12px;
+  border-radius: var(--field-border-radius);
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 480px) {
+  /* EXCEPTION: same terms. */
+  .page-controls__per-page-container {
+    width: 100%;
+  }
+  /* EXCEPTION: same terms. */
+  .page-controls__page-info {
+    margin-left: 0;
+    text-align: start;
+  }
+}

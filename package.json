@@ -1,0 +1,22 @@
+{
+  "name": "sitekick-cms",
+  "private": true,
+  "version": "0.0.0",
+  "license": "MIT",
+  "packageManager": "bun@1.4.2",
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev": "turbo run dev --filter=playground",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "generate:types": "turbo run generate:types",
+    "generate:importmap": "turbo run generate:importmap"
+  },
+  "devDependencies": {
+    "turbo": "2.11.10",
+    "typescript": "6.0.3"
+  },
+  "engines": { "node": ">=24" }
+}

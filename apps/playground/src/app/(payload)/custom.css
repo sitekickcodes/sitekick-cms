@@ -1,0 +1,7 @@
+/* Sitekick CMS theme: tokens first, then marked polish rules. Client overrides go below. */
+@import '@sitekick/cms/theme.css';
+@import '@sitekick/cms/admin.css';
+
+:root {
+  --sk-accent: #0f766e;
+}

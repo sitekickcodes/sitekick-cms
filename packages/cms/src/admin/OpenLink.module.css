@@ -1,0 +1,32 @@
+/* A zero-height anchor after the input: the button sits inside the input's
+   right edge (bottom-aligned to it), and the input keeps room for it. */
+.wrap {
+  position: relative;
+  display: block;
+  height: 0;
+}
+.button {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  color: var(--color-icon-secondary);
+  /* A light fill at rest so it reads as a button, not a stray icon. */
+  background: var(--color-bg-secondary);
+}
+.button:hover {
+  color: var(--color-text);
+  background: var(--color-bg-secondary-hover);
+}
+.button:focus-visible {
+  outline: var(--accessibility-outline);
+  outline-offset: 1px;
+}
+div:has(> .wrap) > input {
+  padding-right: 40px;
+}

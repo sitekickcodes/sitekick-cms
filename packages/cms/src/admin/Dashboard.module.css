@@ -1,0 +1,108 @@
+/* The dashboard shell: header, welcome, a grid of hairline cards. Payload 4
+   semantic tokens only; the admin font; nothing here names a Payload class. */
+.root {
+  --dash-muted: var(--color-text-secondary);
+  --dash-faint: var(--color-text-tertiary);
+  --dash-line: var(--color-border);
+  --dash-card: var(--color-bg);
+  --dash-hover: var(--color-bg-hover);
+  --dash-motion: 150ms ease;
+  padding-bottom: var(--spacing-view-bottom, 56px);
+  color: var(--color-text);
+}
+.root a:focus-visible, .root button:focus-visible {
+  outline: var(--accessibility-outline, 2px solid currentColor);
+  outline-offset: var(--accessibility-outline-offset, 2px);
+}
+
+/* ---- Header ---- */
+.header { margin: 8px 0 24px; }
+.headTop { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; }
+.root .greeting { margin: 0; font-size: 26px; font-weight: 500; line-height: 1.2; letter-spacing: -0.015em; text-transform: none; text-wrap: balance; }
+.date { margin: 6px 0 0; color: var(--dash-muted); font-size: 14px; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+/* A hairline pill; the inverse pill for the main action. */
+.pill {
+  display: inline-flex; align-items: center; height: 36px; padding: 0 16px;
+  border-radius: var(--radius-full, 999px); border: 1px solid var(--dash-line);
+  background: var(--dash-card); color: var(--color-text);
+  font: inherit; font-size: 14px; font-weight: 500; text-decoration: none; cursor: pointer;
+  transition: background-color var(--dash-motion), box-shadow var(--dash-motion);
+}
+.pill:hover { box-shadow: 0 1px 1px rgb(0 0 0 / 0.025), 0 4px 2px rgb(0 0 0 / 0.018), 0 9px 3px rgb(0 0 0 / 0.012); }
+.pillPrimary { border-color: var(--color-bg-inverse); background: var(--color-bg-inverse); color: var(--color-text-oninverse); }
+.pillPrimary:hover { background: var(--color-bg-inverse-hover); box-shadow: none; }
+.createButton { gap: 6px; padding: 0 12px 0 16px; }
+.chev { width: 16px; height: 16px; opacity: 0.7; transition: transform var(--dash-motion); }
+[aria-expanded="true"] .chev { transform: rotate(180deg); }
+
+/* The view bar: the range switch as a ruled strip under the header. */
+.viewBar { display: flex; flex-wrap: wrap; align-items: stretch; margin-top: 32px; border-block: 1px solid var(--dash-line); }
+.chip { display: flex; align-items: center; gap: 8px; padding: 14px 20px 14px 0; color: var(--color-text); font-size: 15px; font-weight: 500; cursor: pointer; }
+/* The choice and its caret as one; a rule sweeps in under them on hover. */
+.sweep {
+  display: inline-flex; align-items: center; gap: 4px; padding-bottom: 3px; margin-bottom: -3px;
+  background: linear-gradient(currentColor, currentColor) left bottom / 0% 1.5px no-repeat;
+  transition: background-size var(--dash-motion);
+}
+.chip:hover .sweep, [aria-expanded="true"] .sweep { background-size: 100% 1.5px; }
+
+/* ---- Welcome ---- */
+.welcome {
+  display: flex; align-items: flex-start; gap: 16px; margin: 0 0 24px; padding: 24px;
+  border: 1px solid var(--dash-line); border-radius: var(--radius-large, 12px); background: var(--dash-card); color: var(--color-text);
+}
+.welcomeIcon { flex-shrink: 0; margin-top: 2px; color: var(--dash-muted); }
+.welcomeBody { flex: 1; min-width: 0; }
+.welcome h2 { margin: 0 0 6px; font-size: 18px; font-weight: 500; line-height: 1.4; letter-spacing: -0.005em; text-transform: none; }
+.welcome p { margin: 0; font-size: 14px; line-height: 1.65; color: var(--dash-muted); }
+.welcome button { font: inherit; color: inherit; border: 0; background: transparent; cursor: pointer; touch-action: manipulation; transition: background-color var(--dash-motion); }
+.welcomeOpen { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; margin: 10px 0 -4px -8px; padding: 6px 8px; border-radius: 5px; font-size: 14px; font-weight: 500; }
+.welcomeDismiss { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 36px; height: 36px; margin: -8px -8px 0 0; padding: 0; border-radius: 5px; }
+.welcome button:hover { background: var(--dash-hover); }
+.welcomeError { margin-top: 8px; }
+
+/* ---- Sections and cards ---- */
+.section { margin-top: 48px; }
+.sectionHead { margin-bottom: 16px; }
+.sectionHead h2 { margin: 0; font-size: 18px; font-weight: 500; line-height: 1.25; letter-spacing: -0.01em; text-transform: none; }
+.sectionHead p { margin: 4px 0 0; max-width: 70ch; color: var(--dash-muted); font-size: 14px; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; }
+.wide { grid-column: 1 / -1; }
+@media (max-width: 1100px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+.card { min-width: 0; padding: 20px; border: 1px solid var(--dash-line); border-radius: var(--radius-large, 12px); background: var(--dash-card); }
+.cardTop { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.cardTitle { margin: 0; font-size: 15px; line-height: 1.3; font-weight: 500; text-wrap: balance; }
+.sub { margin: 4px 0 14px; color: var(--dash-muted); font-size: 13px; text-wrap: pretty; }
+.more { flex: none; color: var(--dash-muted); font-size: 13px; text-decoration: none; white-space: nowrap; }
+.more:hover { color: var(--color-text); text-decoration: underline; }
+.empty { margin: 0; color: var(--dash-faint); font-size: 13px; }
+
+/* ---- Rows (drafts, recent edits) ---- */
+.rows { margin: 0; padding: 0; list-style: none; }
+.rows li + li { border-top: 1px solid var(--dash-line); }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 8px 2px; color: var(--color-text); text-decoration: none; }
+.row:hover .rowName { text-decoration: underline; }
+.rowMain { min-width: 0; }
+.rowName { display: block; overflow: hidden; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+.rowMeta { display: block; color: var(--dash-faint); font-size: 12px; }
+.rowAside { display: flex; align-items: center; gap: 8px; color: var(--dash-faint); font-size: 12px; white-space: nowrap; }
+.tag { padding: 1px 8px; border-radius: var(--radius-full, 999px); background: var(--color-bg-warning-tertiary, var(--dash-hover)); color: var(--color-text); font-size: 11px; font-weight: 600; }
+
+/* ---- Counts (collections at a glance) ---- */
+.counts { display: grid; margin: 0; padding: 0; list-style: none; }
+.counts li + li { border-top: 1px solid var(--dash-line); }
+.counts a { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 2px; color: var(--color-text); text-decoration: none; }
+.counts a:hover .countLabel { text-decoration: underline; }
+.countLabel { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.countValue { font-variant-numeric: tabular-nums; font-weight: 500; }
+
+/* ---- Skeleton ---- */
+.skelRows { display: grid; gap: 14px; margin-top: 18px; }
+.skelRow { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.bone { display: block; border-radius: 4px; background: var(--color-bg-secondary, var(--dash-hover)); }
+@media (prefers-reduced-motion: no-preference) {
+  .bone { animation: bone 1.4s ease-in-out infinite; }
+  @keyframes bone { 50% { opacity: 0.55; } }
+}
+.srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

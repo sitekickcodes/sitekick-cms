@@ -1,0 +1,61 @@
+/* InviteUser.tsx: the invite bar and form above the users list. */
+
+.bar {
+  margin: 0 var(--gutter-h) 1.5rem;
+}
+.form {
+  display: grid;
+  gap: 1rem;
+  margin: 0 var(--gutter-h) 1.5rem;
+  padding: 1.25rem;
+  max-width: 36rem;
+  background: var(--theme-elevation-50);
+  border: 1px solid var(--theme-elevation-100);
+  border-radius: var(--style-radius-m);
+}
+.label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 14px;
+  font-weight: 500;
+}
+.input {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  font: inherit;
+  color: var(--theme-text);
+  background: var(--theme-input-bg, var(--theme-bg));
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: var(--style-radius-s);
+}
+.input:focus {
+  outline: 0;
+  border-color: var(--sk-accent, var(--theme-elevation-400));
+  box-shadow: 0 0 0 1.5px var(--sk-accent, var(--theme-elevation-400));
+}
+.fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.radios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  font-size: 14px;
+}
+.radios label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.hint {
+  margin: 0.5rem 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--theme-elevation-600);
+}
+.actions {
+  display: flex;
+  gap: 0.75rem;
+}

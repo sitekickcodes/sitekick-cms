@@ -1,0 +1,463 @@
+/*
+ * Sitekick admin theme: TOKENS ONLY. No Payload class names live in this file.
+ *
+ * Three layers, top to bottom:
+ *   1. --sk-*         the Sitekick palette and the client's override points
+ *                     (--sk-accent, --sk-font-body, --sk-font-display, ...)
+ *   2. --sk-admin-*   a light/dark shade scale for our own admin screens
+ *                     (sidebar, dashboard, sign-in frame) so they do not
+ *                     depend on Payload's internal ramps
+ *   3. Payload 4's semantic tokens (--color-*, --field-*, --radius-*,
+ *      --button-*, --text-*-family) mapped onto 1 and 2. This is Payload's
+ *      supported theming API; it re-skins every stock control.
+ *
+ * Client override: import this file, then set any --sk-* variable on :root
+ * in the app's own stylesheet. See README.md in this folder.
+ *
+ * Target: @payloadcms/ui 4.0.0-beta.6. Token names checked against its
+ * dist/styles.css. Between beta.3 and beta.6 none of the --color-, --field-
+ * or --radius- names used here changed; see README.md for the full diff.
+ */
+
+/* ---------------------------------------------------------------------------
+ * 1. Sitekick palette and client override points
+ * ------------------------------------------------------------------------ */
+:root {
+  /* The one accent. A client sets this to their brand colour. Buttons stay
+     ink; the accent reaches success states, toasts, checkmarks and banners. */
+  --sk-accent: #0f766e;
+  /* "You are here" and focus: active tab, focused field, keyboard outline. */
+  --sk-focus: #2563eb;
+  /* Text selection. */
+  --sk-selection: #cfe3ff;
+  /* Status hues. */
+  --sk-danger: #dc2626;
+  --sk-warning: #d97706;
+  /* Publish-state tags (document header and list cells). */
+  --sk-tag-neutral: #d9d5cc;
+  --sk-tag-published: #a7e8b4;
+  --sk-tag-changed: #f6d27a;
+  --sk-tag-ink: #1c1c1b;
+
+  /* Type. A client that loads a webfont sets these to its variable. */
+  --sk-font-body:
+    system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --sk-font-display: var(--sk-font-body);
+
+  /* Warm neutral ramp: paper (0-150), secondary text and borders (200-750),
+     ink (800+). The middle steps take Payload's own lightness per step so
+     its secondary text, placeholders and column heads keep the contrast its
+     UI is tuned for. */
+  --sk-base-0: #fffefa;
+  --sk-base-50: #f6f5f0;
+  --sk-base-100: #f0eee9;
+  --sk-base-150: #ebe8e1;
+  --sk-base-200: #d4d0c7;
+  --sk-base-250: #c7c3b9;
+  --sk-base-300: #b9b5ab;
+  --sk-base-350: #ada79e;
+  --sk-base-400: #9f9990;
+  --sk-base-450: #928c83;
+  --sk-base-500: #857f76;
+  --sk-base-550: #777169;
+  --sk-base-600: #69645d;
+  --sk-base-650: #5a5651;
+  --sk-base-700: #4d4a45;
+  --sk-base-750: #3f3c38;
+  --sk-base-800: #393733;
+  --sk-base-850: #2e2d2b;
+  --sk-base-900: #242423;
+  --sk-base-950: #181817;
+  --sk-base-1000: #0f0f0e;
+
+  /* Status ramps, built from one anchor per hue so the lightness structure
+     is preserved whatever accent a client picks. */
+  --sk-success-50: color-mix(in oklch, var(--sk-accent) 8%, white);
+  --sk-success-100: color-mix(in oklch, var(--sk-accent) 16%, white);
+  --sk-success-150: color-mix(in oklch, var(--sk-accent) 24%, white);
+  --sk-success-200: color-mix(in oklch, var(--sk-accent) 32%, white);
+  --sk-success-250: color-mix(in oklch, var(--sk-accent) 40%, white);
+  --sk-success-300: color-mix(in oklch, var(--sk-accent) 50%, white);
+  --sk-success-350: color-mix(in oklch, var(--sk-accent) 60%, white);
+  --sk-success-400: color-mix(in oklch, var(--sk-accent) 72%, white);
+  --sk-success-450: color-mix(in oklch, var(--sk-accent) 86%, white);
+  --sk-success-500: var(--sk-accent);
+  --sk-success-550: color-mix(in oklch, var(--sk-accent) 90%, black);
+  --sk-success-600: color-mix(in oklch, var(--sk-accent) 80%, black);
+  --sk-success-650: color-mix(in oklch, var(--sk-accent) 70%, black);
+  --sk-success-700: color-mix(in oklch, var(--sk-accent) 60%, black);
+  --sk-success-750: color-mix(in oklch, var(--sk-accent) 50%, black);
+  --sk-success-800: color-mix(in oklch, var(--sk-accent) 40%, black);
+  --sk-success-850: color-mix(in oklch, var(--sk-accent) 30%, black);
+  --sk-success-900: color-mix(in oklch, var(--sk-accent) 22%, black);
+  --sk-success-950: color-mix(in oklch, var(--sk-accent) 14%, black);
+
+  --sk-warning-50: color-mix(in oklch, var(--sk-warning) 8%, white);
+  --sk-warning-100: color-mix(in oklch, var(--sk-warning) 16%, white);
+  --sk-warning-150: color-mix(in oklch, var(--sk-warning) 24%, white);
+  --sk-warning-200: color-mix(in oklch, var(--sk-warning) 32%, white);
+  --sk-warning-250: color-mix(in oklch, var(--sk-warning) 40%, white);
+  --sk-warning-300: color-mix(in oklch, var(--sk-warning) 50%, white);
+  --sk-warning-350: color-mix(in oklch, var(--sk-warning) 60%, white);
+  --sk-warning-400: color-mix(in oklch, var(--sk-warning) 72%, white);
+  --sk-warning-450: color-mix(in oklch, var(--sk-warning) 86%, white);
+  --sk-warning-500: var(--sk-warning);
+  --sk-warning-550: color-mix(in oklch, var(--sk-warning) 90%, black);
+  --sk-warning-600: color-mix(in oklch, var(--sk-warning) 80%, black);
+  --sk-warning-650: color-mix(in oklch, var(--sk-warning) 70%, black);
+  --sk-warning-700: color-mix(in oklch, var(--sk-warning) 60%, black);
+  --sk-warning-750: color-mix(in oklch, var(--sk-warning) 50%, black);
+  --sk-warning-800: color-mix(in oklch, var(--sk-warning) 40%, black);
+  --sk-warning-850: color-mix(in oklch, var(--sk-warning) 30%, black);
+  --sk-warning-900: color-mix(in oklch, var(--sk-warning) 22%, black);
+  --sk-warning-950: color-mix(in oklch, var(--sk-warning) 14%, black);
+
+  --sk-error-50: color-mix(in oklch, var(--sk-danger) 8%, white);
+  --sk-error-100: color-mix(in oklch, var(--sk-danger) 16%, white);
+  --sk-error-150: color-mix(in oklch, var(--sk-danger) 24%, white);
+  --sk-error-200: color-mix(in oklch, var(--sk-danger) 32%, white);
+  --sk-error-250: color-mix(in oklch, var(--sk-danger) 40%, white);
+  --sk-error-300: color-mix(in oklch, var(--sk-danger) 50%, white);
+  --sk-error-350: color-mix(in oklch, var(--sk-danger) 60%, white);
+  --sk-error-400: color-mix(in oklch, var(--sk-danger) 72%, white);
+  --sk-error-450: color-mix(in oklch, var(--sk-danger) 86%, white);
+  --sk-error-500: var(--sk-danger);
+  --sk-error-550: color-mix(in oklch, var(--sk-danger) 90%, black);
+  --sk-error-600: color-mix(in oklch, var(--sk-danger) 80%, black);
+  --sk-error-650: color-mix(in oklch, var(--sk-danger) 70%, black);
+  --sk-error-700: color-mix(in oklch, var(--sk-danger) 60%, black);
+  --sk-error-750: color-mix(in oklch, var(--sk-danger) 50%, black);
+  --sk-error-800: color-mix(in oklch, var(--sk-danger) 40%, black);
+  --sk-error-850: color-mix(in oklch, var(--sk-danger) 30%, black);
+  --sk-error-900: color-mix(in oklch, var(--sk-danger) 22%, black);
+  --sk-error-950: color-mix(in oklch, var(--sk-danger) 14%, black);
+
+  /* Shared motion and lift, for our own screens and the polish layer. */
+  --sk-motion-hover: 150ms ease;
+  --sk-motion-press: 100ms ease;
+  --sk-scale-press: 0.98;
+  --sk-lift: 0 1px 1px rgb(0 0 0 / 0.025), 0 4px 2px rgb(0 0 0 / 0.018), 0 9px 3px rgb(0 0 0 / 0.012);
+}
+
+/* ---------------------------------------------------------------------------
+ * 2. Admin shade scale for our own screens. Light reads the ramps straight;
+ *    dark reads them reversed. These are project tokens, not a dependency on
+ *    Payload's removed --theme-* API.
+ * ------------------------------------------------------------------------ */
+:root {
+  --sk-admin-bg: var(--sk-admin-elevation-0);
+  --sk-admin-text: var(--sk-admin-elevation-800);
+  --sk-admin-input-bg: var(--sk-admin-elevation-0);
+  --sk-admin-border-color: var(--sk-admin-elevation-150);
+
+  --sk-admin-elevation-0: var(--sk-base-0);
+  --sk-admin-elevation-50: var(--sk-base-50);
+  --sk-admin-elevation-100: var(--sk-base-100);
+  --sk-admin-elevation-150: var(--sk-base-150);
+  --sk-admin-elevation-200: var(--sk-base-200);
+  --sk-admin-elevation-250: var(--sk-base-250);
+  --sk-admin-elevation-300: var(--sk-base-300);
+  --sk-admin-elevation-350: var(--sk-base-350);
+  --sk-admin-elevation-400: var(--sk-base-400);
+  --sk-admin-elevation-450: var(--sk-base-450);
+  --sk-admin-elevation-500: var(--sk-base-500);
+  --sk-admin-elevation-550: var(--sk-base-550);
+  --sk-admin-elevation-600: var(--sk-base-600);
+  --sk-admin-elevation-650: var(--sk-base-650);
+  --sk-admin-elevation-700: var(--sk-base-700);
+  --sk-admin-elevation-750: var(--sk-base-750);
+  --sk-admin-elevation-800: var(--sk-base-800);
+  --sk-admin-elevation-850: var(--sk-base-850);
+  --sk-admin-elevation-900: var(--sk-base-900);
+  --sk-admin-elevation-950: var(--sk-base-950);
+  --sk-admin-elevation-1000: var(--sk-base-1000);
+
+  --sk-admin-success-50: var(--sk-success-50);
+  --sk-admin-success-100: var(--sk-success-100);
+  --sk-admin-success-150: var(--sk-success-150);
+  --sk-admin-success-200: var(--sk-success-200);
+  --sk-admin-success-250: var(--sk-success-250);
+  --sk-admin-success-300: var(--sk-success-300);
+  --sk-admin-success-350: var(--sk-success-350);
+  --sk-admin-success-400: var(--sk-success-400);
+  --sk-admin-success-450: var(--sk-success-450);
+  --sk-admin-success-500: var(--sk-success-500);
+  --sk-admin-success-550: var(--sk-success-550);
+  --sk-admin-success-600: var(--sk-success-600);
+  --sk-admin-success-650: var(--sk-success-650);
+  --sk-admin-success-700: var(--sk-success-700);
+  --sk-admin-success-750: var(--sk-success-750);
+  --sk-admin-success-800: var(--sk-success-800);
+  --sk-admin-success-850: var(--sk-success-850);
+  --sk-admin-success-900: var(--sk-success-900);
+  --sk-admin-success-950: var(--sk-success-950);
+
+  --sk-admin-warning-50: var(--sk-warning-50);
+  --sk-admin-warning-100: var(--sk-warning-100);
+  --sk-admin-warning-150: var(--sk-warning-150);
+  --sk-admin-warning-200: var(--sk-warning-200);
+  --sk-admin-warning-250: var(--sk-warning-250);
+  --sk-admin-warning-300: var(--sk-warning-300);
+  --sk-admin-warning-350: var(--sk-warning-350);
+  --sk-admin-warning-400: var(--sk-warning-400);
+  --sk-admin-warning-450: var(--sk-warning-450);
+  --sk-admin-warning-500: var(--sk-warning-500);
+  --sk-admin-warning-550: var(--sk-warning-550);
+  --sk-admin-warning-600: var(--sk-warning-600);
+  --sk-admin-warning-650: var(--sk-warning-650);
+  --sk-admin-warning-700: var(--sk-warning-700);
+  --sk-admin-warning-750: var(--sk-warning-750);
+  --sk-admin-warning-800: var(--sk-warning-800);
+  --sk-admin-warning-850: var(--sk-warning-850);
+  --sk-admin-warning-900: var(--sk-warning-900);
+  --sk-admin-warning-950: var(--sk-warning-950);
+
+  --sk-admin-error-50: var(--sk-error-50);
+  --sk-admin-error-100: var(--sk-error-100);
+  --sk-admin-error-150: var(--sk-error-150);
+  --sk-admin-error-200: var(--sk-error-200);
+  --sk-admin-error-250: var(--sk-error-250);
+  --sk-admin-error-300: var(--sk-error-300);
+  --sk-admin-error-350: var(--sk-error-350);
+  --sk-admin-error-400: var(--sk-error-400);
+  --sk-admin-error-450: var(--sk-error-450);
+  --sk-admin-error-500: var(--sk-error-500);
+  --sk-admin-error-550: var(--sk-error-550);
+  --sk-admin-error-600: var(--sk-error-600);
+  --sk-admin-error-650: var(--sk-error-650);
+  --sk-admin-error-700: var(--sk-error-700);
+  --sk-admin-error-750: var(--sk-error-750);
+  --sk-admin-error-800: var(--sk-error-800);
+  --sk-admin-error-850: var(--sk-error-850);
+  --sk-admin-error-900: var(--sk-error-900);
+  --sk-admin-error-950: var(--sk-error-950);
+}
+
+/* Light theme: page and sidebar one colour (warm paper), with white cards,
+   fields and raised controls. Secondary steps borrow a darker base step so
+   body-size secondary text clears 4.5:1 on paper (400 -> 4.8, 450/500 ->
+   5.8, 550/600 -> 7.2). */
+html[data-theme='light'] {
+  --sk-admin-bg: var(--sk-base-50);
+  --sk-admin-input-bg: #fff;
+  --sk-admin-elevation-0: #fff;
+  --sk-admin-elevation-50: #fff;
+
+  --sk-admin-elevation-350: var(--sk-base-450);
+  --sk-admin-elevation-400: var(--sk-base-550);
+  --sk-admin-elevation-450: var(--sk-base-600);
+  --sk-admin-elevation-500: var(--sk-base-600);
+  --sk-admin-elevation-550: var(--sk-base-650);
+  --sk-admin-elevation-600: var(--sk-base-650);
+  --sk-admin-elevation-650: var(--sk-base-700);
+  --sk-admin-elevation-700: var(--sk-base-750);
+}
+
+/* Dark theme: the ramps read the other way round. */
+html[data-theme='dark'] {
+  --sk-admin-text: var(--sk-admin-elevation-1000);
+  --sk-admin-input-bg: var(--sk-admin-elevation-50);
+  --sk-admin-border-color: var(--sk-admin-elevation-150);
+  --sk-focus: #7fa6e6;
+  --sk-selection: #2b4470;
+
+  --sk-admin-elevation-0: var(--sk-base-900);
+  --sk-admin-elevation-50: var(--sk-base-850);
+  --sk-admin-elevation-100: var(--sk-base-800);
+  --sk-admin-elevation-150: var(--sk-base-750);
+  --sk-admin-elevation-200: var(--sk-base-700);
+  --sk-admin-elevation-250: var(--sk-base-650);
+  --sk-admin-elevation-300: var(--sk-base-600);
+  --sk-admin-elevation-350: var(--sk-base-550);
+  --sk-admin-elevation-400: var(--sk-base-450);
+  --sk-admin-elevation-450: var(--sk-base-400);
+  --sk-admin-elevation-500: var(--sk-base-400);
+  --sk-admin-elevation-550: var(--sk-base-350);
+  --sk-admin-elevation-600: var(--sk-base-300);
+  --sk-admin-elevation-650: var(--sk-base-250);
+  --sk-admin-elevation-700: var(--sk-base-200);
+  --sk-admin-elevation-750: var(--sk-base-150);
+  --sk-admin-elevation-800: var(--sk-base-100);
+  --sk-admin-elevation-850: var(--sk-base-50);
+  --sk-admin-elevation-900: var(--sk-base-0);
+  --sk-admin-elevation-950: var(--sk-base-0);
+  --sk-admin-elevation-1000: var(--sk-base-0);
+
+  --sk-admin-success-50: var(--sk-success-950);
+  --sk-admin-success-100: var(--sk-success-900);
+  --sk-admin-success-150: var(--sk-success-850);
+  --sk-admin-success-200: var(--sk-success-800);
+  --sk-admin-success-250: var(--sk-success-750);
+  --sk-admin-success-300: var(--sk-success-700);
+  --sk-admin-success-350: var(--sk-success-650);
+  --sk-admin-success-400: var(--sk-success-600);
+  --sk-admin-success-450: var(--sk-success-550);
+  --sk-admin-success-550: var(--sk-success-450);
+  --sk-admin-success-600: var(--sk-success-400);
+  --sk-admin-success-650: var(--sk-success-350);
+  --sk-admin-success-700: var(--sk-success-300);
+  --sk-admin-success-750: var(--sk-success-250);
+  --sk-admin-success-800: var(--sk-success-200);
+  --sk-admin-success-850: var(--sk-success-150);
+  --sk-admin-success-900: var(--sk-success-100);
+  --sk-admin-success-950: var(--sk-success-50);
+
+  --sk-admin-warning-50: var(--sk-warning-950);
+  --sk-admin-warning-100: var(--sk-warning-900);
+  --sk-admin-warning-150: var(--sk-warning-850);
+  --sk-admin-warning-200: var(--sk-warning-800);
+  --sk-admin-warning-250: var(--sk-warning-750);
+  --sk-admin-warning-300: var(--sk-warning-700);
+  --sk-admin-warning-350: var(--sk-warning-650);
+  --sk-admin-warning-400: var(--sk-warning-600);
+  --sk-admin-warning-450: var(--sk-warning-550);
+  --sk-admin-warning-550: var(--sk-warning-450);
+  --sk-admin-warning-600: var(--sk-warning-400);
+  --sk-admin-warning-650: var(--sk-warning-350);
+  --sk-admin-warning-700: var(--sk-warning-300);
+  --sk-admin-warning-750: var(--sk-warning-250);
+  --sk-admin-warning-800: var(--sk-warning-200);
+  --sk-admin-warning-850: var(--sk-warning-150);
+  --sk-admin-warning-900: var(--sk-warning-100);
+  --sk-admin-warning-950: var(--sk-warning-50);
+
+  --sk-admin-error-50: var(--sk-error-950);
+  --sk-admin-error-100: var(--sk-error-900);
+  --sk-admin-error-150: var(--sk-error-850);
+  --sk-admin-error-200: var(--sk-error-800);
+  --sk-admin-error-250: var(--sk-error-750);
+  --sk-admin-error-300: var(--sk-error-700);
+  --sk-admin-error-350: var(--sk-error-650);
+  --sk-admin-error-400: var(--sk-error-600);
+  --sk-admin-error-450: var(--sk-error-550);
+  --sk-admin-error-550: var(--sk-error-450);
+  --sk-admin-error-600: var(--sk-error-400);
+  --sk-admin-error-650: var(--sk-error-350);
+  --sk-admin-error-700: var(--sk-error-300);
+  --sk-admin-error-750: var(--sk-error-250);
+  --sk-admin-error-800: var(--sk-error-200);
+  --sk-admin-error-850: var(--sk-error-150);
+  --sk-admin-error-900: var(--sk-error-100);
+  --sk-admin-error-950: var(--sk-error-50);
+}
+
+/* ---------------------------------------------------------------------------
+ * 3. Payload 4's supported theme and component API.
+ * ------------------------------------------------------------------------ */
+:root {
+  /* Type */
+  --text-body-family: var(--sk-font-body);
+  --text-heading-family: var(--sk-font-display);
+  --font-family-sans: var(--sk-font-body);
+  --text-body-medium-font-size: 13px;
+  --text-body-medium-font-weight: 400;
+  --text-body-medium-line-height: 20px;
+  --text-body-large-font-weight: 400;
+
+  /* Shape: 12px structural radius. Payload also reads --button-radius for
+     panels and collapsibles, so the true pill lives on .btn in admin.css. */
+  --radius-small: 8px;
+  --radius-medium: 12px;
+  --radius-large: 16px;
+  --button-radius: 12px;
+  --field-border-radius: 8px;
+
+  /* Size */
+  --button-height: 36px;
+  --control-height: 40px;
+  --field-min-height-large: 40px;
+  --field-min-height-medium: 36px;
+
+  /* Surfaces */
+  --color-bg: var(--sk-admin-bg);
+  --color-bg-elevated: var(--sk-admin-elevation-0);
+  --color-bg-secondary: var(--sk-admin-elevation-50);
+  --color-bg-secondary-hover: var(--sk-admin-elevation-100);
+  --color-bg-tertiary: var(--sk-admin-elevation-100);
+  --color-bg-hover: var(--sk-admin-elevation-100);
+  --color-bg-pressed: var(--sk-admin-elevation-150);
+  --color-bg-inverse: var(--sk-admin-text);
+  --color-bg-inverse-hover: var(--sk-admin-elevation-800);
+  --color-bg-inverse-pressed: var(--sk-admin-elevation-700);
+
+  /* Text and icons */
+  --color-text: var(--sk-admin-text);
+  --color-text-secondary: var(--sk-admin-elevation-650);
+  --color-text-tertiary: var(--sk-admin-elevation-550);
+  --color-text-disabled: var(--sk-admin-elevation-400);
+  --color-text-oninverse: var(--sk-admin-elevation-0);
+  --color-icon: var(--color-text);
+  --color-icon-hover: var(--color-text);
+  --color-icon-secondary: var(--color-text-secondary);
+  --color-icon-tertiary: var(--color-text-tertiary);
+  --color-icon-oninverse: var(--color-text-oninverse);
+
+  /* Borders */
+  --color-border: var(--sk-admin-elevation-150);
+  --color-border-control: var(--sk-admin-elevation-200);
+  --color-border-strong: var(--sk-admin-elevation-700);
+
+  /* Brand = ink. Primary buttons are ink pills; the accent is not a button
+     colour. Payload's .btn--style-primary reads these. */
+  --color-bg-brand: var(--sk-admin-text);
+  --color-bg-brand-hover: var(--sk-admin-elevation-800);
+  --color-bg-brand-pressed: var(--sk-admin-elevation-700);
+  --color-text-onbrand: var(--sk-admin-elevation-0);
+  --color-icon-onbrand: var(--sk-admin-elevation-0);
+
+  /* Selected / "you are here" / focus, in blue. --accessibility-outline is
+     derived from --color-border-selected, so the keyboard ring follows. */
+  --color-bg-selected: var(--sk-base-150);
+  --color-bg-selected-hover: var(--sk-base-100);
+  --color-bg-selected-strong: var(--sk-focus);
+  --color-text-selected: var(--sk-focus);
+  --color-icon-selected: var(--sk-focus);
+  --color-text-brand: var(--sk-focus);
+  --color-icon-brand: var(--sk-focus);
+  --color-border-selected: var(--sk-focus);
+  --color-border-selected-strong: var(--sk-focus);
+
+  /* Status */
+  --color-bg-success: var(--sk-success-700);
+  --color-bg-success-tertiary: var(--sk-admin-success-100);
+  --color-text-success: var(--sk-admin-success-800);
+  --color-icon-success: var(--color-text-success);
+  --color-border-success: var(--sk-admin-success-400);
+  --color-bg-danger: var(--sk-error-700);
+  --color-bg-danger-tertiary: var(--sk-admin-error-100);
+  --color-text-danger: var(--sk-admin-error-800);
+  --color-icon-danger: var(--color-text-danger);
+  --color-border-danger: var(--sk-admin-error-500);
+  --color-bg-warning-tertiary: var(--sk-admin-warning-100);
+  --color-text-warning: var(--sk-admin-warning-800);
+  --color-icon-warning: var(--color-text-warning);
+
+  /* Fields */
+  --field-color-bg: var(--sk-admin-input-bg);
+  --field-color-bg-readonly: var(--sk-admin-input-bg);
+  --field-color-text-readonly: var(--color-text);
+  --field-color-placeholder: var(--color-text-tertiary);
+  --field-color-description: var(--color-text-secondary);
+  --field-color-toggle-bg-checked: var(--sk-admin-text);
+  --field-color-toggle-border-checked: var(--sk-admin-text);
+}
+
+html[data-theme='dark'] {
+  --color-bg-selected: var(--sk-base-750);
+  --color-bg-selected-hover: var(--sk-base-700);
+}
+
+/* Page rhythm, independent of v4's denser defaults. */
+:root {
+  --gutter-h: 60px;
+}
+@media (max-width: 1024px) {
+  :root {
+    --gutter-h: 40px;
+  }
+}
+@media (max-width: 768px) {
+  :root {
+    --gutter-h: 16px;
+  }
+}

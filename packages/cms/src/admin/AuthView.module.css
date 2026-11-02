@@ -1,0 +1,197 @@
+/*
+ * The sign-in frame (AuthFrame.tsx), the logo (Logo.tsx) and the icon
+ * (Icon.tsx). The frame is fixed over the whole viewport, so it never has
+ * to restyle Payload's minimal template: no Payload class names here.
+ * Colour comes from Payload 4's theme tokens so it flips with light/dark;
+ * the client's accent arrives as --sk-accent (theme.css sets the default,
+ * AuthFrame overrides it inline from options.site.accent).
+ */
+
+.frame {
+  --sk-auth-panel-w: clamp(360px, 40vw, 760px);
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  overflow: auto;
+  background: var(--theme-bg);
+  color: var(--theme-text);
+}
+
+/* Decorative panel: a neutral accent surface with a faint grid and a soft
+   orb, the site name at the foot. Desktop only. */
+.panel {
+  display: none;
+  position: relative;
+  flex: none;
+  width: var(--sk-auth-panel-w);
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    linear-gradient(160deg, color-mix(in oklch, var(--sk-accent, #0f766e) 92%, white) 0%, var(--sk-accent, #0f766e) 55%, color-mix(in oklch, var(--sk-accent, #0f766e) 70%, black) 100%);
+  color: #fff;
+}
+.panelGrid {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.14;
+  background-image:
+    linear-gradient(to right, #fff 1px, transparent 1px),
+    linear-gradient(to bottom, #fff 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 45%, #000 100%);
+}
+.panelOrb {
+  position: absolute;
+  right: -18%;
+  bottom: 12%;
+  z-index: -1;
+  width: 70%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.06) 60%, transparent 72%);
+  animation: sk-auth-rise-lg 700ms 120ms both;
+}
+.panelFoot {
+  position: absolute;
+  inset: auto 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: clamp(32px, 4vw, 64px);
+  animation: sk-auth-rise 500ms 60ms both;
+}
+.panelName {
+  font-size: clamp(22px, 2.2vw, 32px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+.panelUrl {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+/* The form column: the brand, a heading, Payload's native form. */
+.column {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: clamp(28px, 8vh, 96px) 24px 48px;
+  animation: sk-auth-rise 500ms both;
+}
+.brand {
+  display: flex;
+  margin-bottom: clamp(28px, 5vh, 48px);
+}
+.login,
+.recovery {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+.title {
+  margin: 0 0 8px;
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  color: var(--theme-text);
+}
+.title:focus {
+  outline: 0;
+}
+.sub {
+  margin: 0 0 24px;
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--theme-elevation-650);
+  text-wrap: balance;
+}
+.recovery .title {
+  margin-bottom: 20px;
+}
+.back {
+  align-self: flex-start;
+  margin: 8px 0 0;
+}
+
+@media (min-width: 1024px) {
+  .panel {
+    display: block;
+  }
+  .column {
+    margin: 0;
+    padding-left: clamp(48px, 7vw, 120px);
+    padding-right: 48px;
+    max-width: calc(480px + clamp(48px, 7vw, 120px) + 48px);
+  }
+}
+
+/* The logo and the icon, anywhere they render. */
+.logo {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  color: var(--theme-text);
+}
+.logoImg {
+  display: block;
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+.wordmark {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  white-space: nowrap;
+}
+.icon {
+  display: block;
+  object-fit: contain;
+  border-radius: 6px;
+}
+.lettermark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  border-radius: 7px;
+  color: #fff;
+  font-weight: 700;
+  line-height: 1;
+}
+
+@keyframes sk-auth-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes sk-auth-rise-lg {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .column,
+  .panelFoot,
+  .panelOrb {
+    animation: none;
+  }
+}

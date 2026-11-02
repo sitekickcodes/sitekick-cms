@@ -1,0 +1,10 @@
+:root { color-scheme: light; font-family: ui-sans-serif, system-ui, sans-serif; }
+body { margin: 0; color: #111; background: #faf9f6; }
+.site-header, .site-footer { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; max-width: 56rem; margin: 0 auto; }
+.site-header nav a { margin-left: 1rem; }
+.brand { font-weight: 700; text-decoration: none; color: inherit; }
+main { max-width: 56rem; margin: 0 auto; padding: 1rem 1.5rem 4rem; }
+.prose { line-height: 1.6; }
+.prose h1 { font-size: 2.25rem; line-height: 1.1; }
+.lede { font-size: 1.25rem; color: #444; }
+a { color: #0f766e; }

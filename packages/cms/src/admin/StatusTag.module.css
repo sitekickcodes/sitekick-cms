@@ -1,0 +1,38 @@
+/* A pill, 24px tall, 12px bold uppercase. Tones come from the admin theme's
+   own palette, so they follow light/dark and the client accent. */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--color-text);
+  background: var(--color-bg-secondary);
+}
+.tag[data-tone='success'] {
+  color: var(--color-text-success);
+  background: var(--color-bg-success-tertiary);
+}
+.tag[data-tone='danger'] {
+  color: var(--color-text-danger);
+  background: var(--color-bg-danger-tertiary);
+}
+.tag[data-tone='warning'] {
+  color: var(--color-text-warning);
+  background: var(--color-bg-warning-tertiary);
+}
+.tag[data-tone='info'] {
+  color: var(--color-text-brand);
+  background: var(--color-bg-brand-tertiary);
+}
+.tag[data-tone='quiet'] {
+  color: var(--color-text-secondary);
+  background: var(--color-bg-secondary);
+}

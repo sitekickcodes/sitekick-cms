@@ -1,0 +1,52 @@
+{
+  "name": "playground",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Sitekick CMS playground: the demo client site used to build and test the plugin.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" payload build",
+    "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev -p 3100",
+    "dev:clean": "rm -rf .next && bun run dev",
+    "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
+    "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
+    "lint": "cross-env NODE_OPTIONS=--no-deprecation eslint .",
+    "typecheck": "tsc --noEmit",
+    "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
+    "migrate": "bun scripts/migrate.ts",
+    "migrate:create": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:create",
+    "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
+    "vercel-build": "bun run migrate && bun run generate:importmap && bun run build"
+  },
+  "dependencies": {
+    "@payloadcms/db-postgres": "4.0.0-beta.6",
+    "@payloadcms/next": "4.0.0-beta.6",
+    "@payloadcms/plugin-mcp": "4.0.0-beta.6",
+    "@payloadcms/plugin-seo": "4.0.0-beta.6",
+    "@payloadcms/richtext-lexical": "4.0.0-beta.6",
+    "@payloadcms/storage-vercel-blob": "4.0.0-beta.6",
+    "@payloadcms/transformer-sharp": "4.0.0-beta.6",
+    "@payloadcms/ui": "4.0.0-beta.6",
+    "@sitekick/blocks": "workspace:*",
+    "@sitekick/cms": "workspace:*",
+    "cross-env": "10.1.0",
+    "graphql": "^16.8.1",
+    "next": "16.4.2",
+    "payload": "4.0.0-beta.6",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "sharp": "0.35.5"
+  },
+  "devDependencies": {
+    "@types/node": "24.12.3",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "eslint": "^9.16.0",
+    "eslint-config-next": "16.4.2",
+    "typescript": "6.0.3"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
