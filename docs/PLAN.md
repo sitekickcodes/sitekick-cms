@@ -248,9 +248,9 @@ Generalised from the civic research agent. Yimby-specific tools stay in Yimby; t
 
 ---
 
-## 11. Open questions for John
+## 11. Open questions (answered 2026-11-02)
 
-1. Sitekick brand assets for the default theme (logo, fonts, accent). Until then the playground uses a neutral placeholder.
-2. Which client is the first real adopter after the playground: Last Best Comedy (small, already on Payload 4) or a new client?
-3. Should the public read-only MCP and `llms.txt` be on by default for every client, or opt-in per client?
-4. Does the playground get its own public demo URL (`demo.sitekick.co`)?
+1. **Brand assets.** John will provide logo, fonts and accent later. Until then the playground uses a neutral placeholder theme; the theme API must make the swap a one-commit change.
+2. **First real adopter.** Not decided yet. The playground is the only target through phase 1.
+3. **Public read-only MCP and `llms.txt`.** On by default for every client. Opting out is a plugin option.
+4. **Playground demo URL.** Yes eventually (`demo.sitekick.co`); use the Vercel-generated domain for now.
