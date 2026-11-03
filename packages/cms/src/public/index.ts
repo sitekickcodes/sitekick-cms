@@ -51,7 +51,7 @@ export const createPublicSurface = (options: PublicSurfaceOptions): PublicSurfac
   const catalog = () => {
     catalogPromise ??= options.payload().then((payload) => {
       contracts = contractFromConfig(payload.config)
-      return derivePublicCatalog(payload.config, options.catalog)
+      return derivePublicCatalog(payload.config, options.catalog, payload)
     })
     return catalogPromise
   }

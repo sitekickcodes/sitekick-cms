@@ -1,6 +1,4 @@
-import type { GlobalSlug } from 'payload'
-import type { CollectionSlug } from 'payload'
-import type { CollectionConfig, Config, GlobalConfig, Payload, Where } from 'payload'
+import type { CollectionConfig, CollectionSlug, Config, GlobalConfig, GlobalSlug, Payload, Where } from 'payload'
 import { z } from 'zod'
 
 import { contractFromConfig, type ResolvedContract } from '../agent/contract'
@@ -106,11 +104,14 @@ export const globalOutput = z.object({
 type Entity = CollectionConfig | GlobalConfig
 
 /** Whether anonymous readers pass `access.read`. Omitted access = signed-in only in Payload. */
-export const isPublicRead = async (entity: Entity): Promise<boolean> => {
+export const isPublicRead = async (entity: Entity, payload?: Pick<Payload, 'config'>): Promise<boolean> => {
   const read = entity.access?.read
   if (!read) return false
   try {
-    const result = await read({ req: { user: null, payload: undefined } } as unknown as Parameters<typeof read>[0])
+    // Payload 4 wraps every access function and reads `req.payload.config.baseAccess`;
+    // an unsanitised config gets a stub with no base access.
+    const req = { user: null, payload: payload ?? { config: { baseAccess: undefined } }, context: {} }
+    const result = await read({ req } as unknown as Parameters<typeof read>[0])
     return result === true || (typeof result === 'object' && result !== null)
   } catch {
     return false
@@ -295,21 +296,21 @@ export type CatalogConfig = Pick<Config, 'collections' | 'globals' | 'custom'>
  * Non-private collections with public read and a `slug` field get list/get
  * tools and join `search`; non-private globals with public read get a getter.
  */
-export const derivePublicCatalog = async (config: CatalogConfig, extra: PublicCatalog = { tools: [] }): Promise<PublicCatalog> => {
+export const derivePublicCatalog = async (config: CatalogConfig, extra: PublicCatalog = { tools: [] }, payload?: Pick<Payload, 'config'>): Promise<PublicCatalog> => {
   const contracts = contractFromConfig(config)
   const sources: CollectionSource[] = []
   const tools: PublicTool[] = []
   for (const collection of config.collections ?? []) {
     const contract = contracts.find((c) => c.kind === 'collection' && c.slug === collection.slug)
     if (!contract || contract.private || !contract.fields.some((f) => f.name === 'slug')) continue
-    if (!(await isPublicRead(collection))) continue
+    if (!(await isPublicRead(collection, payload))) continue
     sources.push(collectionSource(collection, contract))
   }
   for (const source of sources) tools.push(...collectionTools(source))
   if (sources.length) tools.push(searchTool(sources))
   for (const global of config.globals ?? []) {
     const contract = contracts.find((c) => c.kind === 'global' && c.slug === global.slug)
-    if (!contract || contract.private || !(await isPublicRead(global))) continue
+    if (!contract || contract.private || !(await isPublicRead(global, payload))) continue
     tools.push(globalTool(contract))
   }
   const names = new Set(tools.map((t) => t.name))

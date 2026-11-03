@@ -13,6 +13,7 @@ export const Posts: CollectionConfig = {
   versions: { drafts: true, maxPerDoc: 50 },
   custom: {
     sitekick: {
+      seo: { pathPrefix: '/news' },
       agent: {
         description: 'A news post shown on /news.',
         writable: ['title', 'excerpt', 'body', 'cover'],

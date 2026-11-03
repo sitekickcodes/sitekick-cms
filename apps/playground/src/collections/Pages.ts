@@ -24,6 +24,8 @@ export const Pages: CollectionConfig = {
     preview: (doc, { req }) => previewUrl(doc.slug, req.payload.config.serverURL),
   },
   access: { read: () => true },
+  // Pages live at the site root: /<slug>. Drives SEO previews and the public catalog.
+  custom: { sitekick: { seo: { pathPrefix: '/' } } },
   versions: { drafts: { autosave: { interval: 1000 } }, maxPerDoc: 50 },
   fields: [
     { name: 'title', type: 'text', required: true },
