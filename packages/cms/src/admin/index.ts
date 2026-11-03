@@ -28,3 +28,8 @@ export { Dashboard } from './Dashboard'
 // Sidebar
 export { Nav } from './Nav'
 export { NavClient, NavHeader } from './NavClient'
+
+export { CommandPalette } from './CommandPalette'
+export { ProposalReview } from './review/ProposalReview'
+export { RunReview } from './review/RunReview'
+export { InboxView } from './review/InboxView'

@@ -1,0 +1,26 @@
+@import 'tailwindcss';
+@import '@sitekick/blocks/styles.css';
+
+/* Scan the block package's source so its utility classes are compiled here. */
+@source '../../../../../packages/blocks/src';
+
+/* Site tokens. Everything the blocks draw with is a --sk-* variable (see DESIGN.md). */
+:root {
+  color-scheme: light;
+  --sk-accent: #0f766e;
+}
+
+@layer base {
+  html {
+    font-family: var(--sk-font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    background: var(--sk-bg);
+    color: var(--sk-fg);
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--sk-accent) 20%, transparent);
+  }
+}

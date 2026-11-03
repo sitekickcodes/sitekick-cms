@@ -1,12 +1,15 @@
 import type { Config, Plugin } from 'payload'
 
 import { adminShell } from './admin/shell'
+import { contractPlugin } from './agent'
 import { authPlugin } from './auth'
 import { conventions } from './conventions'
 import { freshCopy } from './conventions/freshCopy'
 import { dashboardPlugin } from './dashboard'
 import { helpPlugin } from './help'
 import { navPlugin } from './nav'
+import { palettePlugin } from './palette'
+import { reviewPlugin } from './review'
 import { themePlugin } from './theme'
 import type { SitekickCMSOptions } from './types'
 
@@ -26,10 +29,13 @@ export const sitekickCMS =
     let config = freshCopy(incoming)
     const steps: Plugin[] = [
       helpPlugin(options),
+      reviewPlugin(options),
       authPlugin(options),
+      contractPlugin({ site: options.site, usersSlug: options.usersSlug }),
       ...conventions(options),
       navPlugin(options),
       dashboardPlugin(options),
+      palettePlugin(options),
       themePlugin(),
       adminShell(options),
     ]

@@ -32,5 +32,7 @@ declare const styles: {
   readonly accountMore: string
   readonly menu: string
   readonly menuIcon: string
+  readonly kbd: string
+  readonly badge: string
 }
 export default styles

@@ -62,32 +62,52 @@ export type SupportedTimezones =
   | 'Pacific/Fiji';
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LexicalNodes_6A9ABC7D".
+ * via the `definition` "LexicalNodes_8799902D".
  */
-export type LexicalNodes_6A9ABC7D =
+export type LexicalNodes_8799902D =
   | SerializedTextNode
   | SerializedTabNode
   | SerializedLineBreakNode
-  | SerializedParagraphNode<LexicalNodes_6A9ABC7D>
+  | SerializedParagraphNode<LexicalNodes_8799902D>
+  | SerializedUploadNode<'media'>
+  | SerializedHorizontalRuleNode
+  | SerializedQuoteNode<LexicalNodes_8799902D>
+  | SerializedListNode<LexicalNodes_8799902D>
+  | SerializedListItemNode<LexicalNodes_8799902D>
+  | SerializedAutoLinkNode<LexicalNodes_8799902D, LexicalLinkFields>
+  | SerializedLinkNode<LexicalNodes_8799902D, LexicalLinkFields>
+  | SerializedHeadingNode<LexicalNodes_8799902D, 'h1' | 'h2' | 'h3' | 'h4'>;
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LexicalNodes_EBEEF149".
+ */
+export type LexicalNodes_EBEEF149 =
+  | SerializedTextNode
+  | SerializedTabNode
+  | SerializedLineBreakNode
+  | SerializedParagraphNode<LexicalNodes_EBEEF149>
   | SerializedHorizontalRuleNode
   | SerializedUploadNode<'media'>
-  | SerializedQuoteNode<LexicalNodes_6A9ABC7D>
+  | SerializedQuoteNode<LexicalNodes_EBEEF149>
   | SerializedRelationshipNode<
       | 'pages'
       | 'posts'
       | 'people'
       | 'users'
       | 'help-articles'
+      | 'proposals'
+      | 'runs'
+      | 'payload-mcp-api-keys'
       | 'payload-kv'
       | 'payload-locked-documents'
       | 'payload-preferences'
       | 'payload-migrations'
     >
-  | SerializedAutoLinkNode<LexicalNodes_6A9ABC7D, LexicalLinkFields>
-  | SerializedLinkNode<LexicalNodes_6A9ABC7D, LexicalLinkFields>
-  | SerializedListNode<LexicalNodes_6A9ABC7D>
-  | SerializedListItemNode<LexicalNodes_6A9ABC7D>
-  | SerializedHeadingNode<LexicalNodes_6A9ABC7D>;
+  | SerializedAutoLinkNode<LexicalNodes_EBEEF149, LexicalLinkFields>
+  | SerializedLinkNode<LexicalNodes_EBEEF149, LexicalLinkFields>
+  | SerializedListNode<LexicalNodes_EBEEF149>
+  | SerializedListItemNode<LexicalNodes_EBEEF149>
+  | SerializedHeadingNode<LexicalNodes_EBEEF149>;
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "LexicalNodes_6E4E4BF6".
@@ -121,6 +141,7 @@ export type LexicalNodes_3DE324E4 =
 export interface Config {
   auth: {
     users: UserAuthOperations;
+    'payload-mcp-api-keys': PayloadMcpApiKeyAuthOperations;
   };
   blocks: {};
   collections: {
@@ -130,6 +151,9 @@ export interface Config {
     media: Media;
     users: User;
     'help-articles': HelpArticle;
+    proposals: Proposal;
+    runs: Run;
+    'payload-mcp-api-keys': PayloadMcpApiKey;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -144,6 +168,9 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'help-articles': HelpArticlesSelect<false> | HelpArticlesSelect<true>;
+    proposals: ProposalsSelect<false> | ProposalsSelect<true>;
+    runs: RunsSelect<false> | RunsSelect<true>;
+    'payload-mcp-api-keys': PayloadMcpApiKeysSelect<false> | PayloadMcpApiKeysSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -168,13 +195,31 @@ export interface Config {
     activity: ActivityWidget;
     'upload-dropzone': UploadDropzoneWidget;
   };
-  user: User;
+  user: User | PayloadMcpApiKey;
   jobs: {
     tasks: unknown;
     workflows: unknown;
   };
 }
 export interface UserAuthOperations {
+  forgotPassword: {
+    email: string;
+    password: string;
+  };
+  login: {
+    email: string;
+    password: string;
+  };
+  registerFirstUser: {
+    email: string;
+    password: string;
+  };
+  unlock: {
+    email: string;
+    password: string;
+  };
+}
+export interface PayloadMcpApiKeyAuthOperations {
   forgotPassword: {
     email: string;
     password: string;
@@ -209,7 +254,16 @@ export interface Page {
    * One or two sentences under the title. Also the search description if the SEO one is blank.
    */
   intro?: string | null;
-  body?: LexicalRichText<LexicalNodes_6A9ABC7D> | null;
+  /**
+   * The page, top to bottom. Drag to reorder.
+   */
+  layout?:
+    | (HeroBlock | RichTextBlock | ImageTextBlock | StatsBlock | QuoteBlock | CardGridBlock | FaqBlock | CtaBlock)[]
+    | null;
+  /**
+   * Copy below the sections. Blank = none.
+   */
+  body?: LexicalRichText<LexicalNodes_8799902D> | null;
   cover?: (number | null) | Media;
   meta?: {
     title?: string | null;
@@ -219,17 +273,74 @@ export interface Page {
      */
     image?: (number | null) | Media;
   };
-  createdBy?: {
-    relationTo: 'users';
-    value: number | User;
-  } | null;
-  updatedBy?: {
-    relationTo: 'users';
-    value: number | User;
-  } | null;
+  createdBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
+  updatedBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HeroBlock".
+ */
+export interface HeroBlock {
+  /**
+   * Small label above the heading, e.g. “Our story”. Blank = none.
+   */
+  eyebrow?: string | null;
+  /**
+   * Renders large. Line breaks are kept.
+   */
+  heading: string;
+  /**
+   * One or two sentences under the heading. Blank = none.
+   */
+  subheading?: string | null;
+  buttons?:
+    | {
+        /**
+         * The text on the link or button.
+         */
+        label: string;
+        type?: ('page' | 'url') | null;
+        newTab?: boolean | null;
+        page?: (number | null) | Page;
+        /**
+         * Full address (https://…) or a path on this site (/contact).
+         */
+        href?: string | null;
+        style?: ('primary' | 'secondary') | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Feature image under the heading. Blank = text only.
+   */
+  image?: (number | null) | Media;
+  /**
+   * Background for this section.
+   */
+  surface?: ('light' | 'accent' | 'dark') | null;
+  alignment?: ('center' | 'left') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'hero';
 }
 /**
  * Images and files used across the site.
@@ -249,14 +360,24 @@ export interface Media {
   credit?: string | null;
   prefix?: string | null;
   _objectKey?: string | null;
-  createdBy?: {
-    relationTo: 'users';
-    value: number | User;
-  } | null;
-  updatedBy?: {
-    relationTo: 'users';
-    value: number | User;
-  } | null;
+  createdBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
+  updatedBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -295,14 +416,24 @@ export interface User {
   roles: ('admin' | 'editor')[];
   invitedAt?: string | null;
   lastLoginAt?: string | null;
-  createdBy?: {
-    relationTo: 'users';
-    value: number | User;
-  } | null;
-  updatedBy?: {
-    relationTo: 'users';
-    value: number | User;
-  } | null;
+  createdBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
+  updatedBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -322,6 +453,300 @@ export interface User {
     | null;
   password?: string | null;
   collection: 'users';
+}
+/**
+ * Connect Claude Code or another MCP client to the content.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-mcp-api-keys".
+ */
+export interface PayloadMcpApiKey {
+  id: number;
+  /**
+   * Who uses this key, e.g. "Claude Code, Sam's laptop".
+   */
+  label: string;
+  /**
+   * The key acts as this user, so it can never do more than they can.
+   */
+  user: number | User;
+  /**
+   * Find content, inspect its fields, and view saved history.
+   */
+  allowRead?: boolean | null;
+  /**
+   * Add content, duplicate documents, and upload media.
+   */
+  allowCreate?: boolean | null;
+  /**
+   * Update content and settings, publish changes, and restore history.
+   */
+  allowEdit?: boolean | null;
+  /**
+   * Delete content the linked user has permission to remove.
+   */
+  allowDelete?: boolean | null;
+  createdBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
+  updatedBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
+  updatedAt: string;
+  createdAt: string;
+  apiKey?: string | null;
+  apiKeyLast4?: string | null;
+  apiKeyIndex?: string | null;
+  collection: 'payload-mcp-api-keys';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RichTextBlock".
+ */
+export interface RichTextBlock {
+  content: LexicalRichText<LexicalNodes_8799902D>;
+  width?: ('narrow' | 'contained') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'richText';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ImageTextBlock".
+ */
+export interface ImageTextBlock {
+  /**
+   * The photo beside the text. Blank = text only.
+   */
+  image?: (number | null) | Media;
+  /**
+   * Small label above the heading, e.g. “Our story”. Blank = none.
+   */
+  eyebrow?: string | null;
+  /**
+   * Blank = no heading for this section.
+   */
+  heading?: string | null;
+  content?: LexicalRichText<LexicalNodes_8799902D> | null;
+  link?:
+    | {
+        /**
+         * The text on the link or button.
+         */
+        label: string;
+        type?: ('page' | 'url') | null;
+        newTab?: boolean | null;
+        page?: (number | null) | Page;
+        /**
+         * Full address (https://…) or a path on this site (/contact).
+         */
+        href?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  imagePosition?: ('right' | 'left') | null;
+  /**
+   * Background for this section.
+   */
+  surface?: ('light' | 'soft') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'imageText';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "StatsBlock".
+ */
+export interface StatsBlock {
+  /**
+   * Small label above the heading, e.g. “Our story”. Blank = none.
+   */
+  eyebrow?: string | null;
+  /**
+   * Blank = no heading for this section.
+   */
+  heading?: string | null;
+  items?:
+    | {
+        /**
+         * Formatted as it should read: “12,000+”, “81%”, “3×”.
+         */
+        value: string;
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Background for this section.
+   */
+  surface?: ('light' | 'soft' | 'dark') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'stats';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "QuoteBlock".
+ */
+export interface QuoteBlock {
+  /**
+   * No quotation marks needed; the design adds them.
+   */
+  quote: string;
+  attribution?: string | null;
+  /**
+   * e.g. “Customer since 2019”. Blank = none.
+   */
+  role?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'quote';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CardGridBlock".
+ */
+export interface CardGridBlock {
+  /**
+   * Small label above the heading, e.g. “Our story”. Blank = none.
+   */
+  eyebrow?: string | null;
+  /**
+   * Blank = no heading for this section.
+   */
+  heading?: string | null;
+  cards?:
+    | {
+        title: string;
+        /**
+         * Photo across the top of the card. Blank = no photo.
+         */
+        image?: (number | null) | Media;
+        /**
+         * A small icon above the title, for a card without a photo. Blank = none.
+         */
+        icon?:
+          | (
+              | 'sparkles'
+              | 'star'
+              | 'heart'
+              | 'check'
+              | 'zap'
+              | 'shield'
+              | 'globe'
+              | 'mail'
+              | 'phone'
+              | 'map-pin'
+              | 'calendar'
+              | 'users'
+              | 'book-open'
+              | 'lightbulb'
+              | 'megaphone'
+              | 'arrow-right'
+            )
+          | null;
+        text?: string | null;
+        /**
+         * One link makes the whole card clickable. Add a second and the cards show buttons instead: the first link as a button, the second as a text link beside it.
+         */
+        link?:
+          | {
+              /**
+               * The text on the link or button.
+               */
+              label: string;
+              type?: ('page' | 'url') | null;
+              newTab?: boolean | null;
+              page?: (number | null) | Page;
+              /**
+               * Full address (https://…) or a path on this site (/contact).
+               */
+              href?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  columns?: ('two' | 'three' | 'four') | null;
+  /**
+   * Background for this section.
+   */
+  surface?: ('light' | 'soft') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'cardGrid';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FaqBlock".
+ */
+export interface FaqBlock {
+  /**
+   * Small label above the heading, e.g. “Our story”. Blank = none.
+   */
+  eyebrow?: string | null;
+  /**
+   * Blank = no heading for this section.
+   */
+  heading?: string | null;
+  items?:
+    | {
+        question: string;
+        answer: LexicalRichText<LexicalNodes_8799902D>;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'faq';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CtaBlock".
+ */
+export interface CtaBlock {
+  heading: string;
+  /**
+   * A sentence or two under the heading. Blank = none.
+   */
+  body?: string | null;
+  buttons?:
+    | {
+        /**
+         * The text on the link or button.
+         */
+        label: string;
+        type?: ('page' | 'url') | null;
+        newTab?: boolean | null;
+        page?: (number | null) | Page;
+        /**
+         * Full address (https://…) or a path on this site (/contact).
+         */
+        href?: string | null;
+        style?: ('primary' | 'secondary') | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Background for this section.
+   */
+  surface?: ('dark' | 'accent') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'cta';
 }
 /**
  * Shown on /news. Search and sharing details update automatically.
@@ -349,7 +774,7 @@ export interface Post {
    */
   excerpt?: string | null;
   cover?: (number | null) | Media;
-  body: LexicalRichText<LexicalNodes_6A9ABC7D>;
+  body: LexicalRichText<LexicalNodes_EBEEF149>;
   meta?: {
     title?: string | null;
     description?: string | null;
@@ -358,14 +783,24 @@ export interface Post {
      */
     image?: (number | null) | Media;
   };
-  createdBy?: {
-    relationTo: 'users';
-    value: number | User;
-  } | null;
-  updatedBy?: {
-    relationTo: 'users';
-    value: number | User;
-  } | null;
+  createdBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
+  updatedBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -417,14 +852,24 @@ export interface Person {
      */
     image?: (number | null) | Media;
   };
-  createdBy?: {
-    relationTo: 'users';
-    value: number | User;
-  } | null;
-  updatedBy?: {
-    relationTo: 'users';
-    value: number | User;
-  } | null;
+  createdBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
+  updatedBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
   updatedAt: string;
   createdAt: string;
 }
@@ -464,17 +909,234 @@ export interface HelpArticle {
         id?: string | null;
       }[]
     | null;
-  createdBy?: {
-    relationTo: 'users';
-    value: number | User;
-  } | null;
-  updatedBy?: {
-    relationTo: 'users';
-    value: number | User;
-  } | null;
+  createdBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
+  updatedBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * Changes an agent would like to make. Open one to accept or reject each field; nothing reaches the site until you do.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "proposals".
+ */
+export interface Proposal {
+  id: number;
+  /**
+   * What this proposal is about, e.g. "Enrich: Jane Doe".
+   */
+  title: string;
+  /**
+   * Blank = a general edit.
+   */
+  kind?: ('enrich' | 'draft' | 'edit' | 'field-action') | null;
+  /**
+   * Set by your decisions. Open until every field has one.
+   */
+  status: 'open' | 'accepted' | 'partial' | 'rejected' | 'superseded';
+  /**
+   * The collection the change belongs to.
+   */
+  targetCollection: string;
+  /**
+   * Blank = a new document is created when the first field is accepted.
+   */
+  targetId?: string | null;
+  patch:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  decisions?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * The agent’s own account: what it found and what it could not.
+   */
+  summary?: string | null;
+  /**
+   * Blank = the proposal was not produced by a run.
+   */
+  run?: (number | null) | Run;
+  /**
+   * Which agent proposed this, e.g. enrich@1.
+   */
+  agent?: string | null;
+  /**
+   * Blank = nobody has decided yet.
+   */
+  reviewedBy?: (number | null) | User;
+  /**
+   * Blank = nobody has decided yet.
+   */
+  reviewedAt?: string | null;
+  createdBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
+  updatedBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Agent jobs, live. Open one to follow its progress, answer a question, cancel it or try again.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "runs".
+ */
+export interface Run {
+  id: number;
+  /**
+   * What the run is doing, e.g. "Enrich: Jane Doe".
+   */
+  title: string;
+  /**
+   * The agent id, e.g. enrich@1.
+   */
+  kind: string;
+  /**
+   * Waiting = the agent has a question for you.
+   */
+  status: 'queued' | 'running' | 'waiting' | 'done' | 'failed' | 'cancelled';
+  /**
+   * Blank = the run is not about one document.
+   */
+  targetCollection?: string | null;
+  /**
+   * Blank = the run is not about one document.
+   */
+  targetId?: string | null;
+  input?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Blank = the run has not started.
+   */
+  stage?: string | null;
+  /**
+   * The latest activity line; updated often while running.
+   */
+  now?: string | null;
+  steps?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  question?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Blank = no question has been answered.
+   */
+  answer?: string | null;
+  /**
+   * Blank = not measured.
+   */
+  costUsd?: number | null;
+  /**
+   * How many times a worker has picked this run up.
+   */
+  attempts?: number | null;
+  /**
+   * Blank = no worker holds it.
+   */
+  leaseUntil?: string | null;
+  /**
+   * Blank = the adapter did not keep a session.
+   */
+  session?: string | null;
+  /**
+   * Blank = not recorded.
+   */
+  model?: string | null;
+  /**
+   * Blank = nothing went wrong.
+   */
+  error?: string | null;
+  /**
+   * Blank = started by a schedule or a hook.
+   */
+  triggeredBy?: (number | null) | User;
+  /**
+   * Blank = the run has not produced a proposal yet.
+   */
+  proposal?: (number | null) | Proposal;
+  createdBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
+  updatedBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -523,12 +1185,29 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'help-articles';
         value: number | HelpArticle;
+      } | null)
+    | ({
+        relationTo: 'proposals';
+        value: number | Proposal;
+      } | null)
+    | ({
+        relationTo: 'runs';
+        value: number | Run;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
       } | null);
   globalSlug?: string | null;
-  user: {
-    relationTo: 'users';
-    value: number | User;
-  };
+  user:
+    | {
+        relationTo: 'users';
+        value: number | User;
+      }
+    | {
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      };
   updatedAt: string;
   createdAt: string;
 }
@@ -538,10 +1217,15 @@ export interface PayloadLockedDocument {
  */
 export interface PayloadPreference {
   id: number;
-  user: {
-    relationTo: 'users';
-    value: number | User;
-  };
+  user:
+    | {
+        relationTo: 'users';
+        value: number | User;
+      }
+    | {
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      };
   key?: string | null;
   value?:
     | {
@@ -577,14 +1261,24 @@ export interface PayloadLlmInstruction {
   entityType: 'collection' | 'global';
   additionalInstructions?: LexicalRichText<LexicalNodes_3DE324E4> | null;
   systemInstructions?: LexicalRichText<LexicalNodes_3DE324E4> | null;
-  createdBy?: {
-    relationTo: 'users';
-    value: number | User;
-  } | null;
-  updatedBy?: {
-    relationTo: 'users';
-    value: number | User;
-  } | null;
+  createdBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
+  updatedBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
   updatedAt: string;
   createdAt: string;
 }
@@ -596,6 +1290,18 @@ export interface PagesSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
   intro?: T;
+  layout?:
+    | T
+    | {
+        hero?: T | HeroBlockSelect<T>;
+        richText?: T | RichTextBlockSelect<T>;
+        imageText?: T | ImageTextBlockSelect<T>;
+        stats?: T | StatsBlockSelect<T>;
+        quote?: T | QuoteBlockSelect<T>;
+        cardGrid?: T | CardGridBlockSelect<T>;
+        faq?: T | FaqBlockSelect<T>;
+        cta?: T | CtaBlockSelect<T>;
+      };
   body?: T;
   cover?: T;
   meta?:
@@ -610,6 +1316,164 @@ export interface PagesSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HeroBlock_select".
+ */
+export interface HeroBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  subheading?: T;
+  buttons?:
+    | T
+    | {
+        label?: T;
+        type?: T;
+        newTab?: T;
+        page?: T;
+        href?: T;
+        style?: T;
+        id?: T;
+      };
+  image?: T;
+  surface?: T;
+  alignment?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RichTextBlock_select".
+ */
+export interface RichTextBlockSelect<T extends boolean = true> {
+  content?: T;
+  width?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ImageTextBlock_select".
+ */
+export interface ImageTextBlockSelect<T extends boolean = true> {
+  image?: T;
+  eyebrow?: T;
+  heading?: T;
+  content?: T;
+  link?:
+    | T
+    | {
+        label?: T;
+        type?: T;
+        newTab?: T;
+        page?: T;
+        href?: T;
+        id?: T;
+      };
+  imagePosition?: T;
+  surface?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "StatsBlock_select".
+ */
+export interface StatsBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  items?:
+    | T
+    | {
+        value?: T;
+        label?: T;
+        id?: T;
+      };
+  surface?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "QuoteBlock_select".
+ */
+export interface QuoteBlockSelect<T extends boolean = true> {
+  quote?: T;
+  attribution?: T;
+  role?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CardGridBlock_select".
+ */
+export interface CardGridBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  cards?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        icon?: T;
+        text?: T;
+        link?:
+          | T
+          | {
+              label?: T;
+              type?: T;
+              newTab?: T;
+              page?: T;
+              href?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  columns?: T;
+  surface?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FaqBlock_select".
+ */
+export interface FaqBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  items?:
+    | T
+    | {
+        question?: T;
+        answer?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CtaBlock_select".
+ */
+export interface CtaBlockSelect<T extends boolean = true> {
+  heading?: T;
+  body?: T;
+  buttons?:
+    | T
+    | {
+        label?: T;
+        type?: T;
+        newTab?: T;
+        page?: T;
+        href?: T;
+        style?: T;
+        id?: T;
+      };
+  surface?: T;
+  id?: T;
+  blockName?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -756,6 +1620,76 @@ export interface HelpArticlesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "proposals_select".
+ */
+export interface ProposalsSelect<T extends boolean = true> {
+  title?: T;
+  kind?: T;
+  status?: T;
+  targetCollection?: T;
+  targetId?: T;
+  patch?: T;
+  decisions?: T;
+  summary?: T;
+  run?: T;
+  agent?: T;
+  reviewedBy?: T;
+  reviewedAt?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "runs_select".
+ */
+export interface RunsSelect<T extends boolean = true> {
+  title?: T;
+  kind?: T;
+  status?: T;
+  targetCollection?: T;
+  targetId?: T;
+  input?: T;
+  stage?: T;
+  now?: T;
+  steps?: T;
+  question?: T;
+  answer?: T;
+  costUsd?: T;
+  attempts?: T;
+  leaseUntil?: T;
+  session?: T;
+  model?: T;
+  error?: T;
+  triggeredBy?: T;
+  proposal?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-mcp-api-keys_select".
+ */
+export interface PayloadMcpApiKeysSelect<T extends boolean = true> {
+  label?: T;
+  user?: T;
+  allowRead?: T;
+  allowCreate?: T;
+  allowEdit?: T;
+  allowDelete?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  apiKey?: T;
+  apiKeyLast4?: T;
+  apiKeyIndex?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -828,14 +1762,24 @@ export interface SiteSetting {
     phone?: string | null;
     address?: string | null;
   };
-  createdBy?: {
-    relationTo: 'users';
-    value: number | User;
-  } | null;
-  updatedBy?: {
-    relationTo: 'users';
-    value: number | User;
-  } | null;
+  createdBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
+  updatedBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -886,7 +1830,16 @@ export interface CollectionsWidget {
 export interface CollectionQueryWidget {
   data?: {
     title?: string | null;
-    relatedCollection: 'pages' | 'posts' | 'people' | 'media' | 'users' | 'help-articles';
+    relatedCollection:
+      | 'pages'
+      | 'posts'
+      | 'people'
+      | 'media'
+      | 'users'
+      | 'help-articles'
+      | 'proposals'
+      | 'runs'
+      | 'payload-mcp-api-keys';
     where?:
       | {
           [k: string]: unknown;
@@ -908,7 +1861,19 @@ export interface CollectionQueryWidget {
  */
 export interface ActivityWidget {
   data?: {
-    excludedCollections?: ('pages' | 'posts' | 'people' | 'media' | 'users' | 'help-articles')[] | null;
+    excludedCollections?:
+      | (
+          | 'pages'
+          | 'posts'
+          | 'people'
+          | 'media'
+          | 'users'
+          | 'help-articles'
+          | 'proposals'
+          | 'runs'
+          | 'payload-mcp-api-keys'
+        )[]
+      | null;
   };
   width: 'small' | 'medium' | 'large' | 'x-large' | 'full';
 }
@@ -981,12 +1946,6 @@ export interface SerializedParagraphNode<TChildren> extends SerializedLexicalEle
   textStyle: string;
 }
 
-export interface SerializedHorizontalRuleNode {
-  type: 'horizontalrule';
-  /** @deprecated Ignored when loading. Typed as required only to match Lexical's types: rich text sent through the API, CLI or MCP may not contain it. */
-  version: number;
-}
-
 export type SerializedUploadNode<TSlugs extends keyof Config['collections'], TFields = { [k: string]: unknown }> = {
   type: 'upload';
   format: LexicalElementFormat;
@@ -1001,21 +1960,29 @@ export type SerializedUploadNode<TSlugs extends keyof Config['collections'], TFi
   };
 }[TSlugs];
 
+export interface SerializedHorizontalRuleNode {
+  type: 'horizontalrule';
+  /** @deprecated Ignored when loading. Typed as required only to match Lexical's types: rich text sent through the API, CLI or MCP may not contain it. */
+  version: number;
+}
+
 export interface SerializedQuoteNode<TChildren> extends SerializedLexicalElementBase<TChildren> {
   type: 'quote';
 }
 
-export type SerializedRelationshipNode<TSlugs extends keyof Config['collections']> = {
-  type: 'relationship';
-  format: LexicalElementFormat;
-  /** @deprecated Ignored when loading. Typed as required only to match Lexical's types: rich text sent through the API, CLI or MCP may not contain it. */
-  version: number;
-} & {
-  [TSlug in TSlugs]: {
-    relationTo: TSlug;
-    value: Config['collections'][TSlug]['id'] | Config['collections'][TSlug];
-  };
-}[TSlugs];
+export interface SerializedListNode<TChildren> extends SerializedLexicalElementBase<TChildren> {
+  type: 'list';
+  checked?: boolean;
+  listType: 'number' | 'bullet' | 'check';
+  start: number;
+  tag: 'ul' | 'ol';
+}
+
+export interface SerializedListItemNode<TChildren> extends SerializedLexicalElementBase<TChildren> {
+  type: 'listitem';
+  checked?: boolean;
+  value: number;
+}
 
 export interface LexicalLinkFields {
   [k: string]: unknown;
@@ -1035,20 +2002,6 @@ export interface SerializedLinkNode<TChildren, TFields = LexicalLinkFields> exte
 export interface SerializedAutoLinkNode<TChildren, TFields = LexicalLinkFields> extends SerializedLexicalElementBase<TChildren> {
   type: 'autolink';
   fields: TFields;
-}
-
-export interface SerializedListNode<TChildren> extends SerializedLexicalElementBase<TChildren> {
-  type: 'list';
-  checked?: boolean;
-  listType: 'number' | 'bullet' | 'check';
-  start: number;
-  tag: 'ul' | 'ol';
-}
-
-export interface SerializedListItemNode<TChildren> extends SerializedLexicalElementBase<TChildren> {
-  type: 'listitem';
-  checked?: boolean;
-  value: number;
 }
 
 export interface SerializedHeadingNode<
@@ -1071,6 +2024,18 @@ export interface LexicalRichText<TNode> {
     version: number;
   };
 }
+
+export type SerializedRelationshipNode<TSlugs extends keyof Config['collections']> = {
+  type: 'relationship';
+  format: LexicalElementFormat;
+  /** @deprecated Ignored when loading. Typed as required only to match Lexical's types: rich text sent through the API, CLI or MCP may not contain it. */
+  version: number;
+} & {
+  [TSlug in TSlugs]: {
+    relationTo: TSlug;
+    value: Config['collections'][TSlug]['id'] | Config['collections'][TSlug];
+  };
+}[TSlugs];
 
 
 declare module 'payload' {

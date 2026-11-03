@@ -17,9 +17,16 @@ How the playground is hosted, and the convention every client project follows.
 ```sh
 bun install
 cd apps/playground
-bun x vercel env pull .env.local        # development env: Neon dev branch, blob token, secret
+bun x vercel env pull .env.local        # development env: blob token, secret, DATABASE_URL
 bun run dev                              # http://localhost:3100, admin at /admin
 ```
+
+**Known gap (2026-11-03):** the Neon marketplace resource was created with the Vercel
+"development" environment pointing at the **same branch as production**. Until a `dev`
+branch is created in the Neon dashboard (Branches → New branch from `main`) and the
+development env vars are switched to it in the integration's settings, a local
+`bun run migrate` or seed writes to production. The playground has no real content, so this
+is tolerable today and must be fixed before any client project copies this setup.
 
 Schema changes: edit a collection, then `bun run migrate:create <name>`, read the SQL,
 `bun run migrate`. Migrations run over the unpooled connection (`scripts/migrate.ts`).

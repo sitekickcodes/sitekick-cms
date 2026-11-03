@@ -4,10 +4,11 @@ The version of [Payload](https://payloadcms.com) that Sitekick installs on day o
 client project: world-class editor UX, agent-ready from the first commit, and AI workflows as
 part of the product.
 
-Status: planning. Read [`docs/PLAN.md`](docs/PLAN.md) first, then
-[`docs/DECISIONS.md`](docs/DECISIONS.md).
+Status: phase 1 prototype. Read [`docs/PLAN.md`](docs/PLAN.md) first, then
+[`docs/DECISIONS.md`](docs/DECISIONS.md), [`docs/REVIEW-SPEC.md`](docs/REVIEW-SPEC.md) and
+[`docs/ENVIRONMENTS.md`](docs/ENVIRONMENTS.md). Demo: https://sitekick-cms-playground.vercel.app
 
-## What it will be
+## What it is
 
 - `@sitekick/cms` — a Payload 4 plugin. One line in `payload.config.ts` gives you the Sitekick
   admin shell (sidebar, home, command palette, inbox, help), the editing conventions (slugs,

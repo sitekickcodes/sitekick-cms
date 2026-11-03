@@ -4,23 +4,41 @@
   "description": "Sitekick CMS agent kit: durable runs, proposals with receipts, verifiers, model selection.",
   "license": "MIT",
   "type": "module",
-  "sideEffects": [
-    "*.css"
-  ],
+  "sideEffects": false,
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./admin": "./src/admin.ts",
+    "./eve": "./src/adapters/eve.ts",
+    "./workflow": "./src/adapters/workflow.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "bun test src"
   },
   "peerDependencies": {
     "payload": "4.0.0-beta.6",
-    "react": "^19",
-    "react-dom": "^19"
+    "@vercel/functions": ">=3",
+    "workflow": ">=5",
+    "eve": ">=1.0.0-rc.2"
   },
   "devDependencies": {
-    "@types/react": "19.3.0",
-    "@types/react-dom": "19.3.0",
-    "typescript": "6.0.3"
+    "@types/bun": "^1.4.4",
+    "typescript": "6.0.3",
+    "workflow": "5.3.0"
+  },
+  "dependencies": {
+    "ai": "7.0.162",
+    "zod": "4.6.7"
+  },
+  "peerDependenciesMeta": {
+    "@vercel/functions": {
+      "optional": true
+    },
+    "workflow": {
+      "optional": true
+    },
+    "eve": {
+      "optional": true
+    }
   }
 }

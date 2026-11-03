@@ -498,3 +498,25 @@ a.kid:hover {
   font-weight: 600;
   line-height: 18px;
 }
+
+.kbd {
+  margin-inline-start: auto;
+  font: 600 10px/1 var(--nav-ui);
+  letter-spacing: 0.04em;
+  color: var(--color-base-500);
+  background: var(--color-base-100);
+  border: 1px solid var(--color-base-200);
+  border-radius: 5px;
+  padding: 3px 5px;
+}
+
+.badge {
+  margin-inline-start: auto;
+  min-width: 20px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: var(--sk-accent);
+  color: #fff;
+  font: 600 11px/1.2 var(--nav-ui);
+  text-align: center;
+}

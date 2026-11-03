@@ -7,7 +7,7 @@ const dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const nextConfig: NextConfig = {
   // Workspace packages ship TypeScript source.
-  transpilePackages: ['@sitekick/cms', '@sitekick/blocks'],
+  transpilePackages: ['@sitekick/cms', '@sitekick/blocks', '@sitekick/agents'],
   images: {
     localPatterns: [{ pathname: '/api/media/file/**' }],
     remotePatterns: [{ protocol: 'https', hostname: '*.public.blob.vercel-storage.com' }],

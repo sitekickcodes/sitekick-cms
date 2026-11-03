@@ -37,6 +37,7 @@ import styles from './Nav.module.css'
 /** The DOM event the help drawer listens for. */
 export const HELP_OPEN_EVENT = 'sitekick:help:open'
 const OPEN_AREAS_KEY = 'sitekick:nav:open'
+const PALETTE_OPEN_EVENT = 'sitekick:palette:open'
 const RECENT_KEY = 'sitekick:nav:recent'
 const RECENT_MAX = 6
 const PINNED_PREF = 'pinned-documents'
@@ -68,6 +69,13 @@ export function NavClient({ areas, pinned, before, after, adminRoute, dashboardH
       <BreadcrumbTrail areas={areas} pathname={pathname} search={search} />
       <FilterFlag pathname={pathname} search={search} />
       <ul className={styles.list}>
+        <li>
+          <button type="button" className={styles.row} onClick={() => window.dispatchEvent(new CustomEvent(PALETTE_OPEN_EVENT))} aria-haspopup="dialog">
+            <LucideIcon name="search" />
+            <span className={styles.label}>Search</span>
+            <kbd className={styles.kbd} aria-hidden>⌘K</kbd>
+          </button>
+        </li>
         <li>
           <RowLink href={dashboardHref} active={pathname === dashboardHref} pathname={pathname}>
             <LucideIcon name="layout-dashboard" />
@@ -365,6 +373,7 @@ function Area({ area, open, onToggle, pathname, search }: { area: ResolvedArea; 
         <RowLink href={only.href} active={isActive(pathname, only.href, search)} pathname={pathname} className={styles.row}>
           <LucideIcon name={area.icon as IconName} />
           <span className={styles.label}>{area.label}</span>
+          {only.badge ? <span className={styles.badge}>{only.badge}</span> : null}
         </RowLink>
       </li>
     )
@@ -383,7 +392,8 @@ function Area({ area, open, onToggle, pathname, search }: { area: ResolvedArea; 
           {area.links.map((l) => (
             <li key={l.href}>
               <RowLink href={l.href} active={isActive(pathname, l.href, search)} pathname={pathname} className={styles.kid}>
-                {l.label}
+                <span className={styles.label}>{l.label}</span>
+                {l.badge ? <span className={styles.badge}>{l.badge}</span> : null}
               </RowLink>
             </li>
           ))}

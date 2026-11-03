@@ -16,6 +16,10 @@ export type IconShape =
   | ['rect', number, number, number, number, number]
 
 export const ICONS = {
+  search: [
+    ['circle', 11, 11, 8],
+    ['path', 'm21 21-4.3-4.3'],
+  ],
   'layout-dashboard': [
     ['rect', 3, 3, 7, 9, 1],
     ['rect', 14, 3, 7, 5, 1],

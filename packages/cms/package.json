@@ -11,6 +11,8 @@
     "./fields": "./src/fields/index.ts",
     "./hooks": "./src/hooks/index.ts",
     "./access": "./src/access/index.ts",
+    "./agent": "./src/agent/index.ts",
+    "./public": "./src/public/index.ts",
     "./theme.css": "./src/theme/theme.css",
     "./admin.css": "./src/theme/admin.css"
   },
@@ -41,5 +43,9 @@
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "typescript": "6.0.3"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "2.4.0",
+    "zod": "4.6.7"
   }
 }

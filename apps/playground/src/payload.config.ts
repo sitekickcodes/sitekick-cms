@@ -1,11 +1,13 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { mcpPlugin } from '@payloadcms/plugin-mcp'
+import { filterMCPItems } from '@payloadcms/plugin-mcp/internal'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 import { sharpTransformer } from '@payloadcms/transformer-sharp'
 import { sitekickCMS } from '@sitekick/cms'
+import { mcpPluginOptions, type FilterMCPItems } from '@sitekick/cms/agent'
 import path from 'path'
-import { buildConfig } from 'payload'
+import { buildConfig, type Plugin } from 'payload'
 import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 
@@ -15,14 +17,18 @@ import { People } from './collections/People'
 import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
 import { SiteSettings } from './globals/SiteSettings'
+import { siteUrl } from './lib/site'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_SERVER_URL ||
-  (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : '') ||
-  'http://localhost:3100'
+const site = { name: 'Demo Co.', url: siteUrl, accent: '#0f766e' }
+
+/** Payload's MCP server (`/api/mcp`), configured from the collections' agent contracts.
+ * The plugin's item type is mirrored structurally in @sitekick/cms (plugin-mcp is the
+ * app's dependency), hence the cast. */
+const editorMCP: Plugin = (config) =>
+  mcpPlugin(mcpPluginOptions(config, { site, filterItems: filterMCPItems as unknown as FilterMCPItems }))(config)
 
 export default buildConfig({
   admin: {
@@ -69,14 +75,15 @@ export default buildConfig({
   },
   plugins: [
     sitekickCMS({
-      site: { name: 'Demo Co.', url: siteUrl, accent: '#0f766e' },
+      site,
       nav: [
+        { label: 'Inbox', icon: 'inbox', links: [{ to: 'view:/inbox', label: 'Inbox' }] },
         { label: 'Website', icon: 'globe', links: ['pages', 'site-settings'] },
         { label: 'News', icon: 'newspaper', links: ['posts'] },
         { label: 'People', icon: 'users', links: ['people'] },
         { label: 'Library', icon: 'image', links: ['media'] },
       ],
     }),
-    mcpPlugin({}),
+    editorMCP,
   ],
 })

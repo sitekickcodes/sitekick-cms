@@ -8,6 +8,7 @@ import { EntityType, formatAdminURL } from 'payload/shared'
 
 import { accountSlugs, joinAdmin, labelText, resolveArrangement } from '../nav/arrangement'
 import type { NavServerOptions, PinnedDoc, VisibleEntity } from '../nav/types'
+import { countInbox, INBOX_PATH } from '../review'
 import { NavClient, NavHeader } from './NavClient'
 
 /**
@@ -68,6 +69,17 @@ export async function Nav(props: SitekickNavProps) {
   })
 
   const pinned = user ? await loadPinned(payload, user, usersSlug, adminRoute) : []
+
+  // The inbox badge: open proposals plus runs waiting on a person.
+  if (user) {
+    const inbox = await countInbox(payload, user)
+    const total = inbox.proposals + inbox.runs
+    if (total > 0) {
+      for (const area of nav.areas)
+        for (const link of area.links)
+          if (link.key === `view:${INBOX_PATH}` || link.key === `view:${INBOX_PATH.slice(1)}`) link.badge = total
+    }
+  }
 
   const serverProps = { i18n, locale, params, payload, permissions, searchParams, user }
   const clientProps = { documentSubViewType, viewType }

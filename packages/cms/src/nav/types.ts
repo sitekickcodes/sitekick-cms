@@ -16,6 +16,8 @@ export type ResolvedLink = {
   label: string
   /** `collections:<slug>`, `globals:<slug>` or `view:<path>`; the key `placed` is tracked by. */
   key: string
+  /** A count shown at the row's end (the inbox's open items). */
+  badge?: number
 }
 
 /** A titled, collapsible area of links. */

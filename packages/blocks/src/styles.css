@@ -1,0 +1,132 @@
+/*
+ * @sitekick/blocks tokens and prose rhythm. Import this from the app's
+ * globals.css after `@import "tailwindcss"`. Apps override the `--sk-*`
+ * variables on :root; the `@theme inline` block turns them into
+ * `bg-sk-*` / `text-sk-*` utilities the renderers use.
+ */
+
+:root {
+  --sk-font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --sk-font-display: var(--sk-font-sans);
+
+  /* Warm neutrals: page, ink, secondary ink, tinted band, hairline, card. */
+  --sk-bg: #faf8f4;
+  --sk-fg: #1c1a17;
+  --sk-muted: #5f5a52;
+  --sk-soft: #f1ede5;
+  --sk-line: #e3ddd2;
+  --sk-card: #ffffff;
+
+  /* Dark band and the ink on it. */
+  --sk-dark: #1c1a17;
+  --sk-dark-fg: #faf8f4;
+
+  /* Brand accent and the ink on it. The one colour a client changes. */
+  --sk-accent: #0f766e;
+  --sk-accent-fg: #ffffff;
+}
+
+@theme inline {
+  --font-sans: var(--sk-font-sans);
+  --font-display: var(--sk-font-display);
+
+  --color-sk-bg: var(--sk-bg);
+  --color-sk-fg: var(--sk-fg);
+  --color-sk-muted: var(--sk-muted);
+  --color-sk-soft: var(--sk-soft);
+  --color-sk-line: var(--sk-line);
+  --color-sk-card: var(--sk-card);
+  --color-sk-dark: var(--sk-dark);
+  --color-sk-dark-fg: var(--sk-dark-fg);
+  --color-sk-accent: var(--sk-accent);
+  --color-sk-accent-fg: var(--sk-accent-fg);
+}
+
+/* One rhythm for every Lexical body. Applied inside Payload's container. */
+.sk-prose {
+  font-size: 1.0625rem;
+  line-height: 1.65;
+
+  & > * + * {
+    margin-top: 1.1em;
+  }
+  & h1,
+  & h2,
+  & h3,
+  & h4 {
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.15;
+    text-wrap: balance;
+    margin-top: 1.8em;
+  }
+  & h1 {
+    font-size: 2.25rem;
+  }
+  & h2 {
+    font-size: 1.75rem;
+  }
+  & h3 {
+    font-size: 1.375rem;
+  }
+  & h4 {
+    font-size: 1.125rem;
+  }
+  & > :first-child {
+    margin-top: 0;
+  }
+  & a {
+    color: var(--sk-accent);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+  }
+  & a:hover {
+    text-decoration-thickness: 2px;
+  }
+  & ul,
+  & ol {
+    padding-left: 1.4em;
+  }
+  & ul {
+    list-style: disc;
+  }
+  & ol {
+    list-style: decimal;
+  }
+  & li + li {
+    margin-top: 0.35em;
+  }
+  & blockquote {
+    border-left: 3px solid var(--sk-accent);
+    padding-left: 1.1em;
+    color: var(--sk-muted);
+    font-style: italic;
+  }
+  & hr {
+    border: 0;
+    border-top: 1px solid var(--sk-line);
+    margin-block: 2.2em;
+  }
+  & img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    border-radius: 1rem;
+  }
+  & strong {
+    font-weight: 600;
+  }
+}
+
+/* The dark and accent bands invert the prose colours. */
+.sk-prose-invert {
+  color: inherit;
+  & a {
+    color: inherit;
+  }
+  & blockquote {
+    color: inherit;
+    border-color: currentColor;
+  }
+}
