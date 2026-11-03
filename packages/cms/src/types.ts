@@ -49,7 +49,15 @@ export type AgentContract = {
   review?: 'required' | 'optional' | 'none'
   /** Free-form guidance appended to MCP notes. */
   notes?: string
+  /**
+   * Whole-document agents the admin offers here (needs the `agents` plugin
+   * option). `enrich`: "Find details" on a saved document. `draft`: "Draft
+   * from notes" beside Create new.
+   */
+  actions?: AgentAction[]
 }
+
+export type AgentAction = 'enrich' | 'draft'
 
 export type SitekickCustom = {
   sitekick?: {
@@ -90,6 +98,12 @@ export type SitekickCMSOptions = {
   dashboard?: boolean
   /** Public read-only MCP server, llms.txt and OpenAPI. Default on. */
   publicAgentSurface?: boolean
+  /**
+   * Agent buttons in the admin: Find details, Draft from notes, Describe
+   * image, Write search details. Off unless set, because the routes live in
+   * the app (`createAgentRoutes` from @sitekick/agents, mounted at basePath).
+   */
+  agents?: { basePath?: string }
 }
 
 export type Entity = CollectionConfig | GlobalConfig

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { toast } from '@payloadcms/ui'
 
 import { PROPOSAL_STATUS_MAP, computeStatus, isFinal, type Decision, type Decisions, type ProposalStatus } from '../../review/shared'
-import { hostOf } from '../../review/shared'
+import { hostOf, readableExcerpt } from '../../review/shared'
 import { StatusTag } from '../StatusTag'
 import { relative, type FieldView, type ProposalView } from './model'
 import styles from './review.module.css'
@@ -203,14 +203,19 @@ function FieldCard({
           {field.receipts.map((r, i) => (
             <li key={`${r.url}:${i}`} className={styles.receipt}>
               <div className={styles.receiptHead}>
-                <a href={r.url} target="_blank" rel="noreferrer noopener">
-                  {r.title?.trim() || hostOf(r.url)}
-                </a>
+                {/^https?:/.test(r.url) ? (
+                  <a href={r.url} target="_blank" rel="noreferrer noopener">
+                    {r.title?.trim() || hostOf(r.url)}
+                  </a>
+                ) : (
+                  // Notes, transcripts and editor text: provided, not fetched, and nothing to link to.
+                  <span>{r.title?.trim() || r.url.replace(/:$/, '')}</span>
+                )}
                 <span className={styles.receiptWhen} suppressHydrationWarning>
-                  fetched {relative(r.fetchedAt, now)}
+                  {/^https?:/.test(r.url) ? 'fetched' : 'provided'} {relative(r.fetchedAt, now)}
                 </span>
               </div>
-              {r.excerpt ? <blockquote>{r.excerpt}</blockquote> : null}
+              {r.excerpt ? <blockquote>{readableExcerpt(r.excerpt)}</blockquote> : null}
             </li>
           ))}
         </ul>

@@ -42,7 +42,7 @@ function stub(options: {
     collections: Object.fromEntries(
       Object.entries(options.collections ?? { proposals: {}, runs: {}, people: { drafts: true } }).map(([slug, c]) => [
         slug,
-        { config: { slug, versions: c.drafts ? { drafts: true } : undefined } },
+        { config: { slug, fields: [], versions: c.drafts ? { drafts: true } : undefined } },
       ]),
     ),
     findByID: async (args: { collection: string; id: string | number }) => {

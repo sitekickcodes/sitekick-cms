@@ -10,7 +10,8 @@
   border-radius: 12px;
   background: var(--color-bg);
 }
-.overviewHeading { display: flex; align-items: center; gap: 8px; }
+.overviewHeading { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.writeSEO { margin: 0 0 0 auto; min-height: 32px; }
 .overviewIcon { display: flex; flex-shrink: 0; color: var(--color-text-warning); }
 .overviewIcon[data-ready='true'] { color: var(--color-text-success); }
 .overviewHeading strong { font-size: 14px; font-weight: 500; }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { toast } from '@payloadcms/ui'
+import { useRouter } from 'next/navigation'
 
 import { ACTIVE_RUN_STATUSES, RUN_STATUS_MAP, asQuestion, asSteps, type RunStatus, type RunStep } from '../../review/shared'
 import { StatusTag } from '../StatusTag'
@@ -17,7 +18,10 @@ const POLL_MS = 3000
  * the person prefers reduced motion (CSS).
  */
 export function RunReviewClient({ initial }: { initial: RunView }) {
+  const router = useRouter()
   const [run, setRun] = useState(initial)
+  // A server refresh (below) re-resolves the target and proposal links.
+  useEffect(() => setRun(initial), [initial])
   const [busy, setBusy] = useState<string | null>(null)
   const [free, setFree] = useState('')
   const [now, setNow] = useState(() => Date.now())
@@ -35,6 +39,8 @@ export function RunReviewClient({ initial }: { initial: RunView }) {
         const doc = (await res.json()) as Record<string, unknown>
         if (!cancelled) setRun((r) => merge(r, doc))
         setNow(Date.now())
+        // Settled: the proposal link only resolves on the server.
+        if (!cancelled && typeof doc.status === 'string' && !ACTIVE_RUN_STATUSES.includes(doc.status as RunStatus)) router.refresh()
       } catch {
         // A missed poll is nothing to report; the next one will catch up.
       }
@@ -44,7 +50,7 @@ export function RunReviewClient({ initial }: { initial: RunView }) {
       cancelled = true
       window.clearInterval(timer)
     }
-  }, [active, run.readURL])
+  }, [active, run.readURL, router])
 
   const act = async (action: 'answer' | 'cancel' | 'retry', body?: Record<string, unknown>, done?: string) => {
     if (busy) return
@@ -127,6 +133,11 @@ export function RunReviewClient({ initial }: { initial: RunView }) {
           </ul>
         </div>
         <div className={styles.actions}>
+          {run.proposal ? (
+            <a className={`${styles.action} ${styles.actionPrimary}`} href={run.proposal.href}>
+              Review proposal
+            </a>
+          ) : null}
           {active ? (
             <button type="button" className={`${styles.action} ${styles.actionDanger}`} disabled={Boolean(busy)} onClick={() => act('cancel', undefined, 'Run cancelled.')}>
               Cancel

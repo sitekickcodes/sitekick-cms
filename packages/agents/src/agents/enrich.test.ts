@@ -4,6 +4,7 @@ import type { Receipt } from '../receipts'
 import type { Runner } from '../runner'
 import { instrumentTools } from '../runner'
 import { execTool, stubPayload } from '../testing/stub-payload'
+import { shapeLinkRows } from '../fields'
 import { resolveFieldMap, runEnrich } from './enrich'
 
 const site = 'https://janedoe.example/'
@@ -43,6 +44,30 @@ describe('resolveFieldMap', () => {
   })
 })
 
+describe('shapeLinkRows', () => {
+  const found = [
+    { platform: 'LinkedIn', url: 'https://linkedin.com/in/d' },
+    { platform: 'Twitter', url: 'https://x.com/d' },
+    { platform: 'GitHub', url: 'https://github.com/d' },
+  ]
+  test('fits rows to a select, mapping aliases and falling back to other', () => {
+    const rowFields = [
+      { name: 'platform', type: 'select', options: ['x', 'linkedin', 'other'] },
+      { name: 'url', type: 'text' },
+    ]
+    expect(shapeLinkRows(found, rowFields)).toEqual([
+      { platform: 'linkedin', url: 'https://linkedin.com/in/d' },
+      { platform: 'x', url: 'https://x.com/d' },
+      { platform: 'other', url: 'https://github.com/d' },
+    ])
+    // No `other`: an unknown platform is dropped rather than failing on save.
+    expect(shapeLinkRows(found, [{ name: 'network', type: 'select', options: [{ label: 'X', value: 'x' }] }, { name: 'link', type: 'text' }])).toEqual([{ network: 'x', link: 'https://x.com/d' }])
+  })
+  test('a free-text label keeps the platform name as given', () => {
+    expect(shapeLinkRows(found.slice(0, 1), [{ name: 'label', type: 'text' }, { name: 'url', type: 'text' }])).toEqual([{ label: 'LinkedIn', url: 'https://linkedin.com/in/d' }])
+  })
+})
+
 describe('runEnrich', () => {
   test('end to end with a scripted runner: receipts, verifiers, contract, proposal, run status', async () => {
     const payload = stubPayload({ collections: [people] })
@@ -78,13 +103,13 @@ describe('runEnrich', () => {
     const proposal = (await payload.findByID({ collection: 'proposals', id: result.proposalId! }))!
     const patch = proposal.patch as Record<string, { value: unknown; receipts: Receipt[]; current?: unknown }>
     expect(patch.website).toMatchObject({ value: 'https://janedoe.example', current: '' })
-    expect(patch.bio?.receipts[0]).toMatchObject({ url: site, excerpt: expect.stringContaining('director of example org') })
+    expect(patch.bio?.receipts[0]).toMatchObject({ url: site, excerpt: expect.stringContaining('director of Example Org') })
     expect(patch.photo?.value).toEqual({ sourceUrl: 'https://janedoe.example/jane.jpg', credit: 'janedoe.example' })
     expect(String(proposal.summary)).toContain('no socials confirmed')
 
     const run = (await payload.findByID({ collection: 'runs', id: result.runId }))!
     expect(run).toMatchObject({ status: 'done', proposal: result.proposalId, targetCollection: 'people', targetId: String(jane.id), kind: 'enrich@1' })
-    expect((run.steps as Array<{ label: string }>).map((s) => s.label)).toContain('fetch page: janedoe.example')
+    expect((run.steps as Array<{ label: string }>).map((s) => s.label)).toContain('Read janedoe.example')
     expect(run.costUsd).toBeCloseTo(0.13, 6)
   })
   test('a bio the judge rejects is dropped and the reason reaches the summary; a failing runner fails the run', async () => {
@@ -111,5 +136,47 @@ describe('runEnrich', () => {
     await expect(runEnrich(payload, { targetCollection: 'people', targetId: jane.id }, { runner: failing, fetch: fetchStub as never })).rejects.toThrow('model outage')
     const runs = payload.store.get('runs')!
     expect(runs[runs.length - 1]).toMatchObject({ status: 'failed', error: 'model outage' })
+  })
+  test('a bio quotes every sentence through sources; an unsupported sentence is trimmed, not the whole bio', async () => {
+    const payload = stubPayload({ collections: [people] })
+    const jane = await payload.create({ collection: 'people', data: { name: 'Jane Doe' } })
+    const other = 'https://news.example/jane'
+    const bio = 'Jane Doe is the director of Example Org in Leeds. She joined in 2019. She won a Nobel prize.'
+    let receiptsSeen = 0
+    const result = await runEnrich(
+      payload,
+      { targetCollection: 'people', targetId: jane.id },
+      {
+        fetch: fetchStub as never,
+        urlAlive: async () => ({ ok: true }),
+        judge: async ({ receipts }) => {
+          receiptsSeen = receipts.length
+          return {
+            judgement: {
+              claims: [
+                { sentence: 'Jane Doe is the director of Example Org in Leeds.', supported: true, receipt: 0 },
+                { sentence: 'She joined in 2019.', supported: true, receipt: 1 },
+                { sentence: 'She won a Nobel prize.', supported: false, receipt: null },
+              ],
+            },
+            costUsd: null,
+          }
+        },
+        runner: scripted(async (tools) => {
+          await execTool(tools.fetch_page, { url: site })
+          const unread = { slot: 'bio', value: bio, sourceUrl: site, quote: 'director of Example Org', sources: [{ sourceUrl: other, quote: 'She joined in 2019' }] }
+          expect(await execTool(tools.propose, unread)).toMatchObject({ error: expect.stringContaining('(sources[0])') })
+          await execTool(tools.fetch_page, { url: other })
+          expect(await execTool(tools.propose, unread)).toEqual({ ok: true, slot: 'bio' })
+          await execTool(tools.finish, { result: 'done', summary: 'Bio from the official site and a news profile.' })
+        }),
+      },
+    )
+    expect(receiptsSeen).toBe(2)
+    expect(result.proposed).toEqual(['bio'])
+    const proposal = (await payload.findByID({ collection: 'proposals', id: result.proposalId! }))!
+    const patch = proposal.patch as Record<string, { value: unknown; receipts: Receipt[]; note?: string }>
+    expect(patch.bio).toMatchObject({ value: 'Jane Doe is the director of Example Org in Leeds. She joined in 2019.', note: expect.stringContaining('Nobel') })
+    expect(patch.bio?.receipts.map((r) => r.url)).toEqual([site, other])
   })
 })

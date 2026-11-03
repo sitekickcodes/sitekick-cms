@@ -1,5 +1,5 @@
 export { sitekickCMS } from './plugin'
-export type { AgentContract, NavArea, NavArrangement, NavLink, SiteIdentity, SitekickCMSOptions, SitekickCustom } from './types'
+export type { AgentAction, AgentContract, NavArea, NavArrangement, NavLink, SiteIdentity, SitekickCMSOptions, SitekickCustom } from './types'
 export { autoSlug, promoteSlugCopy, publishedAt } from './hooks'
 export * from './fields'
 export * from './access'

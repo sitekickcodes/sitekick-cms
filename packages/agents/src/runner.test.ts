@@ -33,16 +33,19 @@ describe('instrumentTools', () => {
     expect(await execTool(tools.fetch_page, { url: 'https://example.org/a' })).toEqual({ got: 'https://example.org/a' })
     expect(await execTool(tools.boom, {})).toEqual({ error: 'nope' })
     expect(steps.map((s) => [s.label, s.status])).toEqual([
-      ['fetch page: example.org', 'running'],
-      ['fetch page: example.org', 'done'],
+      ['Read example.org', 'running'],
+      ['Read example.org', 'done'],
       ['boom', 'running'],
       ['boom', 'failed'],
     ])
   })
   test('labelFor', () => {
-    expect(labelFor('web_search', { query: 'jane doe site' })).toBe('web search: jane doe site')
-    expect(labelFor('propose', { slot: 'bio' })).toBe('propose: bio')
-    expect(labelFor('finish', { result: 'done' })).toBe('finish: done')
+    expect(labelFor('web_search', { query: 'jane doe site' })).toBe('Search the web for “jane doe site”')
+    expect(labelFor('fetch_page', { url: 'https://www.example.org/about' })).toBe('Read example.org')
+    expect(labelFor('propose', { slot: 'bio' })).toBe('Propose bio')
+    expect(labelFor('finish', { result: 'done' })).toBe('Wrap up')
+    expect(labelFor('finish', { result: 'incomplete' })).toBe('Wrap up (some details not found)')
+    expect(labelFor('lookup_thing', { field: 'bio' })).toBe('lookup thing: bio')
   })
 })
 

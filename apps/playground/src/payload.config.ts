@@ -76,6 +76,8 @@ export default buildConfig({
   plugins: [
     sitekickCMS({
       site,
+      // The agent kit's routes are mounted at app/api/agents/[op].
+      agents: { basePath: '/api/agents' },
       nav: [
         { label: 'Inbox', icon: 'inbox', links: [{ to: 'view:/inbox', label: 'Inbox' }] },
         { label: 'Website', icon: 'globe', links: ['pages', 'site-settings'] },

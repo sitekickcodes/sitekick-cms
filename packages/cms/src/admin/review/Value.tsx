@@ -34,6 +34,30 @@ export function Value({ value }: { value: Rendered }) {
           <span>{value.label}</span>
         </span>
       )
+    case 'image':
+      return (
+        <figure className={styles.webImage}>
+          {/* eslint-disable-next-line @next/next/no-img-element -- a remote image under review, not yet in the library */}
+          <img src={value.src} alt="" loading="lazy" referrerPolicy="no-referrer" />
+          <figcaption>
+            {value.credit ? <>Credit: {value.credit} · </> : null}
+            Added to the media library when you accept.
+          </figcaption>
+        </figure>
+      )
+    case 'links':
+      return (
+        <ul className={styles.links}>
+          {value.items.map((item, i) => (
+            <li key={i}>
+              <span className={styles.linkLabel}>{item.label}</span>
+              <a href={item.href} target="_blank" rel="noreferrer noopener">
+                {item.href.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )
     case 'json':
       return <pre className={styles.json}>{value.text}</pre>
   }

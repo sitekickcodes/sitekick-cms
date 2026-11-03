@@ -126,26 +126,50 @@ export type RunUpdate = {
   leaseUntil?: string | null
 }
 
-export async function updateRun(payload: AgentPayload, id: string | number, update: RunUpdate): Promise<void> {
-  const { step, ...rest } = update
-  const data: Record<string, unknown> = { ...rest }
-  if (step) {
-    const run = await getRun(payload, id)
-    const steps = (Array.isArray(run?.steps) ? run.steps : []) as RunStep[]
-    const entry: RunStep = { at: new Date().toISOString(), ...step }
-    const last = steps[steps.length - 1]
-    if (last && last.status === 'running' && last.label === entry.label) steps[steps.length - 1] = { ...last, ...entry }
-    else steps.push(entry)
-    data.steps = steps
-    if (!rest.now) data.now = entry.detail ? `${entry.label}: ${entry.detail}` : entry.label
-  }
-  await payload.update({ collection: RUNS, id, data, overrideAccess: true, context: CONTEXT })
+/**
+ * Step and cost writes read the run, change it and write it back. A model
+ * that calls three tools in parallel would interleave those and lose steps,
+ * so writes to one run queue behind each other in this process (the runner
+ * always lives in one process: a route handler or a workflow step).
+ */
+const queues = new Map<string, Promise<unknown>>()
+function serial<T>(id: string | number, work: () => Promise<T>): Promise<T> {
+  const key = String(id)
+  const next = (queues.get(key) ?? Promise.resolve()).then(work, work)
+  const settled = next.catch(() => {})
+  queues.set(key, settled)
+  void settled.then(() => {
+    if (queues.get(key) === settled) queues.delete(key)
+  })
+  return next
 }
 
-export async function addCost(payload: AgentPayload, id: string | number, costUsd: number | null): Promise<void> {
-  if (!costUsd) return
-  const run = await getRun(payload, id)
-  await updateRun(payload, id, { costUsd: Number(run?.costUsd ?? 0) + costUsd })
+export function updateRun(payload: AgentPayload, id: string | number, update: RunUpdate): Promise<void> {
+  return serial(id, async () => {
+    const { step, ...rest } = update
+    const data: Record<string, unknown> = { ...rest }
+    if (step) {
+      const run = await getRun(payload, id)
+      const steps = (Array.isArray(run?.steps) ? run.steps : []) as RunStep[]
+      const entry: RunStep = { at: new Date().toISOString(), ...step }
+      // Finish the matching running step, wherever parallel calls left it.
+      let open = -1
+      for (let i = steps.length - 1; i >= 0 && open === -1; i--) if (steps[i]?.status === 'running' && steps[i]?.label === entry.label) open = i
+      if (open !== -1 && entry.status !== 'running') steps[open] = { ...steps[open], ...entry }
+      else steps.push(entry)
+      data.steps = steps
+      if (!rest.now) data.now = entry.detail ? `${entry.label}: ${entry.detail}` : entry.label
+    }
+    await payload.update({ collection: RUNS, id, data, overrideAccess: true, context: CONTEXT })
+  })
+}
+
+export function addCost(payload: AgentPayload, id: string | number, costUsd: number | null): Promise<void> {
+  if (!costUsd) return Promise.resolve()
+  return serial(id, async () => {
+    const run = await getRun(payload, id)
+    await payload.update({ collection: RUNS, id, data: { costUsd: Number(run?.costUsd ?? 0) + costUsd }, overrideAccess: true, context: CONTEXT })
+  })
 }
 
 export class AskEditorTimeout extends Error {
@@ -186,34 +210,38 @@ export async function askEditor(
   }
 }
 
-export async function finishRun(payload: AgentPayload, id: string | number, { proposal, costUsd, summary }: { proposal?: string | number | null; costUsd?: number | null; summary?: string } = {}): Promise<void> {
-  const run = await getRun(payload, id)
-  await payload.update({
-    collection: RUNS,
-    id,
-    data: {
-      status: 'done',
-      stage: 'Done',
-      now: summary ? summary.slice(0, 200) : 'Done',
-      leaseUntil: null,
-      question: null,
-      ...(proposal ? { proposal } : {}),
-      costUsd: Number(run?.costUsd ?? 0) + (costUsd ?? 0),
-    },
-    overrideAccess: true,
-    context: CONTEXT,
+export function finishRun(payload: AgentPayload, id: string | number, { proposal, costUsd, summary }: { proposal?: string | number | null; costUsd?: number | null; summary?: string } = {}): Promise<void> {
+  return serial(id, async () => {
+    const run = await getRun(payload, id)
+    await payload.update({
+      collection: RUNS,
+      id,
+      data: {
+        status: 'done',
+        stage: 'Done',
+        now: summary ? summary.slice(0, 200) : 'Done',
+        leaseUntil: null,
+        question: null,
+        ...(proposal ? { proposal } : {}),
+        costUsd: Number(run?.costUsd ?? 0) + (costUsd ?? 0),
+      },
+      overrideAccess: true,
+      context: CONTEXT,
+    })
   })
 }
 
-export async function failRun(payload: AgentPayload, id: string | number, error: unknown, { costUsd }: { costUsd?: number | null } = {}): Promise<void> {
+export function failRun(payload: AgentPayload, id: string | number, error: unknown, { costUsd }: { costUsd?: number | null } = {}): Promise<void> {
   const message = error instanceof Error ? error.message : String(error)
-  const run = await getRun(payload, id)
-  await payload.update({
-    collection: RUNS,
-    id,
-    data: { status: 'failed', now: `Failed: ${message.slice(0, 180)}`, error: message.slice(0, 2000), leaseUntil: null, question: null, costUsd: Number(run?.costUsd ?? 0) + (costUsd ?? 0) },
-    overrideAccess: true,
-    context: CONTEXT,
+  return serial(id, async () => {
+    const run = await getRun(payload, id)
+    await payload.update({
+      collection: RUNS,
+      id,
+      data: { status: 'failed', now: `Failed: ${message.slice(0, 180)}`, error: message.slice(0, 2000), leaseUntil: null, question: null, costUsd: Number(run?.costUsd ?? 0) + (costUsd ?? 0) },
+      overrideAccess: true,
+      context: CONTEXT,
+    })
   })
 }
 

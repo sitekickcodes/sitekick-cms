@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import React from 'react'
 
 import { cms } from '@/lib/cms'
@@ -24,9 +25,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="flex min-h-svh flex-col bg-sk-bg text-sk-fg">
         <header className="border-b border-sk-line">
           <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8 lg:px-12">
-            <a href="/" className="font-display text-lg font-semibold tracking-tight">
+            <Link href="/" className="font-display text-lg font-semibold tracking-tight">
               {settings.siteName}
-            </a>
+            </Link>
             <nav aria-label="Main" className="flex items-center gap-6 text-sm font-medium text-sk-muted">
               {nav.map((item) => (
                 <a key={item.href} href={item.href} className="hover:text-sk-fg motion-safe:transition-colors">

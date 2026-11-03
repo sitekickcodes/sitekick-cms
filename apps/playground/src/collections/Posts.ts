@@ -16,8 +16,9 @@ export const Posts: CollectionConfig = {
       seo: { pathPrefix: '/news' },
       agent: {
         description: 'A news post shown on /news.',
-        writable: ['title', 'excerpt', 'body', 'cover'],
+        writable: ['title', 'excerpt', 'body', 'cover', 'meta.title', 'meta.description'],
         review: 'required',
+        actions: ['draft'],
         notes: 'Never publish. Keep the excerpt under 160 characters.',
       },
     },

@@ -36,6 +36,22 @@ editor's `req` (so versions, hooks and authorship behave as for a human) and
 accepted/rejected decision is in, status becomes `accepted` (all accepted), `partial` or
 `rejected`. A new proposal for the same target supersedes open ones for it.
 
+Two value shapes get special handling, because agents never write to the media library or
+guess a schema:
+
+- **Web images.** An upload field's proposed value may be `{ sourceUrl, credit }`. On accept,
+  the server downloads it (public hosts only, checked on every redirect; `image/*` only; 10 MB
+  cap), creates a media document with the editor's access (`alt` = the target's title, `credit`
+  when the media collection has that field) and writes the new id. If the target write then
+  fails, the imported media is deleted again. The review view shows the image with its credit.
+- **Link rows.** Arrays of `{ platform, url }` are shaped to the target's row schema by the
+  agent before proposing (select matched case-insensitively, aliases like `twitter → x`, else
+  `other`, else the row is dropped), so an accepted value always saves. The review view lists
+  them as links.
+
+Receipt excerpts are stored byte-exact (verification re-finds them in the fetched text); the
+review view hides inline link targets and `[image: …]` markers when displaying them.
+
 ## Collection `runs` (slug `runs`, group "Inbox")
 
 | Field | Type | Notes |

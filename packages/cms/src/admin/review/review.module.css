@@ -56,6 +56,7 @@
 .receipt { padding: 10px 12px; border: 1px dashed var(--rv-line); border-radius: 8px; font-size: 13px; }
 .receiptHead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
 .receiptHead a { font-weight: 500; text-decoration: underline; text-underline-offset: 2px; overflow-wrap: anywhere; }
+.receiptHead > span:first-child { font-weight: 500; }
 .receiptWhen { color: var(--rv-faint); }
 .receipt blockquote { margin: 6px 0 0; padding-left: 10px; border-left: 2px solid var(--rv-line); color: var(--rv-muted); line-height: 1.5; overflow-wrap: anywhere; }
 .note { margin: 12px 0 0; color: var(--rv-muted); font-size: 13px; line-height: 1.5; }
@@ -131,3 +132,12 @@
   .rowSide { justify-content: flex-start; }
   .card { padding: 14px 16px; }
 }
+
+/* Values: a web image under review, and rows of links. */
+.webImage { margin: 0; }
+.webImage img { display: block; max-width: 100%; max-height: 220px; border-radius: 8px; object-fit: contain; background: var(--theme-elevation-50); }
+.webImage figcaption { margin-top: 8px; font-size: 12px; color: var(--rv-muted); line-height: 1.4; }
+.links { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.links li { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.linkLabel { min-width: 72px; font-weight: 500; }
+.links a { overflow-wrap: anywhere; text-decoration: underline; text-underline-offset: 2px; }

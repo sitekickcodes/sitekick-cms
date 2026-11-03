@@ -85,9 +85,9 @@ describe('receipt', () => {
 })
 
 describe('text helpers', () => {
-  test('excerptFor finds a quote ignoring case, whitespace and curly quotes', () => {
+  test('excerptFor finds a quote ignoring case, whitespace and curly quotes, and keeps the source casing', () => {
     const text = 'Welcome.\n\nJane Doe  is the  director of Example Org’s programme. She joined in 2019.'
-    expect(excerptFor(text, "jane doe is the director of example org's programme")).toContain("jane doe is the director of example org's programme")
+    expect(excerptFor(text, "jane doe is the director of example org's programme")).toContain("Jane Doe is the director of Example Org's programme")
     expect(excerptFor(text, 'Jane is a plumber')).toBeNull()
     expect(excerptFor('a'.repeat(1000) + ' needle ' + 'b'.repeat(1000), 'needle', 10)).toBe('…aaaaaaaaa needle bbbbbbbbb…')
   })

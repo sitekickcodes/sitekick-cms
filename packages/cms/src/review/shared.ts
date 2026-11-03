@@ -180,3 +180,18 @@ export function hostOf(url: string): string {
     return url
   }
 }
+
+/**
+ * A receipt excerpt as an editor reads it. Fetched page text carries link
+ * targets and images inline ("GitHub [https://…]", "[image: Jane https://…]")
+ * so quotes can be matched exactly; the review view drops those. Display
+ * only: the stored excerpt stays byte-exact for verification.
+ */
+export function readableExcerpt(excerpt: string): string {
+  return excerpt
+    .replace(/\[image:[^\]]*\]/gi, '')
+    .replace(/\s*\[https?:\/\/[^\]\s]*\]?/gi, '')
+    .replace(/\s+([,.;:!?])/g, '$1')
+    .replace(/\s{2,}/g, ' ')
+    .trim()
+}

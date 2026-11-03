@@ -79,9 +79,18 @@ const routes = (async () => createAgentRoutes({ payload: await getPayload({ conf
 
 const handler = async (req: Request, { params }: { params: Promise<{ op: string }> }) => (await routes).handle(req, (await params).op)
 
+export const maxDuration = 300
 export const POST = handler
 export const GET = handler
 ```
+
+The admin buttons (Find details, Draft from notes, Describe image, Write with AI) come from
+`@sitekick/cms`: pass `agents: { basePath: '/api/agents' }` to `sitekickCMS()` and list
+`actions: ['enrich']` or `['draft']` in a collection's agent contract.
+
+To try the agents against a live model without the admin, `bun scripts/agents-live.ts
+[rewrite|enrich|draft]` in the playground (needs `vercel env pull` for the Gateway's OIDC
+token; writes runs and proposals, never documents).
 
 Handlers (all take a Web `Request`, return a `Response`, JSON bodies):
 

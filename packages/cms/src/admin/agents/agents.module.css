@@ -1,0 +1,123 @@
+/* Agent buttons (EnrichButton, DraftButton, AltTextButton) and the Draft dialog. */
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.control {
+  margin: 0;
+}
+.fieldAction {
+  margin-top: 8px;
+}
+/* EXCEPTION: Payload's Button has no size between medium and large; a field action sits smaller. */
+.fieldAction :global(.btn) {
+  min-height: 32px;
+}
+.fieldAction .label {
+  font-size: 12px;
+}
+
+/* Payload's reset strips the UA dialog styles, so centring and colours are explicit. */
+.dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  height: fit-content;
+  width: min(36rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  overflow: auto;
+  padding: 0;
+  /* It renders inside Payload's list-actions bar; undo that bar's layout. */
+  white-space: normal;
+  text-align: start;
+  box-sizing: border-box;
+  color: var(--color-text, var(--theme-text));
+  background: var(--color-bg, var(--theme-elevation-0, #fff));
+  border: 1px solid var(--color-border, var(--theme-elevation-150));
+  border-radius: var(--style-radius-m, 12px);
+  box-shadow: 0 24px 60px -20px rgb(0 0 0 / 0.35);
+}
+.dialog:not([open]) {
+  display: none;
+}
+.dialog::backdrop {
+  background: rgb(0 0 0 / 0.4);
+}
+.form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.35rem;
+  padding: 1.5rem;
+}
+.form header {
+  margin-bottom: 0.75rem;
+}
+.form h2 {
+  margin: 0 0 0.4rem;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+.form header p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text-secondary, var(--theme-elevation-600));
+}
+.form label {
+  margin-top: 0.65rem;
+  font-size: 14px;
+  font-weight: 500;
+}
+.optional {
+  margin-left: 4px;
+  font-weight: 400;
+  color: var(--color-text-tertiary, var(--theme-elevation-500));
+}
+.dialog *,
+.dialog *::before,
+.dialog *::after {
+  box-sizing: border-box;
+}
+.form textarea,
+.form input {
+  width: 100%;
+  min-width: 0;
+  padding: 0.6rem 0.75rem;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text, var(--theme-text));
+  background: var(--color-bg, var(--theme-input-bg, #fff));
+  border: 1px solid var(--color-border, var(--theme-elevation-150));
+  border-radius: var(--style-radius-s, 8px);
+}
+.form textarea {
+  resize: vertical;
+  min-height: 9rem;
+}
+.form textarea:focus,
+.form input:focus {
+  outline: 0;
+  border-color: var(--sk-accent, var(--theme-elevation-400));
+  box-shadow: 0 0 0 1.5px var(--sk-accent, var(--theme-elevation-400));
+}
+.form footer {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+@media (max-width: 480px) {
+  .form {
+    padding: 1.1rem;
+  }
+  /* EXCEPTION: full-width dialog buttons on phones; Button takes no width prop. */
+  .form footer :global(.btn) {
+    flex: 1;
+  }
+}

@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 import { altText, rewrite, seo, shorten, translate } from './actions'
 import { runDraft } from './agents/draft'
-import { runEnrich } from './agents/enrich'
+import { nameOf, runEnrich } from './agents/enrich'
 import type { AgentPayload } from './payload'
 import type { Runner } from './runner'
 import { AgentsDisabledError, agentsDisabled, getRun, startRun } from './runs'
@@ -100,10 +100,14 @@ export function createAgentRoutes(options: AgentRoutesOptions): AgentRoutes {
     if (!body.ok) return body.res
     try {
       const { agent, input } = body.data
-      const label = agent === 'enrich' ? `${input.targetCollection}/${input.targetId}` : (input.title ?? input.url ?? 'from notes')
+      // Titles are what the editor sees in the run list and the inbox.
+      const title =
+        agent === 'enrich'
+          ? `Find details: ${nameOf(await payload.findByID({ collection: input.targetCollection, id: input.targetId, depth: 0, overrideAccess: true, disableErrors: true }))}`
+          : `Draft: ${input.title ?? (input.url ? new URL(input.url).hostname : 'from notes')}`
       const run = await startRun(payload, {
         kind: `${agent}@1`,
-        title: `${agent === 'enrich' ? 'Enrich' : 'Draft'}: ${label}`,
+        title,
         targetCollection: input.targetCollection,
         ...(agent === 'enrich' ? { targetId: input.targetId } : {}),
         input,
@@ -129,7 +133,7 @@ export function createAgentRoutes(options: AgentRoutesOptions): AgentRoutes {
       const b = body.data
       const result =
         b.action === 'altText'
-          ? await altText({ payload, ...b.input })
+          ? await altText({ payload, ...b.input, origin: new URL(req.url).origin })
           : b.action === 'seo'
             ? await seo({ payload, ...b.input })
             : b.action === 'rewrite'

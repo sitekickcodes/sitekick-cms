@@ -31,3 +31,19 @@ src/
   `options.site`.
 - Each module exports a `Plugin` factory `(options: SitekickCMSOptions) => Plugin`. The order
   is decided in `plugin.ts`.
+
+## Agent buttons
+
+Off unless the host passes `agents: { basePath: '/api/agents' }` and mounts
+`createAgentRoutes` from `@sitekick/agents` there. Placement comes from each collection's
+contract (`agent/ui.ts`):
+
+| Contract / field | Admin |
+|---|---|
+| `custom.sitekick.agent.actions: ['enrich']` | "Find details" in the edit view's document controls (saved, unmodified documents) |
+| `custom.sitekick.agent.actions: ['draft']` | "Draft from notes" beside Create new; `?draft=1` opens it; a ⌘K command links there |
+| upload collection, top-level `alt` text field | "Describe image" under the field |
+| SEO tab (seo convention) | "Write with AI" in the overview |
+
+Whole-document agents open the run, which links to the proposal; field actions fill the
+form in place and the editor saves. Client components read `admin.custom.sitekick.agents`.

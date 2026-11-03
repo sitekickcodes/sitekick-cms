@@ -40,7 +40,7 @@ const FALLBACKS: Record<string, string[]> = {
 export type ResolvedModel = {
   model: string
   fallbacks: string[]
-  /** Spread into `generateText` / `generateObject` so the Gateway retries down the chain. */
+  /** Spread into `generateText` so the Gateway retries down the chain. */
   providerOptions: { gateway: { models: string[] } }
   /** Where the choice came from, for the run's `model` column and debugging. */
   source: 'override' | 'env' | 'default'

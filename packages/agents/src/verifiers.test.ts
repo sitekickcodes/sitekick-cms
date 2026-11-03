@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
 import type { Receipt } from './receipts'
-import { claimsSupported, excerptPresent, lengthWithin, runVerifiers, urlAlive } from './verifiers'
+import { claimsSupported, excerptPresent, lengthWithin, runVerifiers, trimToSupported, urlAlive } from './verifiers'
 
 const receipt = (excerpt: string, url = 'https://example.org/'): Receipt => ({ url, fetchedAt: 'now', sha256: 'x', excerpt })
 
@@ -62,5 +62,23 @@ describe('runVerifiers', () => {
     )
     expect(Object.keys(result.patch)).toEqual(['a', 'c'])
     expect(result.dropped.b).toMatchObject({ value: 'too long', note: 'Dropped: always' })
+  })
+})
+
+describe('trimToSupported', () => {
+  const bio = 'Jane Doe is the director of Example Org in Leeds. She won a Nobel prize. She joined Example Org in 2019.'
+  const claim = (sentence: string, supported: boolean) => ({ sentence, supported, receipt: supported ? 0 : null })
+
+  test('keeps the supported sentences verbatim and lists the removed ones', () => {
+    const verdict = { claims: [claim('Jane Doe is the director of Example Org in Leeds.', true), claim('She won a Nobel prize.', false), claim('She joined Example Org in 2019.', true)] }
+    expect(trimToSupported(bio, verdict)).toEqual({
+      value: 'Jane Doe is the director of Example Org in Leeds. She joined Example Org in 2019.',
+      removed: ['She won a Nobel prize.'],
+    })
+  })
+
+  test('refuses to trim when the judge paraphrased or too little survives', () => {
+    expect(trimToSupported(bio, { claims: [claim('Jane Doe directs Example Org.', true), claim('She won a Nobel prize.', false)] })).toBeNull()
+    expect(trimToSupported(bio, { claims: [claim('She won a Nobel prize.', false), claim('She joined Example Org in 2019.', true)] }, { minChars: 60 })).toBeNull()
   })
 })

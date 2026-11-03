@@ -115,13 +115,25 @@ export function instrumentTools(tools: Record<string, Tool>, ctx: RunContext): T
   return out
 }
 
+/** A step as the editor reads it in the run view: "Read leerob.com", not "fetch_page: …". */
 export function labelFor(toolName: string, input: unknown): string {
   const record = (input && typeof input === 'object' ? input : {}) as Record<string, unknown>
-  const hint = ['url', 'query', 'slot', 'field', 'result'].map((k) => record[k]).find((v) => typeof v === 'string') as string | undefined
+  const str = (key: string) => (typeof record[key] === 'string' ? (record[key] as string) : undefined)
+  const host = (url: string) => {
+    try {
+      return new URL(url).hostname.replace(/^www\./, '')
+    } catch {
+      return url.slice(0, 60)
+    }
+  }
+  const url = str('url')
+  if (toolName === 'web_search' && str('query')) return `Search the web for “${str('query')!.slice(0, 60)}”`
+  if (toolName === 'fetch_page' && url) return `Read ${host(url)}`
+  if (toolName === 'propose' && str('slot')) return `Propose ${str('slot')}`
+  if (toolName === 'finish') return str('result') === 'incomplete' ? 'Wrap up (some details not found)' : 'Wrap up'
   const pretty = toolName.replace(/_/g, ' ')
-  if (!hint) return pretty
-  const short = /^https?:/.test(hint) ? new URL(hint).hostname : hint.slice(0, 60)
-  return `${pretty}: ${short}`
+  const hint = url ? host(url) : (str('query') ?? str('field'))?.slice(0, 60)
+  return hint ? `${pretty}: ${hint}` : pretty
 }
 
 export function aiSdkRunner({ generate }: { generate?: GenerateFn } = {}): Runner {

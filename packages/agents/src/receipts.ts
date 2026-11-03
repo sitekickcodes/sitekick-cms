@@ -135,7 +135,17 @@ export function titleOf(html: string): string | undefined {
   return title ? decodeEntities(title).replace(/\s+/g, ' ').trim().slice(0, 200) || undefined : undefined
 }
 
-const normalise = (s: string) => s.toLowerCase().replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/\s+/g, ' ').trim()
+/** Whitespace and quotes tidied but case kept, plus a same-length lowercase copy to search in. */
+const fold = (s: string) => {
+  const display = s.replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/\s+/g, ' ').trim()
+  // Per code unit so indices line up; a character whose lowercase changes length stays as is.
+  let search = ''
+  for (const ch of display) {
+    const lower = ch.toLowerCase()
+    search += lower.length === ch.length ? lower : ch
+  }
+  return { display, search }
+}
 
 /**
  * The passage around a quoted claim, for the receipt. Matching ignores case,
@@ -144,14 +154,14 @@ const normalise = (s: string) => s.toLowerCase().replace(/[‘’]/g, "'").repla
  * "not supported".
  */
 export function excerptFor(text: string, needle: string, radius = 160): string | null {
-  const hay = normalise(text)
-  const pin = normalise(needle)
+  const hay = fold(text)
+  const pin = fold(needle).search
   if (!pin) return null
-  const at = hay.indexOf(pin)
+  const at = hay.search.indexOf(pin)
   if (at === -1) return null
   const start = Math.max(0, at - radius)
-  const end = Math.min(hay.length, at + pin.length + radius)
-  return `${start > 0 ? '…' : ''}${hay.slice(start, end).trim()}${end < hay.length ? '…' : ''}`
+  const end = Math.min(hay.display.length, at + pin.length + radius)
+  return `${start > 0 ? '…' : ''}${hay.display.slice(start, end).trim()}${end < hay.display.length ? '…' : ''}`
 }
 
 export const archiveUrlFor = (url: string) => `https://web.archive.org/web/2/${url}`
@@ -253,8 +263,10 @@ export async function fetchWithReceipt(url: string, opts: FetchOptions = {}): Pr
 }
 
 /** A receipt for text the editor typed (notes, a transcript); nothing was fetched. */
+const SYNTHETIC_TITLES = { notes: "Editor's notes", transcript: 'Transcript', editor: 'Editor text' } as const
+
 export function syntheticReceipt(kind: 'notes' | 'transcript' | 'editor', text: string): Receipt {
-  return { url: `${kind}:`, fetchedAt: new Date().toISOString(), sha256: sha256(text), excerpt: text.slice(0, 320) }
+  return { url: `${kind}:`, title: SYNTHETIC_TITLES[kind], fetchedAt: new Date().toISOString(), sha256: sha256(text), excerpt: text.slice(0, 320) }
 }
 
 /** The receipt for a specific claim: same fetch, excerpt narrowed to the passage. */

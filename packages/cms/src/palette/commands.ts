@@ -30,6 +30,8 @@ export type PaletteCollection = {
   /** Upload and auth collections are created through their own flows. */
   isUpload?: boolean
   isAuth?: boolean
+  /** The Draft agent is offered here (contract `actions: ['draft']`). */
+  draftable?: boolean
 }
 
 export type PaletteGlobal = { slug: string; label: string; canRead: boolean }
@@ -74,6 +76,16 @@ export function buildCommands(input: BuildInput): Command[] {
       href: join(adminRoute, `/collections/${c.slug}/create`),
       keywords: ['create', 'add', c.slug],
     })
+    if (c.draftable && !c.isUpload) {
+      out.push({
+        id: `draft:${c.slug}`,
+        label: `Draft ${c.labels.singular.toLowerCase()} from notes`,
+        hint: 'AI',
+        group: 'Create',
+        href: join(adminRoute, `/collections/${c.slug}?draft=1`),
+        keywords: ['write', 'ai', 'agent', 'notes', c.slug],
+      })
+    }
   }
   if (input.help) out.push({ id: 'act:help', label: 'Get help', group: 'Actions', event: HELP_EVENT, keywords: ['guide', 'docs', 'support'] })
   out.push({ id: 'act:account', label: 'My account', group: 'Actions', href: join(adminRoute, input.accountPath), keywords: ['profile', 'password'] })

@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
-import { Button, TextField, TextareaField, UploadField, useConfig, useDocumentInfo, useField, useForm, useFormFields, useLocale } from '@payloadcms/ui'
+import { Button, TextField, TextareaField, UploadField, toast, useConfig, useDocumentInfo, useField, useForm, useFormFields, useFormModified, useLocale } from '@payloadcms/ui'
 import type { TextFieldClientProps, TextareaFieldClientProps, UploadFieldClientProps } from 'payload'
 
 import { seoDefaults } from '../conventions/seoDefaults'
+import { Sparkle } from './agents/Sparkle'
+import { errorText, useAgents } from './agents/useAgents'
 import styles from './SEOFields.module.css'
 
 /**
@@ -135,6 +137,48 @@ export function SEOImage(props: UploadFieldClientProps & SiteProps) {
   )
 }
 
+/** "Write with AI": the agent kit's seo action reads the saved document and fills title and description in the form. */
+function WriteSEO() {
+  const agents = useAgents()
+  const { id, collectionSlug } = useDocumentInfo()
+  const modified = useFormModified()
+  const title = useField<string>({ path: 'meta.title' })
+  const description = useField<string>({ path: 'meta.description' })
+  const [busy, setBusy] = useState(false)
+  if (!agents || !collectionSlug || id === undefined || id === null) return null
+
+  const write = async () => {
+    setBusy(true)
+    try {
+      const { value } = await agents.post<{ value: { title: string; description: string } }>('action', { action: 'seo', input: { collection: collectionSlug, id } })
+      title.setValue(value.title)
+      description.setValue(value.description)
+      toast.success('Search details written. Read them over, then save.')
+    } catch (err) {
+      toast.error(`Couldn't write search details: ${errorText(err)}`)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Button
+      className={styles.writeSEO}
+      buttonStyle="pill"
+      size="medium"
+      margin={false}
+      disabled={busy || modified || title.disabled}
+      tooltip={modified ? 'Save first: the agent reads the saved version' : 'Write a search title and description from the content'}
+      onClick={write}
+    >
+      <span className={styles.resetLabel}>
+        <Sparkle />
+        {busy ? 'Writing…' : 'Write with AI'}
+      </span>
+    </Button>
+  )
+}
+
 export function SEOOverview() {
   const title = useFormFields(([fields]) => String(fields['meta.title']?.value ?? ''))
   const description = useFormFields(([fields]) => String(fields['meta.description']?.value ?? ''))
@@ -152,6 +196,7 @@ export function SEOOverview() {
           {missing ? <Alert size={18} /> : <CircleCheck size={18} />}
         </span>
         <strong>{missing ? `${missing} search ${missing === 1 ? 'detail needs' : 'details need'} attention` : 'Search details ready'}</strong>
+        <WriteSEO />
       </div>
       <ul className={styles.checks}>
         {checks.map(({ label, good }) => (

@@ -158,7 +158,7 @@ export async function runDraft(payload: AgentPayload, input: DraftInput, opts: D
       kind: 'draft',
       title: `Draft: ${draft.title}`,
       patch: verified.patch,
-      summary: `Suggested cover image search: "${draft.coverSearchPhrase}". Sources: ${receipts.map((r) => r.url).join(', ')}.`,
+      summary: `Written from ${receipts.map((r) => (r.url.startsWith('http') ? new URL(r.url).hostname : (r.title ?? r.url).toLowerCase())).join(', ')}. Suggested cover image search: "${draft.coverSearchPhrase}".`,
       runId: run.id,
       agent: 'draft@1',
     })

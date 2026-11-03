@@ -1,7 +1,7 @@
 import type { Config, Plugin } from 'payload'
 
 import { adminShell } from './admin/shell'
-import { contractPlugin } from './agent'
+import { agentUIPlugin, contractPlugin } from './agent'
 import { authPlugin } from './auth'
 import { conventions } from './conventions'
 import { freshCopy } from './conventions/freshCopy'
@@ -33,6 +33,7 @@ export const sitekickCMS =
       authPlugin(options),
       contractPlugin({ site: options.site, usersSlug: options.usersSlug }),
       ...conventions(options),
+      agentUIPlugin(options),
       navPlugin(options),
       dashboardPlugin(options),
       palettePlugin(options),

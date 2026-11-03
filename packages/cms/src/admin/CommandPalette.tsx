@@ -26,7 +26,9 @@ export function CommandPalette({ children }: { children?: ReactNode }) {
   const input = useRef<HTMLInputElement>(null)
   const listId = useId()
 
-  const custom = (config.admin as { custom?: { sitekick?: { palette?: PaletteClientOptions } } }).custom?.sitekick?.palette
+  const sitekick = (config.admin as { custom?: { sitekick?: { palette?: PaletteClientOptions; agents?: { draft?: string[] } } } }).custom?.sitekick
+  const custom = sitekick?.palette
+  const draftable = sitekick?.agents?.draft
   const adminRoute = config.routes.admin
   const apiRoute = `${config.serverURL ?? ''}${config.routes.api}`
 
@@ -41,8 +43,9 @@ export function CommandPalette({ children }: { children?: ReactNode }) {
         canCreate: Boolean(permissions?.collections?.[c.slug]?.create),
         isUpload: Boolean(c.upload),
         isAuth: Boolean(c.auth),
+        draftable: Boolean(draftable?.includes(c.slug)),
       })),
-    [config.collections, permissions],
+    [config.collections, permissions, draftable],
   )
   const statics = useMemo(
     () =>

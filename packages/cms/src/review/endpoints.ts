@@ -1,6 +1,7 @@
 import type { CollectionSlug, Endpoint, PayloadRequest } from 'payload'
 
 import { isUserAccount } from '../access'
+import { importAcceptedImages } from './importImage'
 import {
   ACTIVE_RUN_STATUSES,
   REVIEW_AGENT_CONTEXT,
@@ -103,7 +104,12 @@ export function decideEndpoint({ proposalsSlug, usersSlug }: ReviewEndpointOptio
         typeof proposal.targetId === 'string' && proposal.targetId.trim() ? proposal.targetId : typeof proposal.targetId === 'number' ? proposal.targetId : null
 
       if (toWrite.length) {
+        const imported: Array<{ collection: string; id: string | number }> = []
         try {
+          const titleField = target.config.admin?.useAsTitle ?? 'title'
+          const accepted = Object.fromEntries(toWrite.map((path) => [path, patch[path]?.value]))
+          const importImages = (doc: Record<string, unknown>) =>
+            importAcceptedImages({ req, fields: target.config.fields, values: accepted, alt: typeof doc[titleField] === 'string' ? (doc[titleField] as string) : '', onCreate: (m) => imported.push(m) })
           if (targetId !== null) {
             // Read the latest draft so sibling keys and array rows survive a nested write.
             const current = (await payload.findByID({
@@ -114,7 +120,8 @@ export function decideEndpoint({ proposalsSlug, usersSlug }: ReviewEndpointOptio
               req,
               overrideAccess: false,
             })) as unknown as Record<string, unknown>
-            const whole = toWrite.reduce<Record<string, unknown>>((acc, path) => setAtPath(acc, path, patch[path]?.value), current)
+            const values = await importImages(current)
+            const whole = toWrite.reduce<Record<string, unknown>>((acc, path) => setAtPath(acc, path, values[path]), current)
             const data: Record<string, unknown> = {}
             for (const key of new Set(toWrite.map(topLevelOf))) data[key] = whole[key]
             await payload.update({
@@ -128,7 +135,8 @@ export function decideEndpoint({ proposalsSlug, usersSlug }: ReviewEndpointOptio
               context: { ...REVIEW_AGENT_CONTEXT },
             })
           } else {
-            const data = toWrite.reduce<Record<string, unknown>>((acc, path) => setAtPath(acc, path, patch[path]?.value), {})
+            const values = await importImages(Object.fromEntries(toWrite.map((path) => [path, patch[path]?.value])))
+            const data = toWrite.reduce<Record<string, unknown>>((acc, path) => setAtPath(acc, path, values[path]), {})
             const created = (await payload.create({
               collection: target.config.slug as CollectionSlug,
               data: data as never,
@@ -141,6 +149,8 @@ export function decideEndpoint({ proposalsSlug, usersSlug }: ReviewEndpointOptio
             targetId = created.id
           }
         } catch (err) {
+          // Images fetched for a write that failed would sit orphaned in the library.
+          for (const m of imported) await payload.delete({ collection: m.collection as CollectionSlug, id: m.id, req, overrideAccess: false }).catch(() => {})
           return fail(err, 'The change could not be saved to the document.')
         }
       }

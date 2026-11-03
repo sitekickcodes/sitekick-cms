@@ -6,25 +6,37 @@ import { markdownToLexical } from './lexical'
 import { stubPayload } from './testing/stub-payload'
 
 describe('field actions', () => {
-  test('altText sends the absolute image URL as an image part and clips to 125 chars', async () => {
+  test('altText reads the image bytes from the request origin, sends them inline and clips to 125 chars', async () => {
     const payload = stubPayload({ collections: [{ slug: 'media', fields: [], upload: true }] })
-    const media = await payload.create({ collection: 'media', data: { url: '/api/media/file/cat.jpg', filename: 'cat.jpg' } })
+    const media = await payload.create({ collection: 'media', data: { url: '/api/media/file/cat.jpg', filename: 'cat.jpg', mimeType: 'image/jpeg' } })
+    let fetched = ''
     let seen: GenerateArgs | null = null
     const result = await altText({
       payload,
       mediaId: media.id,
+      origin: 'https://cms.example',
+      fetchImpl: (async (url: string) => {
+        fetched = String(url)
+        return new Response(new Uint8Array([255, 216, 255]), { headers: { 'content-type': 'image/jpeg' } })
+      }) as unknown as typeof fetch,
       generate: async (args) => {
         seen = args
         return { text: `"${'A tabby cat asleep on a sunny windowsill '.repeat(5)}"` }
       },
     })
-    const content = seen!.messages?.[0]?.content as Array<{ type: string; image?: URL }>
-    expect(content[1]).toMatchObject({ type: 'image' })
-    expect(String(content[1]?.image)).toBe('http://localhost:3100/api/media/file/cat.jpg')
+    expect(fetched).toBe('https://cms.example/api/media/file/cat.jpg')
+    const content = seen!.messages?.[0]?.content as Array<{ type: string; image?: Uint8Array; mediaType?: string }>
+    expect(content[1]).toMatchObject({ type: 'image', mediaType: 'image/jpeg' })
+    expect(content[1]?.image?.byteLength).toBe(3)
     expect(result.value.length).toBeLessThanOrEqual(125)
     expect(result.value.startsWith('A tabby cat')).toBe(true)
     expect(result.costUsd).toBeNull()
     expect(await payload.findByID({ collection: 'proposals', id: result.proposalId! })).toMatchObject({ targetCollection: 'media', targetId: String(media.id), status: 'accepted' })
+  })
+  test('altText refuses files that are not images', async () => {
+    const payload = stubPayload({ collections: [{ slug: 'media', fields: [], upload: true }] })
+    const pdf = await payload.create({ collection: 'media', data: { url: '/api/media/file/a.pdf', filename: 'a.pdf', mimeType: 'application/pdf' } })
+    await expect(altText({ payload, mediaId: pdf.id, generate: async () => ({ text: 'x' }) })).rejects.toThrow('Only images')
   })
   test('seo parses the two lines from the document text', async () => {
     const payload = stubPayload({ collections: [{ slug: 'posts', fields: [] }] })

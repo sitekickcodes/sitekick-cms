@@ -58,6 +58,16 @@ describe('run lifecycle', () => {
     expect(doc.now).toBe('web search: jane')
     expect(doc.steps).toMatchObject([{ label: 'fetch page: example.org', status: 'done', detail: '12 KB' }, { label: 'web search: jane', status: 'done' }])
 
+    // Parallel tool calls: every step survives and each finishes its own running entry.
+    await Promise.all(['website', 'bio', 'social'].map((slot) => updateRun(payload, run.id, { step: { label: `Propose ${slot}`, status: 'running' } })))
+    await Promise.all(['bio', 'social', 'website'].map((slot) => updateRun(payload, run.id, { step: { label: `Propose ${slot}`, status: 'done' } })))
+    doc = (await payload.findByID({ collection: 'runs', id: run.id }))!
+    expect((doc.steps as Array<{ label: string; status: string }>).slice(2)).toMatchObject([
+      { label: 'Propose website', status: 'done' },
+      { label: 'Propose bio', status: 'done' },
+      { label: 'Propose social', status: 'done' },
+    ])
+
     await finishRun(payload, run.id, { proposal: 'p1', costUsd: 0.2, summary: 'Proposed 2 fields' })
     doc = (await payload.findByID({ collection: 'runs', id: run.id }))!
     expect(doc).toMatchObject({ status: 'done', proposal: 'p1', costUsd: 0.2, leaseUntil: null, now: 'Proposed 2 fields' })

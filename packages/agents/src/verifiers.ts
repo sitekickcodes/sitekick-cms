@@ -1,4 +1,4 @@
-import { generateObject } from 'ai'
+import { Output, generateText } from 'ai'
 import { z } from 'zod'
 
 import { costFromResult, resolveModel } from './model'
@@ -71,15 +71,15 @@ export const modelJudge =
   (modelOverride?: string): Judge =>
   async ({ bio, receipts }) => {
     const resolved = resolveModel({ purpose: 'judge', override: modelOverride })
-    const result = await generateObject({
+    const result = await generateText({
       model: resolved.model,
       providerOptions: resolved.providerOptions,
-      schema: judgement,
+      output: Output.object({ schema: judgement }),
       system:
         'You check a short biography sentence by sentence against quoted source passages. A sentence is supported only if a passage states it (not merely suggests it). Do not use outside knowledge.',
       prompt: `Biography:\n${bio}\n\nPassages:\n${receipts.map((r, i) => `[${i}] (${r.url}) ${r.excerpt}`).join('\n\n')}`,
     })
-    return { judgement: result.object, costUsd: costFromResult(result) }
+    return { judgement: result.output, costUsd: costFromResult(result) }
   }
 
 /**
@@ -103,6 +103,24 @@ export async function claimsSupported({
     return { ok: false, reason: `unsupported: ${bad.map((c) => `"${c.sentence.slice(0, 80)}"`).join('; ')}`, costUsd, judgement: verdict }
   }
   return { ok: true, costUsd, judgement: verdict }
+}
+
+/**
+ * Keep only the sentences the judge marked supported, in their original order
+ * and wording. Returns null when the judge's sentences do not match the bio
+ * verbatim (it paraphrased, so nothing can be trimmed safely) or when fewer
+ * than `minChars` survive.
+ */
+export function trimToSupported(bio: string, verdict: Judgement, { minChars = 40 } = {}): { value: string; removed: string[] } | null {
+  const kept: string[] = []
+  const removed: string[] = []
+  for (const claim of verdict.claims) {
+    const sentence = claim.sentence.trim()
+    if (!sentence || !bio.includes(sentence)) return null
+    ;(claim.supported ? kept : removed).push(sentence)
+  }
+  const value = kept.join(' ')
+  return value.length >= minChars ? { value, removed } : null
 }
 
 export type VerifiedPatch = {

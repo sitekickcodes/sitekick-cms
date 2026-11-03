@@ -14,6 +14,8 @@ export type Rendered =
   | { kind: 'paragraphs'; items: string[] }
   | { kind: 'list'; items: string[] }
   | { kind: 'ref'; collection: string; id: string; label: string; src?: string }
+  | { kind: 'image'; src: string; credit?: string }
+  | { kind: 'links'; items: Array<{ label: string; href: string }> }
   | { kind: 'json'; text: string }
 
 /** Where a value points when the field is a relationship or upload. */
@@ -136,12 +138,32 @@ export function renderValue(value: unknown, field: FlattenedField | null): Rende
   if (typeof value === 'boolean') return { kind: 'text', text: value ? 'Yes' : 'No' }
   if (typeof value === 'number') return { kind: 'text', text: String(value) }
   if (typeof value === 'string') return { kind: 'text', text: value }
+  // An image an agent found on the web; imported into the media library on accept.
+  if (webImage(value)) return { kind: 'image', src: value.sourceUrl, ...(typeof value.credit === 'string' && value.credit ? { credit: value.credit } : {}) }
   if (Array.isArray(value)) {
     if (value.length === 0) return { kind: 'empty' }
     if (value.every((v) => typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean')) {
       return { kind: 'list', items: value.map((v) => String(v)) }
     }
+    // Rows that each carry a link (social profiles, related links): label + URL.
+    const links = value.map(linkRow)
+    if (links.every((l): l is { label: string; href: string } => l !== null)) return { kind: 'links', items: links }
     return { kind: 'json', text: JSON.stringify(value, null, 2) }
   }
   return { kind: 'json', text: JSON.stringify(value, null, 2) }
+}
+
+const isHttp = (v: unknown): v is string => typeof v === 'string' && /^https?:\/\//i.test(v)
+
+function webImage(value: unknown): value is { sourceUrl: string; credit?: unknown } {
+  return Boolean(value && typeof value === 'object' && !Array.isArray(value) && isHttp((value as { sourceUrl?: unknown }).sourceUrl))
+}
+
+function linkRow(row: unknown): { label: string; href: string } | null {
+  if (!row || typeof row !== 'object') return null
+  const r = row as Record<string, unknown>
+  const href = [r.url, r.href, r.link].find(isHttp)
+  if (!href) return null
+  const label = [r.platform, r.label, r.title, r.name].find((v): v is string => typeof v === 'string' && Boolean(v.trim()))
+  return { label: label?.trim() ?? new URL(href).hostname.replace(/^www\./, ''), href }
 }

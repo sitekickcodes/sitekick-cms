@@ -27,3 +27,4 @@ export {
   type MCPOptions,
   type MCPPluginOptionsShape,
 } from './mcp'
+export { AGENT_COMPONENTS, agentUIPlugin, type AgentsClientConfig } from './ui'

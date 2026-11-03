@@ -33,6 +33,9 @@ import { InlineCodeFeatureClient as InlineCodeFeatureClient_e70f5e05f09f93e00b99
 import { SuperscriptFeatureClient as SuperscriptFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { SubscriptFeatureClient as SubscriptFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { StrikethroughFeatureClient as StrikethroughFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
+import { DraftButton as DraftButton_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
+import { EnrichButton as EnrichButton_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
+import { AltTextButton as AltTextButton_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
 import { SetPassword as SetPassword_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
 import { InviteButton as InviteButton_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
 import { InviteUser as InviteUser_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
@@ -100,6 +103,9 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#SuperscriptFeatureClient": SuperscriptFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#SubscriptFeatureClient": SubscriptFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#StrikethroughFeatureClient": StrikethroughFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  "@sitekick/cms/admin#DraftButton": DraftButton_3c4e1d732ae6727d2b5b078221a842c9,
+  "@sitekick/cms/admin#EnrichButton": EnrichButton_3c4e1d732ae6727d2b5b078221a842c9,
+  "@sitekick/cms/admin#AltTextButton": AltTextButton_3c4e1d732ae6727d2b5b078221a842c9,
   "@sitekick/cms/admin#SetPassword": SetPassword_3c4e1d732ae6727d2b5b078221a842c9,
   "@sitekick/cms/admin#InviteButton": InviteButton_3c4e1d732ae6727d2b5b078221a842c9,
   "@sitekick/cms/admin#InviteUser": InviteUser_3c4e1d732ae6727d2b5b078221a842c9,

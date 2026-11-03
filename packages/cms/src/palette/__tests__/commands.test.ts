@@ -26,6 +26,13 @@ describe('buildCommands', () => {
     expect(cmds.find((c) => c.id === 'create:media')?.label).toBe('Upload image')
     expect(cmds.find((c) => c.id === 'create:posts')?.label).toBe('New post')
   })
+  test('a draftable collection gets a Draft from notes command that opens the list form', () => {
+    expect(cmds.find((c) => c.id === 'draft:posts')).toBeUndefined()
+    const withDraft = buildCommands({ ...input, collections: [{ ...posts, draftable: true }, { ...media, draftable: true }] })
+    expect(withDraft.find((c) => c.id === 'draft:posts')).toMatchObject({ label: 'Draft post from notes', group: 'Create', href: '/admin/collections/posts?draft=1' })
+    expect(withDraft.find((c) => c.id === 'draft:media')).toBeUndefined()
+    expect(rank(withDraft, 'write post')[0]?.id).toBe('draft:posts')
+  })
   test('views, globals, help and account are present with admin hrefs', () => {
     expect(cmds.find((c) => c.id === 'go:view:/inbox')?.href).toBe('/admin/inbox')
     expect(cmds.find((c) => c.id === 'go:global:site-settings')?.href).toBe('/admin/globals/site-settings')

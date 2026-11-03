@@ -2,7 +2,7 @@ import { tool } from 'ai'
 import type { Tool } from 'ai'
 import { z } from 'zod'
 
-import { flattenFields, pickField } from '../fields'
+import { flattenFields, pickField, shapeLinkRows } from '../fields'
 import type { AgentPayload, Doc } from '../payload'
 import { createProposal } from '../proposals'
 import { excerptFor, fetchWithReceipt } from '../receipts'
@@ -10,7 +10,7 @@ import type { FetchOptions, FetchResult, Receipt } from '../receipts'
 import { aiSdkRunner } from '../runner'
 import type { AgentDefinition, RunContext, Runner } from '../runner'
 import { claimRun, failRun, finishRun, startRun, updateRun } from '../runs'
-import { claimsSupported, excerptPresent, lengthWithin, runVerifiers, urlAlive } from '../verifiers'
+import { claimsSupported, excerptPresent, lengthWithin, runVerifiers, trimToSupported, urlAlive } from '../verifiers'
 import type { Check, Judge, Patch, VerifyResult } from '../verifiers'
 import { webSearchTool } from '../search'
 
@@ -41,7 +41,8 @@ export function resolveFieldMap(fields: Array<Record<string, unknown>>, override
   }
 }
 
-const nameOf = (doc: Doc | null) =>
+/** What a record is called, for run titles: name, title, full name, or first + last. */
+export const nameOf = (doc: Doc | null) =>
   String(doc?.name ?? doc?.title ?? doc?.fullName ?? [doc?.firstName, doc?.lastName].filter(Boolean).join(' ') ?? '').trim() || `#${doc?.id ?? '?'}`
 
 const MAX_PAGE_CHARS = 14_000
@@ -85,7 +86,7 @@ Work in this order:
 1. web_search for the entity's official website (use the name and any context the record gives). Fetch the most likely candidate with fetch_page and confirm it is theirs.
 2. From the official site (and its about/contact/team pages) collect: the website URL, social profile URLs the site itself links to, and facts for a neutral 2-3 sentence bio in the third person (who they are, what they do, where). Prefer the entity's own site; a reputable third party is acceptable when it states the fact plainly.
 3. If the profile allows a photo or logo, choose a direct image URL from the official site (an [image: ...] entry in the page text) and give the page it came from as the credit.
-4. Call propose once per slot you can support. Only slots listed as allowed in the input. If a value is already filled and you have nothing better, skip it.
+4. Call propose once per slot you can support. For the bio, quote the passage behind every sentence: the first in quote, the rest in sources. A sentence without a quote will be cut. Only slots listed as allowed in the input. If a value is already filled and you have nothing better, skip it.
 5. Call finish with 'done' if the website and bio were found, else 'incomplete', and a two-sentence summary naming what could not be confirmed.
 
 Rules: no guessing, no inferring a bio from the name alone, no stale or archived pages for the website slot, quote exactly (copy the words). Stop after at most 25 tool calls.`
@@ -130,21 +131,31 @@ export function createEnrichAgent(opts: EnrichOptions, state: Collected, allowed
           ]),
           sourceUrl: z.url(),
           quote: z.string().min(3).max(600).describe('Verbatim words from the fetched page that support the value'),
+          sources: z
+            .array(z.object({ sourceUrl: z.url(), quote: z.string().min(3).max(600) }))
+            .max(6)
+            .optional()
+            .describe('More verbatim quotes, one per further claim. A bio needs a quote for every sentence; they may come from different pages.'),
           note: z.string().max(200).optional(),
         }),
-        execute: async ({ slot, value, sourceUrl, quote, note }) => {
+        execute: async ({ slot, value, sourceUrl, quote, sources = [], note }) => {
           if (!allowed.includes(slot)) return { error: `slot ${slot} is not allowed for this record` }
-          const page = state.pages.get(sourceUrl)
-          if (!page) return { error: 'fetch the source page first; receipts only come from pages you read' }
-          const excerpt =
-            excerptFor(page.text, quote) ??
-            // The website slot is self-evident on the site itself: accept its title or URL as the excerpt.
-            (slot === 'website' && typeof value === 'string' && sourceUrl.startsWith(value.replace(/\/$/, '')) ? (page.receipt.title ?? page.text.slice(0, 200)) : null)
-          if (!excerpt) return { error: 'the quote does not appear on that page; copy the exact words' }
+          const receipts: Receipt[] = []
+          for (const [i, source] of [{ sourceUrl, quote }, ...sources].entries()) {
+            const page = state.pages.get(source.sourceUrl)
+            const which = i === 0 ? '' : ` (sources[${i - 1}])`
+            if (!page) return { error: `fetch the source page first; receipts only come from pages you read${which}` }
+            const excerpt =
+              excerptFor(page.text, source.quote) ??
+              // The website slot is self-evident on the site itself: accept its title or URL as the excerpt.
+              (i === 0 && slot === 'website' && typeof value === 'string' && source.sourceUrl.startsWith(value.replace(/\/$/, '')) ? (page.receipt.title ?? page.text.slice(0, 200)) : null)
+            if (!excerpt) return { error: `the quote does not appear on that page; copy the exact words${which}` }
+            receipts.push({ ...page.receipt, excerpt })
+          }
           const path = `${slot}` // mapped to the real field path after the run
           state.patch[path] = {
             value: slot === 'image' && typeof value === 'object' && !Array.isArray(value) ? { sourceUrl: value.url, credit: value.credit } : value,
-            receipts: [{ ...page.receipt, excerpt }],
+            receipts,
             ...(note ? { note } : {}),
           }
           return { ok: true, slot }
@@ -179,7 +190,7 @@ export async function runEnrich(payload: AgentPayload, input: EnrichInput, opts:
   const fieldMap = resolveFieldMap(collection?.fields ?? [], opts.fieldMap)
   const allowed = (Object.keys(fieldMap) as EnrichSlot[]).filter((slot) => fieldMap[slot])
 
-  const run = opts.runId !== undefined ? { id: opts.runId } : await startRun(payload, { kind: 'enrich@1', title: `Enrich: ${name}`, targetCollection: input.targetCollection, targetId: input.targetId, input, triggeredBy: opts.triggeredBy, model: opts.model })
+  const run = opts.runId !== undefined ? { id: opts.runId } : await startRun(payload, { kind: 'enrich@1', title: `Find details: ${name}`, targetCollection: input.targetCollection, targetId: input.targetId, input, triggeredBy: opts.triggeredBy, model: opts.model })
   if (!(await claimRun(payload, run.id))) throw new Error(`run ${run.id} is held by another worker or exhausted`)
 
   const ctx: RunContext = {
@@ -203,9 +214,16 @@ export async function runEnrich(payload: AgentPayload, input: EnrichInput, opts:
 
     // Slot keys become the client's real field paths before verification and the contract check.
     const patch: Patch = {}
+    const flat = flattenFields(collection?.fields ?? [])
     for (const [slot, field] of Object.entries(state.patch)) {
       const path = fieldMap[slot as EnrichSlot]
-      if (path) patch[path] = field
+      if (!path) continue
+      if (slot === 'social' && Array.isArray(field.value)) {
+        const rows = shapeLinkRows(field.value as Array<{ platform?: string; url: string }>, flat.find((f) => f.path === path)?.fields)
+        if (rows.length) patch[path] = { ...field, value: rows }
+        continue
+      }
+      patch[path] = field
     }
     const textFor = (r: Receipt) => state.pages.get(r.url)?.text ?? ''
     const everyReceiptPresent: Check = (field) => {
@@ -222,7 +240,13 @@ export async function runEnrich(payload: AgentPayload, input: EnrichInput, opts:
         async (f) => {
           const verdict = await claimsSupported({ bio: String(f.value), receipts: f.receipts ?? [], judge: opts.judge })
           if (verdict.costUsd) costUsd = (costUsd ?? 0) + verdict.costUsd
-          return verdict.ok ? { ok: true } : { ok: false, reason: verdict.reason }
+          if (verdict.ok) return { ok: true }
+          // Cut the unsupported sentences rather than lose the verified ones; the note tells the editor what went.
+          const trimmed = verdict.judgement ? trimToSupported(String(f.value), verdict.judgement) : null
+          if (!trimmed) return { ok: false, reason: verdict.reason }
+          f.value = trimmed.value
+          f.note = [f.note, `Removed ${trimmed.removed.length} unsupported sentence(s): ${trimmed.removed.map((s) => `"${s}"`).join(' ')}`].filter(Boolean).join(' ')
+          return { ok: true }
         },
       ]
     }
@@ -236,7 +260,7 @@ export async function runEnrich(payload: AgentPayload, input: EnrichInput, opts:
       targetId: input.targetId,
       target,
       kind: 'enrich',
-      title: `Enrich: ${name}`,
+      title: `Find details: ${name}`,
       patch: verified.patch,
       summary: [summary, Object.keys(droppedByVerifier).length ? `Failed verification: ${Object.entries(droppedByVerifier).map(([p, r]) => `${p}: ${r}`).join('; ')}.` : null].filter(Boolean).join('\n\n'),
       runId: run.id,

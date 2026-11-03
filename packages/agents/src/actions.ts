@@ -60,16 +60,40 @@ export async function logFieldAction(payload: AgentPayload | undefined, action: 
 
 const clip = (s: string, max: number) => (s.length <= max ? s : `${s.slice(0, max - 1).replace(/\s+\S*$/, '')}…`)
 
-export async function altText({ payload, mediaId, collection = 'media', ...opts }: Common & { payload: AgentPayload; mediaId: string | number; collection?: string }): Promise<ActionResult> {
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024
+
+export async function altText({
+  payload,
+  mediaId,
+  collection = 'media',
+  origin,
+  fetchImpl = fetch,
+  ...opts
+}: Common & {
+  payload: AgentPayload
+  mediaId: string | number
+  collection?: string
+  /** Where relative media URLs resolve: the request's origin. Falls back to `serverURL`. */
+  origin?: string
+  fetchImpl?: typeof fetch
+}): Promise<ActionResult> {
   const media = await payload.findByID({ collection, id: mediaId, depth: 0, overrideAccess: true, disableErrors: true })
   if (!media) throw new Error(`${collection}/${mediaId} not found`)
   const rel = String(media.url ?? '')
   if (!rel) throw new Error('media has no url')
-  // Payload stores a relative url; the model needs an absolute one it can fetch.
-  const url = /^https?:/.test(rel) ? rel : new URL(rel, payload.config.serverURL ?? 'http://localhost:3000').toString()
+  const mimeType = String(media.mimeType ?? '')
+  if (mimeType && !mimeType.startsWith('image/')) throw new Error('Only images can be described.')
+  const url = /^https?:/.test(rel) ? rel : new URL(rel, origin ?? payload.config.serverURL ?? 'http://localhost:3000').toString()
+  // Send the bytes, not the URL: providers differ on URL support and a dev or
+  // access-controlled URL is not reachable from the model anyway.
+  const res = await fetchImpl(url, { signal: AbortSignal.timeout(20_000) })
+  if (!res.ok) throw new Error(`The image could not be read (HTTP ${res.status}).`)
+  const bytes = new Uint8Array(await res.arrayBuffer())
+  if (bytes.byteLength > MAX_IMAGE_BYTES) throw new Error('The image is too large to describe (over 8 MB).')
+  const mediaType = (res.headers.get('content-type') ?? mimeType ?? 'image/jpeg').split(';')[0]!.trim()
   const { text, costUsd } = await call(opts, {
     system: 'Write alt text for screen-reader users: what the image shows, plainly, at most 125 characters, no "image of", no trailing period.',
-    messages: [{ role: 'user', content: [{ type: 'text', text: `Filename: ${String(media.filename ?? '')}` }, { type: 'image', image: new URL(url) }] }],
+    messages: [{ role: 'user', content: [{ type: 'text', text: `Filename: ${String(media.filename ?? '')}` }, { type: 'image', image: bytes, mediaType }] }],
   })
   const value = clip(text.replace(/^["']|["']$/g, ''), 125)
   const proposalId = await logFieldAction(payload, 'altText', { collection, id: mediaId, field: 'alt' }, { alt: value }, url)

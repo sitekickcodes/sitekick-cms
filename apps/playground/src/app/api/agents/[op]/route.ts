@@ -11,5 +11,8 @@ const routes = (async () => createAgentRoutes({ payload: await getPayload({ conf
 
 const handler = async (req: Request, { params }: { params: Promise<{ op: string }> }) => (await routes).handle(req, (await params).op)
 
+// Research runs keep working after the 202 (waitUntil); give them room.
+export const maxDuration = 300
+
 export const POST = handler
 export const GET = handler

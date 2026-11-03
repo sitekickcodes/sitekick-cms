@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
 import { fieldLabel, lexicalParagraphs, renderValue } from '../render'
-import { asDecisions, asPatch, asQuestion, asSteps, computeStatus, hostOf, isFinal, setAtPath, topLevelOf, type Patch } from '../shared'
+import { asDecisions, asPatch, asQuestion, asSteps, computeStatus, hostOf, isFinal, readableExcerpt, setAtPath, topLevelOf, type Patch } from '../shared'
 
 const patch: Patch = {
   bio: { value: 'A new bio', current: 'Old bio' },
@@ -114,5 +114,26 @@ describe('render', () => {
     expect(renderValue({ a: 1 }, null)).toEqual({ kind: 'json', text: '{\n  "a": 1\n}' })
     const photo = fields[3] as never
     expect(renderValue(12, photo)).toEqual({ kind: 'ref', collection: 'media', id: '12', label: 'Media #12' })
+  })
+})
+
+
+describe('readableExcerpt', () => {
+  test('drops inline link targets and images, keeps the words', () => {
+    expect(readableExcerpt("About me [image: Delba https://delba.dev/_next/image?url=x] Hey, I'm Delba. LinkedIn [https://www.linkedin.com/in/d/] · GitHub [https://github.com/d] · X [https://x.com/…")).toBe("About me Hey, I'm Delba. LinkedIn · GitHub · X")
+  })
+})
+
+describe('renderValue for agent shapes', () => {
+  test('a web image and rows of links read as such', () => {
+    expect(renderValue({ sourceUrl: 'https://a.example/j.jpg', credit: 'a.example' }, null)).toEqual({ kind: 'image', src: 'https://a.example/j.jpg', credit: 'a.example' })
+    expect(renderValue([{ platform: 'GitHub', url: 'https://github.com/d' }, { url: 'https://www.youtube.com/@d' }], null)).toEqual({
+      kind: 'links',
+      items: [
+        { label: 'GitHub', href: 'https://github.com/d' },
+        { label: 'youtube.com', href: 'https://www.youtube.com/@d' },
+      ],
+    })
+    expect(renderValue([{ name: 'no link' }], null).kind).toBe('json')
   })
 })
