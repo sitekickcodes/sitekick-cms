@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { FORMAT, lexicalToText, markdownToLexical, parseInline } from './lexical'
+import { FORMAT, lexicalToMarkdown, lexicalToText, markdownToLexical, parseInline } from './lexical'
 
 describe('markdownToLexical', () => {
   test('headings, paragraphs, lists, quotes, links and emphasis', () => {
@@ -66,5 +66,12 @@ Last.`
   })
   test('lexicalToText round-trips the words', () => {
     expect(lexicalToText(markdownToLexical('## Hi\n\nSome **words** [here](https://x.y).\n\n- a\n- b'))).toBe('Hi\nSome words here.\na\nb')
+  })
+})
+
+describe('lexicalToMarkdown', () => {
+  test('round-trips what markdownToLexical makes', () => {
+    const md = '## Getting here\n\nTake the **5** bus or [walk](https://maps.example).\n\n- Bike racks out front\n- *Free* parking after 6\n\n1. One\n2. Two\n\n> Worth the trip'
+    expect(lexicalToMarkdown(markdownToLexical(md))).toBe(md)
   })
 })

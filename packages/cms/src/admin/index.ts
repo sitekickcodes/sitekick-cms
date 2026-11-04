@@ -3,7 +3,7 @@
  * `@sitekick/cms/admin#<Name>`. Client components carry 'use client' in their own file.
  */
 // Conventions
-export { AutoRowLabel } from './RowLabel'
+export { AutoRowLabel, BlockRowLabel } from './RowLabel'
 export { RelationshipCell } from './RelationshipCell'
 export { MetaImageWithPreview, UploadPreview } from './UploadPreview'
 export { CallLink, EmailLink, OpenLink } from './OpenLink'
@@ -36,4 +36,5 @@ export { InboxView } from './review/InboxView'
 // Agent buttons (placed by agent/ui.ts from the contract)
 export { AltTextButton } from './agents/AltTextButton'
 export { DraftButton } from './agents/DraftButton'
+export { EditButton } from './agents/EditButton'
 export { EnrichButton } from './agents/EnrichButton'

@@ -8,6 +8,7 @@ import { sitekickCustom } from './contract'
  * (`custom.sitekick.agent.actions`) once the host sets the `agents` option:
  *
  * - `enrich` → "Find details" in the edit view's document controls
+ * - `edit` → "Edit with words" there too
  * - `draft` → "Draft from notes" beside Create new (also `?draft=1`, which the
  *   command palette links to)
  * - an upload collection's top-level `alt` text field → "Describe image"
@@ -19,6 +20,7 @@ import { sitekickCustom } from './contract'
 export const AGENT_COMPONENTS = {
   enrich: '@sitekick/cms/admin#EnrichButton',
   draft: '@sitekick/cms/admin#DraftButton',
+  edit: '@sitekick/cms/admin#EditButton',
   altText: '@sitekick/cms/admin#AltTextButton',
 } as const
 
@@ -26,6 +28,7 @@ export type AgentsClientConfig = {
   basePath: string
   enrich: string[]
   draft: string[]
+  edit: string[]
 }
 
 const actionsOf = (collection: CollectionConfig): AgentAction[] => sitekickCustom(collection).agent?.actions ?? []
@@ -41,19 +44,20 @@ export const agentUIPlugin =
   (options: Pick<SitekickCMSOptions, 'agents'>): Plugin =>
   (config: Config): Config => {
     if (!options.agents) return config
-    const client: AgentsClientConfig = { basePath: options.agents.basePath ?? '/api/agents', enrich: [], draft: [] }
+    const client: AgentsClientConfig = { basePath: options.agents.basePath ?? '/api/agents', enrich: [], draft: [], edit: [] }
 
     const collections = (config.collections ?? []).map((collection) => {
       const actions = actionsOf(collection)
       let next = collection
-      if (actions.includes('enrich')) {
-        client.enrich.push(collection.slug)
+      const controls = (['enrich', 'edit'] as const).filter((a) => actions.includes(a))
+      if (controls.length) {
+        for (const a of controls) client[a].push(collection.slug)
         const edit = next.admin?.components?.edit
         next = {
           ...next,
           admin: {
             ...next.admin,
-            components: { ...next.admin?.components, edit: { ...edit, beforeDocumentControls: [...(edit?.beforeDocumentControls ?? []), AGENT_COMPONENTS.enrich] } },
+            components: { ...next.admin?.components, edit: { ...edit, beforeDocumentControls: [...(edit?.beforeDocumentControls ?? []), ...controls.map((a) => AGENT_COMPONENTS[a])] } },
           },
         }
       }

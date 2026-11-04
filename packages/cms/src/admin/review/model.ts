@@ -1,5 +1,5 @@
 import type { Decision, Decisions, ProposalStatus, Receipt, RunQuestion, RunStatus, RunStep } from '../../review/shared'
-import type { Rendered } from '../../review/render'
+import type { Rendered, SectionChange } from '../../review/render'
 
 /**
  * What the server views hand to their client halves: plain, serialisable
@@ -16,6 +16,8 @@ export type FieldView = {
   proposed: Rendered
   receipts: Receipt[]
   note?: string
+  /** Blocks fields: the change section by section, in place of the two panes. */
+  sections?: SectionChange[]
 }
 
 export type ProposalView = {
@@ -36,6 +38,8 @@ export type ProposalView = {
   decideURL: string
   /** For linking a target the first acceptance created. */
   adminRoute: string
+  /** The target's preview with and without the proposal applied, when the collection has one. */
+  preview?: { proposed: string; current: string }
 }
 
 export type RunView = {

@@ -42,8 +42,31 @@ contract (`agent/ui.ts`):
 |---|---|
 | `custom.sitekick.agent.actions: ['enrich']` | "Find details" in the edit view's document controls (saved, unmodified documents) |
 | `custom.sitekick.agent.actions: ['draft']` | "Draft from notes" beside Create new; `?draft=1` opens it; a ⌘K command links there |
+| `custom.sitekick.agent.actions: ['edit']` | "Edit with words" in the edit view's document controls (needs a writable blocks field) |
 | upload collection, top-level `alt` text field | "Describe image" under the field |
 | SEO tab (seo convention) | "Write with AI" in the overview |
 
 Whole-document agents open the run, which links to the proposal; field actions fill the
 form in place and the editor saves. Client components read `admin.custom.sitekick.agents`.
+
+### Previewing a proposal
+
+A proposal for a blocks field is reviewed section by section (new, changed, moved,
+removed) beside the site's own preview of the proposed page. The review view takes the
+target collection's `admin.preview` URL and adds `proposal=<id>` (and `section=<n>`, the
+first changed section). The host wires two things:
+
+- its draft route forwards extra query parameters to the page (the playground's
+  `/api/draft` does);
+- in draft mode, the page applies the proposal to the document it loaded:
+
+```ts
+import { applyProposalPreview } from '@sitekick/cms'
+
+const applied = await applyProposalPreview({ payload, headers: await headers(), proposal, collection: 'pages', doc: page })
+const shown = applied?.doc ?? page // applied.proposal.title for a "not saved" banner
+```
+
+Only a signed-in editor who can read the proposal gets it applied; uploads and
+relationships in the proposed value are populated one level. `RenderBlocks` takes
+`anchors` to put a `#section-<n>` anchor before each section.

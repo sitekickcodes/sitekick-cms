@@ -1,5 +1,6 @@
 import { AutoRowLabel as AutoRowLabel_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
 import { UploadPreview as UploadPreview_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
+import { BlockRowLabel as BlockRowLabel_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { LexicalDiffComponent as LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
@@ -23,6 +24,7 @@ import { SEOImage as SEOImage_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick
 import { SEOPreview as SEOPreview_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
 import { LLMInstructionsMenuItem as LLMInstructionsMenuItem_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
 import { SEOAutofill as SEOAutofill_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
+import { EditButton as EditButton_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
 import { RelationshipCell as RelationshipCell_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
 import { InlineToolbarFeatureClient as InlineToolbarFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { RelationshipFeatureClient as RelationshipFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
@@ -70,6 +72,7 @@ import { UploadDropzoneCollectionsField as UploadDropzoneCollectionsField_3817bf
 export const importMap = {
   "@sitekick/cms/admin#AutoRowLabel": AutoRowLabel_3c4e1d732ae6727d2b5b078221a842c9,
   "@sitekick/cms/admin#UploadPreview": UploadPreview_3c4e1d732ae6727d2b5b078221a842c9,
+  "@sitekick/cms/admin#BlockRowLabel": BlockRowLabel_3c4e1d732ae6727d2b5b078221a842c9,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#LexicalDiffComponent": LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e,
@@ -93,6 +96,7 @@ export const importMap = {
   "@sitekick/cms/admin#SEOPreview": SEOPreview_3c4e1d732ae6727d2b5b078221a842c9,
   "@payloadcms/ui#LLMInstructionsMenuItem": LLMInstructionsMenuItem_3817bf644402e67bfe6577f60ef982de,
   "@sitekick/cms/admin#SEOAutofill": SEOAutofill_3c4e1d732ae6727d2b5b078221a842c9,
+  "@sitekick/cms/admin#EditButton": EditButton_3c4e1d732ae6727d2b5b078221a842c9,
   "@sitekick/cms/admin#RelationshipCell": RelationshipCell_3c4e1d732ae6727d2b5b078221a842c9,
   "@payloadcms/richtext-lexical/client#InlineToolbarFeatureClient": InlineToolbarFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#RelationshipFeatureClient": RelationshipFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,

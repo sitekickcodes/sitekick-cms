@@ -67,7 +67,11 @@ export type GenerateFn = (args: {
 }) => Promise<{
   text: string
   finishReason: string
-  steps: ReadonlyArray<{ providerMetadata?: Record<string, Record<string, unknown> | undefined>; toolCalls: ReadonlyArray<{ toolName: string }> }>
+  steps: ReadonlyArray<{
+    providerMetadata?: Record<string, Record<string, unknown> | undefined>
+    toolCalls: ReadonlyArray<{ toolName: string }>
+    toolResults?: ReadonlyArray<{ toolName: string; output?: unknown }>
+  }>
   providerMetadata?: Record<string, Record<string, unknown> | undefined>
 }>
 
@@ -102,7 +106,8 @@ export function instrumentTools(tools: Record<string, Tool>, ctx: RunContext): T
         await ctx.log({ label, status: 'running' })
         try {
           const result = await original(input as never, options)
-          await ctx.log({ label, status: 'done' })
+          if (wantsRetry(result)) await ctx.log({ label, status: 'failed', detail: 'Needs another pass' })
+          else await ctx.log({ label, status: 'done' })
           return result
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err)
@@ -130,10 +135,25 @@ export function labelFor(toolName: string, input: unknown): string {
   if (toolName === 'web_search' && str('query')) return `Search the web for “${str('query')!.slice(0, 60)}”`
   if (toolName === 'fetch_page' && url) return `Read ${host(url)}`
   if (toolName === 'propose' && str('slot')) return `Propose ${str('slot')}`
+  if (toolName === 'search_media' && str('query')) return `Look for images of “${str('query')!.slice(0, 60)}”`
+  if (toolName === 'propose_sections') return 'Propose the sections'
   if (toolName === 'finish') return str('result') === 'incomplete' ? 'Wrap up (some details not found)' : 'Wrap up'
   const pretty = toolName.replace(/_/g, ' ')
   const hint = url ? host(url) : (str('query') ?? str('field'))?.slice(0, 60)
   return hint ? `${pretty}: ${hint}` : pretty
+}
+
+/**
+ * A finish tool may refuse its input and ask for another pass by returning
+ * `{ retry: true, ... }` (the Edit agent does when its sections fail
+ * validation); such a call does not end the loop.
+ */
+export const wantsRetry = (output: unknown): boolean => Boolean(output && typeof output === 'object' && (output as { retry?: unknown }).retry === true)
+
+function finishedIn(step: { toolCalls: ReadonlyArray<{ toolName: string }>; toolResults?: ReadonlyArray<{ toolName: string; output?: unknown }> } | undefined, finishTools: string[]): boolean {
+  if (!step) return false
+  if (step.toolResults) return step.toolResults.some((r) => finishTools.includes(r.toolName) && !wantsRetry(r.output))
+  return step.toolCalls.some((c) => finishTools.includes(c.toolName))
 }
 
 export function aiSdkRunner({ generate }: { generate?: GenerateFn } = {}): Runner {
@@ -147,7 +167,7 @@ export function aiSdkRunner({ generate }: { generate?: GenerateFn } = {}): Runne
       ctx.signal?.addEventListener('abort', () => controller.abort(ctx.signal?.reason))
       let spent = 0
       let overBudget: CostLimitError | null = null
-      const finished: StopCondition<ToolSet> = ({ steps }) => (steps[steps.length - 1]?.toolCalls ?? []).some((c) => finishTools.includes(c.toolName))
+      const finished: StopCondition<ToolSet> = ({ steps }) => finishedIn(steps[steps.length - 1], finishTools)
       let result: Awaited<ReturnType<GenerateFn>>
       try {
         result = await gen({
@@ -177,7 +197,7 @@ export function aiSdkRunner({ generate }: { generate?: GenerateFn } = {}): Runne
         costUsd: costUsd ?? (spent || null),
         steps: result.steps.length,
         finishReason: result.finishReason,
-        finished: result.steps.some((s) => s.toolCalls.some((c) => finishTools.includes(c.toolName))),
+        finished: result.steps.some((s) => finishedIn(s, finishTools)),
         model: resolved.model,
       }
     },

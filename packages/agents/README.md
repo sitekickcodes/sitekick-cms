@@ -171,7 +171,7 @@ and `createProposal`.
 
 Image slot: an upload field cannot take a URL, so the proposal's value is
 `{ sourceUrl, credit }` with a note; the review side imports it into media on
-accept (open item for `@sitekick/cms`). Social: the whole array
+accept. Social: the whole array
 `[{ platform, url }]`.
 
 ## Draft
@@ -185,6 +185,32 @@ code, links, bullet and numbered lists, quotes). Field map: `title`, `excerpt|su
 `content|body|richText`, `meta.title`, `meta.description`. Always a proposal
 without `targetId`; accepting creates the document. The cover phrase is in the
 proposal summary.
+
+## Edit with words
+
+Input `{ targetCollection, targetId, instruction }`, e.g. "add a FAQ about parking below
+the hero, three questions". The collection needs a top-level blocks field in its
+contract's `writable` (`layout` on Pages). The agent reads the latest draft:
+
+- the current sections, numbered, as the model reads them (`rowToModel`: rich text as
+  Markdown, uploads and relationships as ids, no row ids or blank values)
+- the block catalogue (`describeBlocks`: fields, types, options, limits, descriptions)
+- the site's pages for links, and `search_media` for images
+
+It calls `propose_sections` with every section in its new order:
+`{ keep: n }`, `{ edit: n, set: { …changed fields } }` or `{ add: { blockType, … } }`.
+`applySectionPlan` builds the layout: kept rows byte for byte, edits merged into the
+row, additions without an id. Then it validates the layout with the block schemas,
+including Payload's own field validators and the blocks field's `validate` (one hero).
+Problems go back to the model as `{ retry: true, problems }`; a finish tool that returns
+`retry: true` does not end the loop (`wantsRetry` in the runner). Ids must already be on
+the page, in the page list, or found by `search_media`. Copy the agent cannot know is
+written as a `[placeholder]`, never invented.
+
+The proposal is the whole blocks field with `current` = the layout it worked from, and
+the instruction as an `editor:` receipt. A plan that keeps everything in order finishes
+the run without a proposal. Accepting is refused (409) if the sections changed since
+(see docs/REVIEW-SPEC.md).
 
 ## Field actions
 
@@ -216,8 +242,10 @@ beyond the Gateway credential is needed. Searches are leads only; `propose`
 only accepts pages the agent fetched.
 
 Cost: the Gateway returns `providerMetadata.gateway.cost` per call; the runner
-sums it into `runs.costUsd`. Without the Gateway the cost is `null`
-("unknown"), never `0`.
+sums it into `runs.costUsd` and checks it against the agent's cost limit. With
+bring-your-own-key credentials `cost` is `"0"` and the provider's charge is in
+`marketCost`, so the larger of the two counts. Without the Gateway the cost is
+`null` ("unknown"), never `0`.
 
 ## Durable runs: the workflow adapter
 

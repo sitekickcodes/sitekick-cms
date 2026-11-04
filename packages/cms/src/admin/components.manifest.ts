@@ -5,6 +5,7 @@
 export const conventionComponents = [
   // admin/RowLabel.tsx
   'AutoRowLabel',
+  'BlockRowLabel',
   // admin/RelationshipCell.tsx
   'RelationshipCell',
   // admin/UploadPreview.tsx

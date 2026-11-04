@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react'
+import { Fragment, type ComponentType } from 'react'
 
 import type { BlockSlug, LayoutBlock } from '../types'
 import { CardGrid } from './blocks/card-grid'
@@ -56,16 +56,22 @@ function BlockComponent({ block, components }: { block: LayoutBlock; components?
 export function RenderBlocks({
   blocks,
   components,
+  anchors,
 }: {
   blocks: LayoutBlock[] | null | undefined
   /** Swap a renderer per slug, e.g. a hero that uses `next/image`. */
   components?: Partial<BlockComponents>
+  /** An empty `#section-<n>` anchor before each section (n from 1), so a preview can open at a given one. */
+  anchors?: boolean
 }) {
   if (!blocks?.length) return null
   return (
     <>
       {blocks.map((block, index) => (
-        <BlockComponent key={block.id ?? index} block={block} components={components} />
+        <Fragment key={block.id ?? index}>
+          {anchors ? <div id={`section-${index + 1}`} aria-hidden="true" style={{ scrollMarginTop: '3rem' }} /> : null}
+          <BlockComponent block={block} components={components} />
+        </Fragment>
       ))}
     </>
   )

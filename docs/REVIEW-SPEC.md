@@ -49,6 +49,13 @@ guess a schema:
   `other`, else the row is dropped), so an accepted value always saves. The review view lists
   them as links.
 
+- **Blocks fields.** An Edit with words proposal carries the whole blocks field as `value` and
+  the layout the agent worked from as `current`. The review view lists sections in the
+  proposed order (new, changed with the changed fields, moved, unchanged), then removed ones,
+  matching rows by id, and shows the target's preview with the proposal applied. Accepting
+  is refused with 409 when the field no longer matches `current` (ignoring key order and empty
+  keys): the whole field is replaced, so a later hand edit would otherwise be lost.
+
 Receipt excerpts are stored byte-exact (verification re-finds them in the fetched text); the
 review view hides inline link targets and `[image: …]` markers when displaying them.
 

@@ -8,6 +8,7 @@ import { hostOf, readableExcerpt } from '../../review/shared'
 import { StatusTag } from '../StatusTag'
 import { relative, type FieldView, type ProposalView } from './model'
 import styles from './review.module.css'
+import { ProposalPreview, SectionList } from './Sections'
 import { Value } from './Value'
 
 /**
@@ -136,6 +137,7 @@ export function ProposalReviewClient({ initial }: { initial: ProposalView }) {
           locked={final || Boolean(busy)}
           busy={busy === field.path}
           now={now}
+          preview={field.sections && !final ? view.preview : undefined}
           onDecide={(d) => decide({ [field.path]: d }, field.path)}
         />
       ))}
@@ -149,6 +151,7 @@ function FieldCard({
   locked,
   busy,
   now,
+  preview,
   onDecide,
 }: {
   field: FieldView
@@ -156,6 +159,7 @@ function FieldCard({
   locked: boolean
   busy: boolean
   now: number
+  preview?: { proposed: string; current: string }
   onDecide: (d: Decision) => void
 }) {
   return (
@@ -183,16 +187,23 @@ function FieldCard({
           </button>
         </div>
       </div>
-      <div className={styles.diff}>
-        <div className={styles.pane} data-side="current">
-          <span className={styles.paneLabel}>Now</span>
-          <Value value={field.current} />
+      {field.sections ? (
+        <>
+          <SectionList sections={field.sections} />
+          {preview ? <ProposalPreview urls={preview} /> : null}
+        </>
+      ) : (
+        <div className={styles.diff}>
+          <div className={styles.pane} data-side="current">
+            <span className={styles.paneLabel}>Now</span>
+            <Value value={field.current} />
+          </div>
+          <div className={styles.pane} data-side="proposed">
+            <span className={styles.paneLabel}>Proposed</span>
+            <Value value={field.proposed} />
+          </div>
         </div>
-        <div className={styles.pane} data-side="proposed">
-          <span className={styles.paneLabel}>Proposed</span>
-          <Value value={field.proposed} />
-        </div>
-      </div>
+      )}
       {field.note ? (
         <p className={styles.note}>
           <b>Why:</b> {field.note}

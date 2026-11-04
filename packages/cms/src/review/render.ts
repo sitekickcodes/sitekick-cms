@@ -1,6 +1,8 @@
 import type { Field, FlattenedField } from 'payload'
 import { flattenAllFields } from 'payload/shared'
 
+import { rowLabelOf } from '../conventions/rowLabelOf'
+
 /**
  * Turns a proposal's raw values into something an editor can read without
  * knowing the schema: field labels from the target collection's config and
@@ -166,4 +168,148 @@ function linkRow(row: unknown): { label: string; href: string } | null {
   if (!href) return null
   const label = [r.platform, r.label, r.title, r.name].find((v): v is string => typeof v === 'string' && Boolean(v.trim()))
   return { label: label?.trim() ?? new URL(href).hostname.replace(/^www\./, ''), href }
+}
+
+/** One section of a blocks field in a proposal, as the editor reads the change. */
+export type SectionChange = {
+  change: 'same' | 'changed' | 'added' | 'removed' | 'moved'
+  /** The block's label, e.g. "FAQ". */
+  type: string
+  /** The section's own heading, when it has one. */
+  title?: string
+  /** "Heading: “Old” → “New”", "Questions: 3 → 4", or for a new section its content in brief. */
+  details: string[]
+}
+
+type Row = Record<string, unknown> & { id?: unknown; blockType?: unknown }
+
+const clip = (text: string, max = 90) => (text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text)
+const sameValue = (a: unknown, b: unknown) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null)
+
+const blockFor = (field: FlattenedField, slug: unknown): { label: string; fields: FlattenedField[] } | null => {
+  if (field.type !== 'blocks') return null
+  const block = field.blocks.find((b): b is Exclude<typeof b, string> => typeof b !== 'string' && b.slug === slug)
+  if (!block) return null
+  return { label: fieldLabelText(block.labels?.singular, block.slug), fields: block.flattenedFields }
+}
+
+/** A short plain-text version of a value, for one line of a change list. */
+function brief(value: unknown, field: FlattenedField): string {
+  if (value === undefined || value === null || value === '') return ''
+  if (isLexical(value)) return lexicalParagraphs(value).join(' ')
+  if (field.type === 'upload' || field.type === 'relationship') return `#${String(typeof value === 'object' && value && 'id' in value ? (value as { id: unknown }).id : value)}`
+  if (Array.isArray(value)) return String(value.length)
+  if (typeof value === 'object') return ''
+  if (typeof value === 'boolean') return value ? 'Yes' : 'No'
+  return String(value)
+}
+
+/** What a row leads with (as in its admin header); for a text-only section, its first line. */
+function rowTitle(fields: FlattenedField[], row: Row): string | undefined {
+  const label = rowLabelOf(row)
+  if (label) return clip(label, 70)
+  const rich = fields.find((f) => f.type === 'richText' && isLexical(row[f.name]))
+  const first = rich ? lexicalParagraphs(row[rich.name])[0] : undefined
+  return first ? clip(first, 70) : undefined
+}
+
+function arrayDetail(label: string, f: FlattenedField, before: unknown, after: unknown): string {
+  const a = Array.isArray(before) ? (before as Row[]) : []
+  const b = Array.isArray(after) ? (after as Row[]) : []
+  const fields = 'flattenedFields' in f ? (f.flattenedFields as FlattenedField[]) : []
+  const titles = (rows: Row[]) => rows.map((r) => rowTitle(fields, r)).filter(Boolean) as string[]
+  const added = titles(b).filter((t) => !titles(a).includes(t))
+  if (a.length === b.length) return `${label}: edited${added.length ? ` (${added.map((t) => `“${t}”`).join(', ')})` : ''}`
+  return `${label}: ${a.length} → ${b.length}${added.length ? ` (${added.map((t) => `“${t}”`).join(', ')})` : ''}`
+}
+
+function fieldDetails(fields: FlattenedField[], before: Row | null, after: Row, language: string): string[] {
+  const out: string[] = []
+  for (const f of fields) {
+    if (!('name' in f) || f.type === 'join') continue
+    const label = fieldLabelText(f.label, f.name, language)
+    const a = before?.[f.name]
+    const b = after[f.name]
+    if (before && sameValue(a, b)) continue
+    if (f.type === 'array') {
+      if (!before) {
+        const n = Array.isArray(b) ? b.length : 0
+        const fieldsOf = 'flattenedFields' in f ? (f.flattenedFields as FlattenedField[]) : []
+        const t = (Array.isArray(b) ? (b as Row[]) : []).map((r) => rowTitle(fieldsOf, r)).filter(Boolean) as string[]
+        if (n) out.push(`${label}: ${t.length ? t.map((x) => `“${x}”`).join(', ') : n}`)
+      } else out.push(arrayDetail(label, f, a, b))
+      continue
+    }
+    if (f.type === 'group') {
+      const inner = 'flattenedFields' in f ? (f.flattenedFields as FlattenedField[]) : []
+      out.push(...fieldDetails(inner, before ? ((a ?? {}) as Row) : null, (b ?? {}) as Row, language).map((d) => `${label} › ${d}`))
+      continue
+    }
+    const nb = brief(b, f)
+    const na = before ? brief(a, f) : ''
+    if (!before) {
+      if (nb && f.type !== 'select' && f.type !== 'radio' && f.type !== 'checkbox') out.push(`${label}: “${clip(nb)}”`)
+    } else if (!na) out.push(`${label}: “${clip(nb)}” (new)`)
+    else if (!nb) out.push(`${label}: removed`)
+    else if (f.type === 'richText') out.push(`${label}: rewritten (“${clip(nb, 70)}”)`)
+    else out.push(`${label}: “${clip(na, 60)}” → “${clip(nb, 60)}”`)
+  }
+  return out
+}
+
+/** Indexes of a longest increasing run, for telling moved sections from ones that only shifted. */
+function longestIncreasing(seq: number[]): Set<number> {
+  const tails: number[] = []
+  const prev: number[] = new Array(seq.length).fill(-1)
+  seq.forEach((v, i) => {
+    let lo = 0
+    let hi = tails.length
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1
+      if (seq[tails[mid]!]! < v) lo = mid + 1
+      else hi = mid
+    }
+    prev[i] = lo > 0 ? tails[lo - 1]! : -1
+    tails[lo] = i
+  })
+  const keep = new Set<number>()
+  let k = tails.length ? tails[tails.length - 1]! : -1
+  while (k >= 0) {
+    keep.add(k)
+    k = prev[k]!
+  }
+  return keep
+}
+
+/**
+ * The change list for a blocks field: the proposed sections in order, each
+ * marked same, changed, added or moved (matched to the current ones by row
+ * id), then the removed ones.
+ */
+export function sectionChanges(field: FlattenedField | null, current: unknown, proposed: unknown, language = 'en'): SectionChange[] | null {
+  if (!field || field.type !== 'blocks') return null
+  const before = (Array.isArray(current) ? current : []) as Row[]
+  const after = (Array.isArray(proposed) ? proposed : []) as Row[]
+  const index = new Map(before.map((row, i) => [String(row.id), i]))
+  const keptOrder = after.map((row) => (row.id !== undefined ? index.get(String(row.id)) : undefined)).filter((i): i is number => i !== undefined)
+  const inPlace = longestIncreasing(keptOrder)
+  let kept = 0
+  const used = new Set<number>()
+  const out: SectionChange[] = after.map((row) => {
+    const block = blockFor(field, row.blockType)
+    const type = block?.label ?? titleCase(String(row.blockType ?? 'section'))
+    const title = block ? rowTitle(block.fields, row) : undefined
+    const was = row.id !== undefined ? index.get(String(row.id)) : undefined
+    if (was === undefined) return { change: 'added', type, title, details: block ? fieldDetails(block.fields, null, row, language) : [] }
+    used.add(was)
+    const moved = !inPlace.has(kept++)
+    const details = block ? fieldDetails(block.fields, before[was]!, row, language) : []
+    return { change: details.length ? 'changed' : moved ? 'moved' : 'same', type, title, details: moved && details.length ? ['Moved', ...details] : details }
+  })
+  before.forEach((row, i) => {
+    if (used.has(i)) return
+    const block = blockFor(field, row.blockType)
+    out.push({ change: 'removed', type: block?.label ?? titleCase(String(row.blockType ?? 'section')), title: block ? rowTitle(block.fields, row) : undefined, details: [] })
+  })
+  return out
 }

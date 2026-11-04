@@ -27,6 +27,8 @@ export interface AgentPayload {
     depth?: number
     overrideAccess?: boolean
     disableErrors?: boolean
+    /** Latest draft, for collections with drafts. */
+    draft?: boolean
   }): Promise<Doc | null>
   find(args: {
     collection: string
@@ -35,6 +37,7 @@ export interface AgentPayload {
     depth?: number
     sort?: string
     overrideAccess?: boolean
+    draft?: boolean
   }): Promise<{ docs: Doc[] }>
   create(args: { collection: string; data: Record<string, unknown>; overrideAccess?: boolean; context?: AgentContext }): Promise<Doc>
   update(args: {

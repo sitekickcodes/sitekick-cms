@@ -52,12 +52,13 @@ export type AgentContract = {
   /**
    * Whole-document agents the admin offers here (needs the `agents` plugin
    * option). `enrich`: "Find details" on a saved document. `draft`: "Draft
-   * from notes" beside Create new.
+   * from notes" beside Create new. `edit`: "Edit with words" on a saved
+   * document with a writable blocks field.
    */
   actions?: AgentAction[]
 }
 
-export type AgentAction = 'enrich' | 'draft'
+export type AgentAction = 'enrich' | 'draft' | 'edit'
 
 export type SitekickCustom = {
   sitekick?: {

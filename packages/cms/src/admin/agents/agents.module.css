@@ -121,3 +121,31 @@
     flex: 1;
   }
 }
+
+/* Example instructions under the Edit with words box. */
+.examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 0.5rem;
+}
+.example {
+  padding: 4px 10px;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: start;
+  color: var(--color-text-secondary, var(--theme-elevation-600));
+  background: transparent;
+  border: 1px solid var(--color-border, var(--theme-elevation-150));
+  border-radius: 999px;
+  cursor: pointer;
+}
+.example:hover {
+  color: var(--color-text, var(--theme-text));
+  border-color: var(--color-text-tertiary, var(--theme-elevation-400));
+}
+.example:focus-visible {
+  outline: 2px solid var(--sk-accent, var(--theme-elevation-400));
+  outline-offset: 2px;
+}

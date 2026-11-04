@@ -49,3 +49,17 @@ fight the block model.
 ## D8 — Native sign-in plus invites; SSO as a recipe (2026-11-02)
 
 Rejected: Google-only sign-in. Reason: non-technical client editors often have no Workspace.
+
+## D9 — Edit with words proposes a section plan, applied and validated server-side (2026-11-04)
+
+The model never writes Payload's block storage. It answers with the page's sections in their
+new order (keep n, edit n with changed fields, add a new section), in a readable form (rich
+text as Markdown, ids for images and links). The kit applies the plan (kept sections byte for
+byte), validates it with the block schemas and Payload's own validators, and returns problems
+for the model to fix. The proposal is the whole blocks field; accepting is refused if the
+sections changed since. Rejected: free-form JSON for the whole layout (the model rewrites
+sections it should not touch and loses ids and images); one tool call per operation (more
+turns, and a half-applied plan when the loop stops early); per-section accept (sections depend
+on each other's order, and a partial layout is a page nobody reviewed). Reason: small,
+checkable output; untouched content is guaranteed untouched; the review is what the editor
+will get.

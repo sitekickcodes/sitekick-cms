@@ -3,9 +3,10 @@ import { cms, isDraft } from '@/lib/cms'
 import { findPage } from '@/lib/pages'
 
 /** The `home` page when an editor has made one; a plain starter otherwise. */
-export default async function HomePage() {
-  const home = await findPage('home')
-  if (home) return <PageView page={home} />
+export default async function HomePage({ searchParams }: { searchParams: Promise<{ proposal?: string; section?: string }> }) {
+  const { proposal, section } = await searchParams
+  const home = await findPage('home', { proposal })
+  if (home) return <PageView page={home} section={Number(section) || undefined} />
 
   const payload = await cms()
   const draft = await isDraft()

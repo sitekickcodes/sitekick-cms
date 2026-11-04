@@ -173,7 +173,7 @@ Generalised from the civic research agent. Yimby-specific tools stay in Yimby; t
 
 1. **Enrich.** "Research this entity and fill in the profile." Target: any collection with a `website` or `name`. Finds the official site, socials, logo or headshot with credit, a neutral bio. The generalisation of candidate research; works for partners, team members, venues, sponsors.
 2. **Draft.** "Write a post from these notes / this URL / this transcript." Produces title, excerpt, body (Lexical JSON), SEO, suggested cover. Always a draft proposal.
-3. **Edit with words** (phase 2). On any page with blocks: "add a FAQ section about parking below the hero, three questions." The agent proposes a block patch, live preview renders the proposal, the editor accepts or rejects. This is the answer to the visual-editor request.
+3. **Edit with words** (phase 2, shipped 2026-11-04). On any page with blocks: "add a FAQ section about parking below the hero, three questions." The agent proposes a section plan, the review shows the change per section beside a preview of the proposed page, the editor accepts or rejects. This is the answer to the visual-editor request. See DECISIONS.md D9.
 4. **Field actions.** Rewrite, shorten, translate, alt text, SEO. Inline, instant, accept-in-place; still logged as proposals with `review: 'none'`.
 
 ---
@@ -216,7 +216,7 @@ Generalised from the civic research agent. Yimby-specific tools stay in Yimby; t
 - Exit: a demo where an editor creates a partner by name, the agent enriches it, the editor reviews per field and accepts; and writes a post from notes.
 
 ### Phase 2 — platform (months 2–3)
-- Edit with words. Saved views and board view. Google sign-in recipe. Localisation recipe.
+- Edit with words (shipped 2026-11-04). Saved views and board view. Google sign-in recipe. Localisation recipe.
 - `create-sitekick-cms` CLI and the template repo. Docs site.
 - Evals harness and cost dashboard. Plain AI SDK adapter alongside eve.
 - Migrate Last Best Comedy onto the packages as the first real adopter; then Yimby.

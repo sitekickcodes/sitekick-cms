@@ -2,6 +2,7 @@ import type { CollectionSlug, Endpoint, PayloadRequest } from 'payload'
 
 import { isUserAccount } from '../access'
 import { importAcceptedImages } from './importImage'
+import { fieldAtPath } from './render'
 import {
   ACTIVE_RUN_STATUSES,
   REVIEW_AGENT_CONTEXT,
@@ -120,6 +121,7 @@ export function decideEndpoint({ proposalsSlug, usersSlug }: ReviewEndpointOptio
               req,
               overrideAccess: false,
             })) as unknown as Record<string, unknown>
+            assertUnchangedSections(target.config.fields, toWrite, patch, current)
             const values = await importImages(current)
             const whole = toWrite.reduce<Record<string, unknown>>((acc, path) => setAtPath(acc, path, values[path]), current)
             const data: Record<string, unknown> = {}
@@ -178,6 +180,31 @@ export function decideEndpoint({ proposalsSlug, usersSlug }: ReviewEndpointOptio
       }
       return json({ id, status, decisions: merged, targetId: targetId === null ? null : String(targetId), reviewedAt })
     },
+  }
+}
+
+/** Same stored value, ignoring key order and empty keys. */
+const canonical = (value: unknown): string =>
+  JSON.stringify(value ?? null, (_key, v: unknown) =>
+    v && typeof v === 'object' && !Array.isArray(v)
+      ? Object.fromEntries(Object.entries(v as Record<string, unknown>).filter(([, x]) => x !== null && x !== undefined).sort(([a], [b]) => a.localeCompare(b)))
+      : v,
+  )
+
+/**
+ * A blocks proposal replaces the whole field, so accepting it after someone
+ * edited the sections would silently undo their work (principle 3: an agent
+ * never overwrites a human's edit). Refuse when the field no longer matches
+ * the snapshot the agent worked from.
+ */
+export function assertUnchangedSections(fields: Parameters<typeof fieldAtPath>[0], paths: string[], patch: ReturnType<typeof asPatch>, doc: Record<string, unknown>): void {
+  for (const path of paths) {
+    const proposed = patch[path]
+    if (!proposed || proposed.current === undefined || fieldAtPath(fields, path)?.type !== 'blocks') continue
+    const now = path.split('.').reduce<unknown>((node, key) => (node && typeof node === 'object' ? (node as Record<string, unknown>)[key] : undefined), doc)
+    if (canonical(now) !== canonical(proposed.current)) {
+      throw Object.assign(new Error('The sections changed after this was proposed, so accepting it would undo those edits. Ask for the change again.'), { status: 409 })
+    }
   }
 }
 

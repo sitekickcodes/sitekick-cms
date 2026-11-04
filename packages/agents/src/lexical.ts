@@ -131,3 +131,48 @@ export function lexicalToText(value: unknown): string {
   const root = (value as { root?: unknown } | null)?.root
   return walk(root).replace(/\n{2,}/g, '\n').trim()
 }
+
+/**
+ * Markdown for a Lexical tree: the inverse of `markdownToLexical` for the
+ * nodes it produces, so an agent can read rich text and write it back in the
+ * same form. Unknown nodes fall back to their text.
+ */
+export function lexicalToMarkdown(value: unknown): string {
+  const inline = (nodes: unknown[] = []): string =>
+    nodes
+      .map((node) => {
+        const n = (node ?? {}) as { type?: string; text?: string; format?: number; children?: unknown[]; fields?: { url?: string } }
+        if (n.type === 'text') {
+          let t = n.text ?? ''
+          if (!t) return ''
+          const f = n.format ?? 0
+          if (f & FORMAT.code) t = `\`${t}\``
+          if (f & FORMAT.italic) t = `*${t}*`
+          if (f & FORMAT.bold) t = `**${t}**`
+          return t
+        }
+        if (n.type === 'linebreak') return '\n'
+        if (n.type === 'link' || n.type === 'autolink') return n.fields?.url ? `[${inline(n.children)}](${n.fields.url})` : inline(n.children)
+        return inline(n.children)
+      })
+      .join('')
+  const blocks: string[] = []
+  const root = (value as { root?: { children?: unknown[] } } | null)?.root
+  for (const node of root?.children ?? []) {
+    const n = (node ?? {}) as { type?: string; tag?: string; listType?: string; children?: unknown[] }
+    if (n.type === 'heading') blocks.push(`${'#'.repeat(Number((n.tag ?? 'h2').slice(1)) || 2)} ${inline(n.children)}`)
+    else if (n.type === 'quote') blocks.push(`> ${inline(n.children)}`)
+    else if (n.type === 'list') {
+      blocks.push(
+        (n.children ?? [])
+          .map((item, i) => `${n.listType === 'number' ? `${i + 1}.` : '-'} ${inline((item as { children?: unknown[] }).children)}`)
+          .join('\n'),
+      )
+    } else if (n.type === 'horizontalrule') blocks.push('---')
+    else {
+      const text = inline(n.children)
+      if (text.trim()) blocks.push(text)
+    }
+  }
+  return blocks.join('\n\n')
+}

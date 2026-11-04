@@ -3,6 +3,7 @@ import { z } from 'zod'
 
 import { altText, rewrite, seo, shorten, translate } from './actions'
 import { runDraft } from './agents/draft'
+import { runEdit } from './agents/edit'
 import { nameOf, runEnrich } from './agents/enrich'
 import type { AgentPayload } from './payload'
 import type { Runner } from './runner'
@@ -27,6 +28,10 @@ const enqueueBody = z.discriminatedUnion('agent', [
       transcript: z.string().max(200_000).optional(),
       title: z.string().max(200).optional(),
     }),
+  }),
+  z.object({
+    agent: z.literal('edit'),
+    input: z.object({ targetCollection: z.string().min(1), targetId: z.union([z.string(), z.number()]), instruction: z.string().trim().min(3).max(2_000) }),
   }),
 ])
 export type EnqueueBody = z.infer<typeof enqueueBody>
@@ -101,20 +106,23 @@ export function createAgentRoutes(options: AgentRoutesOptions): AgentRoutes {
     try {
       const { agent, input } = body.data
       // Titles are what the editor sees in the run list and the inbox.
+      const b = body.data
       const title =
-        agent === 'enrich'
-          ? `Find details: ${nameOf(await payload.findByID({ collection: input.targetCollection, id: input.targetId, depth: 0, overrideAccess: true, disableErrors: true }))}`
-          : `Draft: ${input.title ?? (input.url ? new URL(input.url).hostname : 'from notes')}`
+        b.agent === 'enrich'
+          ? `Find details: ${nameOf(await payload.findByID({ collection: b.input.targetCollection, id: b.input.targetId, depth: 0, overrideAccess: true, disableErrors: true }))}`
+          : b.agent === 'edit'
+            ? `Edit: ${b.input.instruction.length > 60 ? `${b.input.instruction.slice(0, 59)}…` : b.input.instruction}`
+            : `Draft: ${b.input.title ?? (b.input.url ? new URL(b.input.url).hostname : 'from notes')}`
       const run = await startRun(payload, {
         kind: `${agent}@1`,
         title,
         targetCollection: input.targetCollection,
-        ...(agent === 'enrich' ? { targetId: input.targetId } : {}),
+        ...('targetId' in input ? { targetId: input.targetId } : {}),
         input,
         triggeredBy: user.id,
       })
       const common = { runId: run.id, runner: options.runner, triggeredBy: user.id }
-      const work = agent === 'enrich' ? runEnrich(payload, input, common) : runDraft(payload, input, common)
+      const work = b.agent === 'enrich' ? runEnrich(payload, b.input, common) : b.agent === 'edit' ? runEdit(payload, b.input, common) : runDraft(payload, b.input, common)
       ;(await background)(work.catch(() => {}))
       return json({ runId: run.id }, 202)
     } catch (err) {

@@ -97,17 +97,26 @@ function finish(model: string, source: ResolvedModel['source'], env: Env, reject
 
 /**
  * The Gateway reports the dollar cost of a call in `providerMetadata.gateway.cost`
- * (a decimal string). Multi-step results carry one per step; sum them. Null
- * when no step carried a cost (direct provider, or a mocked call), so a run
- * can tell "free" from "unknown".
+ * (a decimal string). With bring-your-own-key credentials that is "0" (the
+ * Gateway bills nothing) and the provider's charge is in `marketCost`, so the
+ * larger of the two is the real spend; the run's cost and its cost limit both
+ * rely on that. Multi-step results carry one per step; sum them. Null when no
+ * step carried a cost (direct provider, or a mocked call), so a run can tell
+ * "free" from "unknown".
  */
 type MetaCarrier = { providerMetadata?: Record<string, Record<string, unknown> | undefined> | undefined }
 
-const costOf = (meta: MetaCarrier['providerMetadata']): number | null => {
-  const raw = meta?.gateway?.cost
-  if (typeof raw === 'number') return raw
+const amount = (raw: unknown): number | null => {
+  if (typeof raw === 'number' && Number.isFinite(raw)) return raw
   if (typeof raw === 'string' && raw.trim() !== '' && Number.isFinite(Number(raw))) return Number(raw)
   return null
+}
+
+const costOf = (meta: MetaCarrier['providerMetadata']): number | null => {
+  const billed = amount(meta?.gateway?.cost)
+  const market = amount(meta?.gateway?.marketCost)
+  if (billed === null && market === null) return null
+  return Math.max(billed ?? 0, market ?? 0)
 }
 
 export function costFromResult(result: MetaCarrier & { steps?: ReadonlyArray<MetaCarrier> }): number | null {

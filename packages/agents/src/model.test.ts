@@ -41,4 +41,8 @@ describe('costFromResult', () => {
     expect(costFromResult({ providerMetadata: { anthropic: { cacheCreationInputTokens: 1 } } })).toBeNull()
     expect(costFromResult({})).toBeNull()
   })
+  test('bring-your-own-key: the Gateway bills 0 and the spend is marketCost', () => {
+    expect(costFromResult({ providerMetadata: { gateway: { cost: '0', marketCost: '0.0421' } } })).toBe(0.0421)
+    expect(costFromResult({ providerMetadata: { gateway: { cost: '0.05', marketCost: '0.0421' } } })).toBe(0.05)
+  })
 })

@@ -1,13 +1,14 @@
-import { asAgentPayload, rewrite, runDraft, runEnrich } from '@sitekick/agents'
+import { asAgentPayload, rewrite, runDraft, runEdit, runEnrich } from '@sitekick/agents'
 import { getPayload } from 'payload'
 
 import config from '../src/payload.config'
 
 /**
  * Exercise the agent kit against a live model through AI Gateway: one field
- * action, one Enrich run, one Draft run. Writes runs and proposals (never
+ * action, one Enrich run, one Draft run, one Edit with words run (on the page
+ * with slug PAGE, default `home`). Writes runs and proposals (never
  * documents) to whatever database DATABASE_URL points at.
- * Run: `bun scripts/agents-live.ts [enrich|draft|rewrite]...`
+ * Run: `bun scripts/agents-live.ts [enrich|draft|rewrite|edit]...`
  */
 const only = new Set(process.argv.slice(2))
 const want = (step: string) => only.size === 0 || only.has(step)
@@ -52,6 +53,18 @@ if (want('draft')) {
   ].join('\n')
   const result = await time('draft posts', () => runDraft(agents, { targetCollection: 'posts', notes, title: 'Volunteer day recap' }))
   if (result) console.log(JSON.stringify(result, null, 2).slice(0, 4000))
+}
+
+if (want('edit')) {
+  const slug = process.env.PAGE ?? 'home'
+  const { docs } = await payload.find({ collection: 'pages', where: { slug: { equals: slug } }, limit: 1, draft: true, overrideAccess: true })
+  const page = docs[0]
+  if (!page) console.log(`\n✗ edit: no page with slug ${slug}`)
+  else {
+    const instruction = process.env.INSTRUCTION ?? 'Add a FAQ about parking below the hero, three questions. Make the call to action at the end say "Book a visit".'
+    const result = await time(`edit pages/${page.id}`, () => runEdit(agents, { targetCollection: 'pages', targetId: page.id, instruction }))
+    if (result) console.log(JSON.stringify(result, null, 2))
+  }
 }
 
 process.exit()

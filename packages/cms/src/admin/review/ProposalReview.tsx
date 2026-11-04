@@ -3,7 +3,7 @@ import { formatAdminURL } from 'payload/shared'
 import { Gutter } from '@payloadcms/ui'
 
 import { labelOf } from '../dashboard/data'
-import { fieldAtPath, fieldLabel, renderValue, type Rendered } from '../../review/render'
+import { fieldAtPath, fieldLabel, renderValue, sectionChanges, type Rendered } from '../../review/render'
 import { PROPOSALS_SLUG, asDecisions, asPatch, type ProposalStatus, type Receipt } from '../../review/shared'
 import type { DocLink, FieldView, ProposalView } from './model'
 import { ProposalReviewClient } from './ProposalReviewClient'
@@ -49,9 +49,11 @@ export async function ProposalReview(props: DocumentViewServerProps) {
     Object.entries(patch).map(async ([path, proposed]): Promise<FieldView> => {
       const field = target ? fieldAtPath(target.fields, path) : null
       const current = proposed.current !== undefined ? proposed.current : targetDoc ? valueAt(targetDoc.data, path) : undefined
+      const sections = sectionChanges(field, current, proposed.value, i18n.language)
       return {
         path,
         label: target ? fieldLabel(target.fields, path, i18n.language) : path,
+        ...(sections ? { sections } : {}),
         current: await resolveRef(req, renderValue(current, field), adminRoute),
         proposed: await resolveRef(req, renderValue(proposed.value, field), adminRoute),
         receipts: Array.isArray(proposed.receipts) ? proposed.receipts.filter(isReceipt) : [],
@@ -80,6 +82,7 @@ export async function ProposalReview(props: DocumentViewServerProps) {
     decisions,
     decideURL: formatAdminURL({ apiRoute, path: `/${collectionSlug}/${encodeURIComponent(String(id))}/decide` }),
     adminRoute,
+    ...(fields.some((f) => f.sections) && target && targetDoc ? await previewURLs(req, target, targetDoc.data, String(id), firstChange(fields)) : {}),
   }
 
   return (
@@ -89,6 +92,44 @@ export async function ProposalReview(props: DocumentViewServerProps) {
       </div>
     </Gutter>
   )
+}
+
+/**
+ * The target's own preview URL (its `admin.preview`), and the same with
+ * `proposal=<id>` added: the host's draft route forwards that parameter to the
+ * page, which renders the proposal on top of the draft (see `applyProposalPreview`).
+ */
+async function previewURLs(
+  req: PayloadRequest,
+  target: SanitizedCollectionConfig,
+  doc: Record<string, unknown>,
+  proposalId: string,
+  section: number | null,
+): Promise<{ preview?: { proposed: string; current: string } }> {
+  const preview = target.admin?.preview
+  if (typeof preview !== 'function') return {}
+  try {
+    const current = await preview(doc, { locale: req.locale ?? 'en', req, token: null })
+    if (typeof current !== 'string' || !current) return {}
+    const url = new URL(current, req.payload.config.serverURL || 'http://localhost')
+    url.searchParams.set('proposal', proposalId)
+    // Open at the first changed section (the page scrolls its own window to the
+    // blocks' `#section-<n>` anchor; a URL fragment would scroll this view too).
+    if (section && section > 1) url.searchParams.set('section', String(section))
+    const proposed = /^https?:/.test(current) ? url.toString() : `${url.pathname}${url.search}`
+    return { preview: { proposed, current } }
+  } catch {
+    return {}
+  }
+}
+
+/** 1-based position of the first added, changed or moved section in the proposed order. */
+function firstChange(fields: FieldView[]): number | null {
+  for (const f of fields) {
+    const i = f.sections?.findIndex((s) => s.change !== 'same' && s.change !== 'removed') ?? -1
+    if (i >= 0) return i + 1
+  }
+  return null
 }
 
 /** The runs slug the `run` relationship points at (configurable, so read it from the field). */

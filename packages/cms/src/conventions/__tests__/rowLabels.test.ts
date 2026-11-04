@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import type { ArrayField, Block, Field } from 'payload'
 
-import { ROW_LABEL, withRowLabels } from '../rowLabels'
+import { BLOCK_ROW_LABEL, ROW_LABEL, withRowLabels } from '../rowLabels'
 
 const rowLabel = (field: Field) => (field as ArrayField).admin?.components?.RowLabel
 
@@ -48,6 +48,24 @@ describe('withRowLabels', () => {
 
     const blocks = out[2] as Extract<Field, { type: 'blocks' }>
     expect(rowLabel((blocks.blocks[0] as Block).fields[0]!)).toEqual({ path: ROW_LABEL, clientProps: { fallback: 'Items' } })
+  })
+
+  test('blocks get a section header with their type, unless they bring a Label', () => {
+    const fields: Field[] = [
+      {
+        name: 'layout',
+        type: 'blocks',
+        blocks: [
+          { slug: 'imageText', labels: { singular: 'Image + text', plural: 'Image + text' }, fields: [] },
+          { slug: 'cta', fields: [] },
+          { slug: 'own', admin: { components: { Label: '@/custom#Own' } }, fields: [] },
+        ],
+      },
+    ]
+    const [a, b, c] = (withRowLabels(fields)[0] as Extract<Field, { type: 'blocks' }>).blocks as Block[]
+    expect(a!.admin?.components?.Label).toEqual({ path: BLOCK_ROW_LABEL, clientProps: { blockLabel: 'Image + text' } })
+    expect(b!.admin?.components?.Label).toEqual({ path: BLOCK_ROW_LABEL, clientProps: { blockLabel: 'Cta' } })
+    expect(c!.admin?.components?.Label).toBe('@/custom#Own')
   })
 
   test('does not mutate the input', () => {

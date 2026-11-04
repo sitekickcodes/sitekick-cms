@@ -25,7 +25,18 @@ export const Pages: CollectionConfig = {
   },
   access: { read: () => true },
   // Pages live at the site root: /<slug>. Drives SEO previews and the public catalog.
-  custom: { sitekick: { seo: { pathPrefix: '/' } } },
+  custom: {
+    sitekick: {
+      seo: { pathPrefix: '/' },
+      agent: {
+        description: 'A page on the site, built from sections (the layout field).',
+        writable: ['layout'],
+        review: 'required',
+        actions: ['edit'],
+        notes: 'Never publish. Keep the one hero at the top.',
+      },
+    },
+  },
   versions: { drafts: { autosave: { interval: 1000 } }, maxPerDoc: 50 },
   fields: [
     { name: 'title', type: 'text', required: true },

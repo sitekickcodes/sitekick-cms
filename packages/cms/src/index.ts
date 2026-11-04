@@ -3,3 +3,4 @@ export type { AgentAction, AgentContract, NavArea, NavArrangement, NavLink, Site
 export { autoSlug, promoteSlugCopy, publishedAt } from './hooks'
 export * from './fields'
 export * from './access'
+export { applyProposalPreview } from './review/preview'
