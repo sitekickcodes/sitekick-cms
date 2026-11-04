@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, mock, test } from 'bun:test'
 import type { Config, Payload } from 'payload'
 
-import { canSendEmail, emailFromEnv, emailPlugin, LOG_ADAPTER, parseFrom, resendAdapter, toResend } from '../index'
+import { autosendAdapter, canSendEmail, emailFromEnv, emailPlugin, LOG_ADAPTER, missingSetting, parseFrom, toAutoSend } from '../index'
 import { emailSendsFromConfig } from '../client'
 
 const run = (plugin: ReturnType<typeof emailPlugin>, config: Config) => plugin(config) as Config
@@ -22,15 +22,18 @@ describe('parseFrom', () => {
 })
 
 describe('emailFromEnv', () => {
-  test('Resend when there is a key, with EMAIL_FROM as the sender', () => {
-    const adapter = emailFromEnv('Acme', { RESEND_API_KEY: 're_x', EMAIL_FROM: 'hello@acme.com' })({ payload })
-    expect(adapter.name).toBe('resend')
+  test('AutoSend when there is a key and a sender', () => {
+    const adapter = emailFromEnv('Acme', { AUTOSEND_API_KEY: 'as_x', EMAIL_FROM: 'hello@acme.com' })({ payload })
+    expect(adapter.name).toBe('autosend')
     expect(adapter.defaultFromAddress).toBe('hello@acme.com')
     expect(adapter.defaultFromName).toBe('Acme')
   })
 
-  test("Resend's test sender when EMAIL_FROM is blank", () => {
-    expect(emailFromEnv('Acme', { RESEND_API_KEY: 're_x' })({ payload }).defaultFromAddress).toBe('onboarding@resend.dev')
+  test('a key without a sender is not enough (AutoSend has no test sender)', () => {
+    expect(emailFromEnv('Acme', { AUTOSEND_API_KEY: 'as_x' })({ payload }).name).toBe(LOG_ADAPTER)
+    expect(missingSetting({ AUTOSEND_API_KEY: 'as_x' })).toBe('EMAIL_FROM')
+    expect(missingSetting({ EMAIL_FROM: 'hello@acme.com' })).toBe('AUTOSEND_API_KEY')
+    expect(missingSetting({ AUTOSEND_API_KEY: 'as_x', EMAIL_FROM: 'hello@acme.com' })).toBeUndefined()
   })
 
   test('without a key, logs the whole message in development', async () => {
@@ -39,6 +42,7 @@ describe('emailFromEnv', () => {
     expect(adapter.name).toBe(LOG_ADAPTER)
     await adapter.sendEmail({ to: 'a@b.co', subject: 'Hi', html: '<p>Go <a href="https://x.co/reset/t0k">here</a></p>' })
     const line = String(logger.info.mock.calls[0]?.[0])
+    expect(line).toContain('AUTOSEND_API_KEY')
     expect(line).toContain('To: a@b.co')
     expect(line).toContain('here (https://x.co/reset/t0k)')
   })
@@ -53,61 +57,74 @@ describe('emailFromEnv', () => {
   })
 })
 
-describe('resend', () => {
+describe('autosend', () => {
   const realFetch = globalThis.fetch
+  const from = { name: 'Acme', address: 'hello@acme.com' }
   afterEach(() => {
     globalThis.fetch = realFetch
   })
 
-  test('maps a Payload message onto the Resend API', () => {
-    const body = toResend(
-      { to: [{ name: 'Ann', address: 'ann@x.co' }, 'bo@x.co'], replyTo: 'help@acme.com', subject: 'S', html: '<p>h</p>', text: 't' },
-      { name: 'Acme', address: 'hello@acme.com' },
+  test('maps a Payload message onto the AutoSend API, one request per recipient', () => {
+    const bodies = toAutoSend(
+      { to: [{ name: 'Ann', address: 'ann@x.co' }, 'bo@x.co'], cc: 'cc@x.co', replyTo: 'help@acme.com', subject: 'S', html: '<p>h</p>', text: 't' },
+      from,
     )
-    expect(body).toEqual({
-      from: 'Acme <hello@acme.com>',
-      to: ['Ann <ann@x.co>', 'bo@x.co'],
-      reply_to: ['help@acme.com'],
+    expect(bodies).toHaveLength(2)
+    expect(bodies[0]).toEqual({
+      from: { email: 'hello@acme.com', name: 'Acme' },
+      to: { email: 'ann@x.co', name: 'Ann' },
+      cc: [{ email: 'cc@x.co' }],
+      replyTo: { email: 'help@acme.com' },
       subject: 'S',
       html: '<p>h</p>',
       text: 't',
     })
+    expect(bodies[1]?.to).toEqual({ email: 'bo@x.co' })
   })
 
-  test("passes Resend's own error message on", async () => {
+  test('nothing in the message is read as a Handlebars tag', () => {
+    const [body] = toAutoSend({ to: 'a@b.co', subject: 'S', html: '<p>{{name}}</p>', text: 'Hi {{name}}' }, from)
+    expect(body?.html).toBe('<p>&#123;&#123;name}}</p>')
+    expect(body?.text).not.toContain('{{')
+  })
+
+  test('passes AutoSend\'s error message on', async () => {
     globalThis.fetch = mock(async () =>
-      Response.json({ name: 'validation_error', message: 'The acme.com domain is not verified.' }, { status: 403 }),
+      Response.json({ success: false, error: { message: 'Domain acme.com is not verified.' } }, { status: 400 }),
     ) as unknown as typeof fetch
-    const adapter = resendAdapter({ apiKey: 're_x', from: { name: 'Acme', address: 'hello@acme.com' } })({ payload })
-    expect(adapter.sendEmail({ to: 'a@b.co', subject: 'S', text: 't' })).rejects.toThrow('The acme.com domain is not verified.')
+    const adapter = autosendAdapter({ apiKey: 'as_x', from })({ payload })
+    expect(adapter.sendEmail({ to: 'a@b.co', subject: 'S', text: 't' })).rejects.toThrow('Domain acme.com is not verified.')
   })
 
   test('sends with the key as a bearer token', async () => {
     const calls: [string, RequestInit][] = []
     globalThis.fetch = mock(async (url: string, init: RequestInit) => {
       calls.push([url, init])
-      return Response.json({ id: 'em_1' })
+      return Response.json({ success: true, data: { emailId: 'em_1', message: 'Email queued successfully.', totalRecipients: 1 } })
     }) as unknown as typeof fetch
-    const adapter = resendAdapter({ apiKey: 're_x', from: { name: 'Acme', address: 'hello@acme.com' } })({ payload })
-    expect(await adapter.sendEmail({ to: 'a@b.co', subject: 'S', text: 't' })).toEqual({ id: 'em_1' })
-    expect(calls[0]?.[0]).toBe('https://api.resend.com/emails')
-    expect((calls[0]?.[1].headers as Record<string, string>).Authorization).toBe('Bearer re_x')
+    const adapter = autosendAdapter({ apiKey: 'as_x', from })({ payload })
+    expect(await adapter.sendEmail({ to: 'a@b.co', subject: 'S', text: 't' })).toMatchObject({ emailId: 'em_1' })
+    expect(calls[0]?.[0]).toBe('https://api.autosend.com/v1/mails/send')
+    expect((calls[0]?.[1].headers as Record<string, string>).Authorization).toBe('Bearer as_x')
   })
 })
 
 describe('emailPlugin', () => {
-  const env = process.env.RESEND_API_KEY
+  const saved = { key: process.env.AUTOSEND_API_KEY, from: process.env.EMAIL_FROM }
   afterEach(() => {
-    if (env === undefined) delete process.env.RESEND_API_KEY
-    else process.env.RESEND_API_KEY = env
+    for (const [name, value] of [['AUTOSEND_API_KEY', saved.key], ['EMAIL_FROM', saved.from]] as const) {
+      if (value === undefined) delete process.env[name]
+      else process.env[name] = value
+    }
   })
 
   test('installs the env adapter and tells the admin whether mail sends', () => {
-    delete process.env.RESEND_API_KEY
+    delete process.env.AUTOSEND_API_KEY
     const config = run(emailPlugin({ site }), {} as Config)
     expect(typeof config.email).toBe('function')
     expect(emailSendsFromConfig(config)).toBe(false)
-    process.env.RESEND_API_KEY = 're_x'
+    process.env.AUTOSEND_API_KEY = 'as_x'
+    process.env.EMAIL_FROM = 'Acme <hello@acme.com>'
     expect(emailSendsFromConfig(run(emailPlugin({ site }), {} as Config))).toBe(true)
   })
 
@@ -124,7 +141,7 @@ describe('emailPlugin', () => {
 })
 
 test('canSendEmail', () => {
-  expect(canSendEmail({ email: { name: 'resend' } } as unknown as Payload)).toBe(true)
+  expect(canSendEmail({ email: { name: 'autosend' } } as unknown as Payload)).toBe(true)
   expect(canSendEmail({ email: { name: LOG_ADAPTER } } as unknown as Payload)).toBe(false)
   expect(canSendEmail({ email: { name: 'console' } } as unknown as Payload)).toBe(false)
 })

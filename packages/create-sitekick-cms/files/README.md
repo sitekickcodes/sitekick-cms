@@ -16,8 +16,8 @@ to give local dev the project's OIDC token.
 
 ## Email
 
-Invites and password resets go through [Resend](https://resend.com). Set `RESEND_API_KEY` and
-`EMAIL_FROM` (an address on a domain you've verified in Resend, e.g. `Acme <hello@acme.com>`).
+Invites and password resets go through [AutoSend](https://autosend.com). Set `AUTOSEND_API_KEY`
+and `EMAIL_FROM` (an address on a domain you've verified in AutoSend, e.g. `Acme <hello@acme.com>`).
 Until then nothing is emailed: inviting someone shows you their set-password link to send
 yourself, and in development the full message is printed in the server log.
 

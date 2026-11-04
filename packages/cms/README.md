@@ -34,9 +34,9 @@ src/
 
 ## Email
 
-Invites and password resets are sent through Resend when `RESEND_API_KEY` is set, from
-`EMAIL_FROM` (`Acme <hello@acme.com>`; blank = Resend's test sender) (`email/index.ts`). Without
-a key nothing is sent: invites hand the admin the set-password link to pass on, "Send reset
+Invites and password resets are sent through AutoSend when `AUTOSEND_API_KEY` and `EMAIL_FROM`
+(`Acme <hello@acme.com>`, on a domain verified in AutoSend) are set (`email/index.ts`). Until
+both are, nothing is sent: invites hand the admin the set-password link to pass on, "Send reset
 email" is hidden, and the message is logged (in full in development, recipient only in
 production, so tokens stay out of hosted logs). A config that sets its own `email` adapter is
 left alone; `email: false` keeps Payload's default.

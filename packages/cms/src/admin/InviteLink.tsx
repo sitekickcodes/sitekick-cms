@@ -7,7 +7,7 @@ import styles from './InviteUser.module.css'
 
 /**
  * Shown instead of "Invite sent" when the site has no mail provider yet
- * (no RESEND_API_KEY): the set-password link, ready to copy into a message.
+ * (AUTOSEND_API_KEY or EMAIL_FROM unset): the set-password link, ready to copy into a message.
  */
 export function InviteLink({ email, link }: { email: string; link: string }) {
   const copy = async () => {

@@ -5,14 +5,13 @@ import type { SitekickCMSOptions } from '../types'
 export { emailSendsFromConfig } from './client'
 
 /**
- * Account email (invites, password resets) through one adapter, picked from the environment:
+ * Account email (invites, password resets) through AutoSend, configured from the environment:
  *
- *   RESEND_API_KEY   send through Resend.
- *   EMAIL_FROM       the sender: `hello@acme.com` or `Acme <hello@acme.com>`. The address must be on
- *                    a domain verified in Resend. Blank = Resend's test sender, which only delivers
- *                    to the Resend account's own address.
+ *   AUTOSEND_API_KEY  an AutoSend API key.
+ *   EMAIL_FROM        the sender: `hello@acme.com` or `Acme <hello@acme.com>`, on a domain
+ *                     verified in AutoSend. A bare address is sent under the site name.
  *
- * Without a key, mail is logged instead of sent: in development the whole message (links
+ * Until both are set, mail is logged instead of sent: in development the whole message (links
  * included), in production only who it was for, so reset tokens stay out of hosted logs. Invites
  * notice (`canSendEmail`) and hand the admin the link to pass on themselves.
  *
@@ -21,7 +20,7 @@ export { emailSendsFromConfig } from './client'
  */
 
 export const LOG_ADAPTER = 'sitekick-log'
-const RESEND_TEST_SENDER = 'onboarding@resend.dev'
+const AUTOSEND_URL = 'https://api.autosend.com/v1/mails/send'
 
 type Env = Record<string, string | undefined>
 type Address = { name: string; address: string }
@@ -30,7 +29,7 @@ export const emailPlugin =
   (options: SitekickCMSOptions): Plugin =>
   (config: Config): Config => {
     const install = !config.email && options.email !== false
-    const sends = install ? Boolean(process.env.RESEND_API_KEY?.trim()) : true
+    const sends = install ? !missingSetting(process.env) : true
     // The admin reads this to avoid promising an email that only reaches the server log.
     const admin = { ...config.admin, custom: { ...config.admin?.custom } }
     admin.custom.sitekick = { ...(admin.custom.sitekick as object | undefined), emailSends: sends }
@@ -38,10 +37,17 @@ export const emailPlugin =
   }
 
 export function emailFromEnv(siteName: string, env: Env = process.env): EmailAdapter {
-  const apiKey = env.RESEND_API_KEY?.trim()
+  const apiKey = env.AUTOSEND_API_KEY?.trim()
   const from = parseFrom(env.EMAIL_FROM, siteName)
-  if (apiKey) return resendAdapter({ apiKey, from: from ?? { name: siteName, address: RESEND_TEST_SENDER } })
-  return logAdapter({ from: from ?? { name: siteName, address: 'no-reply@localhost' }, verbose: env.NODE_ENV !== 'production' })
+  const missing = missingSetting(env)
+  if (!missing && apiKey && from) return autosendAdapter({ apiKey, from })
+  return logAdapter({ from: from ?? { name: siteName, address: 'no-reply@localhost' }, verbose: env.NODE_ENV !== 'production', missing: missing ?? 'EMAIL_FROM' })
+}
+
+/** The first setting email still needs, or undefined when it can send. */
+export function missingSetting(env: Env): 'AUTOSEND_API_KEY' | 'EMAIL_FROM' | undefined {
+  if (!env.AUTOSEND_API_KEY?.trim()) return 'AUTOSEND_API_KEY'
+  if (!parseFrom(env.EMAIL_FROM, 'site')) return 'EMAIL_FROM'
 }
 
 /** True when account email actually leaves the building. */
@@ -60,41 +66,68 @@ export function parseFrom(value: string | undefined, siteName: string): Address 
   return undefined
 }
 
-export function resendAdapter({ apiKey, from }: { apiKey: string; from: Address }): EmailAdapter {
+export function autosendAdapter({ apiKey, from }: { apiKey: string; from: Address }): EmailAdapter {
   return () => ({
-    name: 'resend',
+    name: 'autosend',
     defaultFromAddress: from.address,
     defaultFromName: from.name,
     sendEmail: async (message: SendEmailOptions) => {
-      const res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(toResend(message, from)),
-      })
-      const body = (await res.json().catch(() => ({}))) as { id?: string; message?: string; name?: string }
-      // Resend's message is written for people ("The acme.com domain is not verified…"); pass it on.
-      if (!res.ok) throw new Error(body.message ?? `Resend answered HTTP ${res.status}`)
-      return body
+      // AutoSend takes one `to` per request; account email has one, but don't drop any.
+      const results = []
+      for (const body of toAutoSend(message, from)) {
+        const res = await fetch(AUTOSEND_URL, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        })
+        const json = (await res.json().catch(() => ({}))) as AutoSendResponse
+        if (!res.ok || json.success === false) throw new Error(errorOf(json) ?? `AutoSend answered HTTP ${res.status}`)
+        results.push(json.data)
+      }
+      return results.length === 1 ? results[0] : results
     },
   })
 }
 
-export function toResend(message: SendEmailOptions, from: Address) {
-  const to = addresses(message.to)
-  if (!to.length) throw new Error('Email has no recipient.')
-  return {
-    from: format(addresses(message.from)[0] ?? from),
-    to: to.map(format),
-    ...(message.cc ? { cc: addresses(message.cc).map(format) } : {}),
-    ...(message.bcc ? { bcc: addresses(message.bcc).map(format) } : {}),
-    ...(message.replyTo ? { reply_to: addresses(message.replyTo).map(format) } : {}),
-    subject: String(message.subject ?? ''),
-    ...(typeof message.html === 'string' ? { html: message.html } : {}),
-    ...(typeof message.text === 'string' ? { text: message.text } : {}),
-  }
+type AutoSendAddress = { email: string; name?: string }
+type AutoSendResponse = {
+  success?: boolean
+  data?: { emailId?: string }
+  message?: string
+  error?: string | { message?: string }
+  errors?: { message?: string }[]
 }
 
-function logAdapter({ from, verbose }: { from: Address; verbose: boolean }): EmailAdapter {
+export function toAutoSend(message: SendEmailOptions, from: Address) {
+  const to = addresses(message.to)
+  if (!to.length) throw new Error('Email has no recipient.')
+  const cc = addresses(message.cc).map(autosendAddress)
+  const bcc = addresses(message.bcc).map(autosendAddress)
+  const replyTo = addresses(message.replyTo)[0]
+  return to.map((recipient) => ({
+    from: autosendAddress(addresses(message.from)[0] ?? from),
+    to: autosendAddress(recipient),
+    ...(cc.length ? { cc } : {}),
+    ...(bcc.length ? { bcc } : {}),
+    ...(replyTo ? { replyTo: autosendAddress(replyTo) } : {}),
+    subject: String(message.subject ?? ''),
+    // AutoSend renders html and text as Handlebars; the message is final, so no `{{` may reach it.
+    ...(typeof message.html === 'string' ? { html: message.html.replaceAll('{{', '&#123;&#123;') } : {}),
+    ...(typeof message.text === 'string' ? { text: message.text.replaceAll('{{', '{\u200b{') } : {}),
+  }))
+}
+
+function autosendAddress({ name, address }: Address): AutoSendAddress {
+  return name ? { email: address, name } : { email: address }
+}
+
+/** AutoSend doesn't document its error shape; take the first readable message it gives. */
+function errorOf(json: AutoSendResponse): string | undefined {
+  if (typeof json.error === 'string') return json.error
+  return json.error?.message ?? json.errors?.[0]?.message ?? json.message
+}
+
+function logAdapter({ from, verbose, missing }: { from: Address; verbose: boolean; missing: string }): EmailAdapter {
   return ({ payload }) => ({
     name: LOG_ADAPTER,
     defaultFromAddress: from.address,
@@ -102,11 +135,11 @@ function logAdapter({ from, verbose }: { from: Address; verbose: boolean }): Ema
     sendEmail: async (message: SendEmailOptions) => {
       const to = addresses(message.to).map(format).join(', ')
       if (!verbose) {
-        payload.logger.warn(`Email not sent (no RESEND_API_KEY): "${message.subject}" to ${to}.`)
+        payload.logger.warn(`Email not sent (${missing} is not set): "${message.subject}" to ${to}.`)
         return
       }
       const body = typeof message.text === 'string' ? message.text : typeof message.html === 'string' ? textOf(message.html) : ''
-      payload.logger.info(`Email (not sent; set RESEND_API_KEY to send)\nTo: ${to}\nSubject: ${message.subject}\n\n${body}`)
+      payload.logger.info(`Email (not sent; set ${missing} to send)\nTo: ${to}\nSubject: ${message.subject}\n\n${body}`)
     },
   })
 }

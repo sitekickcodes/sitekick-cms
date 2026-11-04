@@ -149,7 +149,7 @@ Deploy on Vercel
   bunx vercel integration add neon         Postgres; sets DATABASE_URL
   bunx vercel blob store add media         image storage; sets BLOB_READ_WRITE_TOKEN
   bunx vercel env add PAYLOAD_SECRET       copy it from .env
-  bunx vercel env add RESEND_API_KEY       and EMAIL_FROM, so invites are emailed
+  bunx vercel env add AUTOSEND_API_KEY     and EMAIL_FROM, so invites are emailed
   bunx vercel --prod
 
 Agents use AI Gateway through the project's OIDC token: run \`bunx vercel env pull .env.local\`
@@ -200,9 +200,9 @@ DATABASE_URL_UNPOOLED=
 PAYLOAD_SECRET=${randomBytes(32).toString('hex')}
 # Vercel Blob. Without it media is stored on local disk (dev only).
 BLOB_READ_WRITE_TOKEN=
-# Account email (invites, password resets) through Resend. Blank = links are shown to the admin instead.
-RESEND_API_KEY=
-# Sender on a domain verified in Resend, e.g. "Acme <hello@acme.com>".
+# Account email (invites, password resets) through AutoSend. Until both are set, invite links are shown to the admin instead.
+AUTOSEND_API_KEY=
+# Sender on a domain verified in AutoSend, e.g. "Acme <hello@acme.com>".
 EMAIL_FROM=
 # Public URL of this site. Blank = the Vercel production URL, or http://localhost:3000.
 NEXT_PUBLIC_SERVER_URL=

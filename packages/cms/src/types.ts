@@ -96,7 +96,7 @@ export type SitekickCMSOptions = {
   /** Invite flow and set-password polish on the users collection. Default on. */
   invites?: boolean
   /**
-   * Account email from the environment (RESEND_API_KEY, EMAIL_FROM; see email/index.ts) when
+   * Account email from the environment (AUTOSEND_API_KEY, EMAIL_FROM; see email/index.ts) when
    * the config sets no `email` adapter itself. `false` leaves Payload's default. Default on.
    */
   email?: false

@@ -193,7 +193,7 @@ Generalised from the civic research agent. Yimby-specific tools stay in Yimby; t
 - Bun, Node 24, exact pins on every `@payloadcms/*` package, `importMap.autoGenerate: false`.
 - Neon: `main` is production and the default branch, `preview/<git-branch>` per Vercel preview via the integration, `dev` for local, migrations only (`push: false`), migrate over the unpooled connection, pooled `max: 5`.
 - `vercel-build`: lint, typecheck, test, migrate, build. Crons aligned to one hour.
-- Email behind one adapter: Resend from `RESEND_API_KEY`/`EMAIL_FROM` (built 2026-11-04). Without a key, invites hand the admin the link instead of failing silently. Analytics via env plus `instrumentation-client.ts`.
+- Email behind one adapter: AutoSend from `AUTOSEND_API_KEY`/`EMAIL_FROM` (built 2026-11-04). Until both are set, invites hand the admin the link instead of failing silently. Analytics via env plus `instrumentation-client.ts`.
 - CI on the monorepo: typecheck, unit tests, lint, and a packaging job that creates a site from the npm tarballs (built 2026-11-04, `.github/workflows/ci.yml`). Still to add: the admin signoff Playwright suite against the playground (needs a Neon branch for CI), changesets release to npm.
 
 ---
