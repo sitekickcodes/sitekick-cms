@@ -34,7 +34,7 @@ export const editorConfig = ({
   inlineBlocks = [],
   media = defaultFieldOptions.media,
   pages = defaultFieldOptions.pages,
-}: EditorOptions = {}) =>
+}: EditorOptions = {}): ReturnType<typeof lexicalEditor> =>
   lexicalEditor({
     admin: {
       hideAddBlockButton: true,

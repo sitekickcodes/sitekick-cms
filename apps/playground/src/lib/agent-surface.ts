@@ -2,7 +2,7 @@ import config from '@payload-config'
 import { createPublicSurface } from '@sitekick/cms/public'
 import { getPayload } from 'payload'
 
-import { siteUrl } from './site'
+import { site } from './site'
 
 /**
  * The public, anonymous, read-only agent surface: llms.txt, OpenAPI, a
@@ -11,5 +11,5 @@ import { siteUrl } from './site'
  */
 export const surface = createPublicSurface({
   payload: () => getPayload({ config }),
-  site: { name: 'Demo Co.', url: siteUrl, description: 'The Sitekick CMS playground: a demo company site.' },
+  site: { name: site.name, url: site.url, description: site.description },
 })

@@ -1,6 +1,7 @@
 import { PageView } from '@/components/page-view'
 import { cms, isDraft } from '@/lib/cms'
 import { findPage } from '@/lib/pages'
+import { site } from '@/lib/site'
 
 /** The `home` page when an editor has made one; a plain starter otherwise. */
 export default async function HomePage({ searchParams }: { searchParams: Promise<{ proposal?: string; section?: string }> }) {
@@ -14,9 +15,9 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   return (
     <section className="px-5 py-16 sm:px-8 sm:py-24 lg:px-12">
       <div className="mx-auto flex max-w-2xl flex-col gap-6">
-        <h1 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">Sitekick CMS playground</h1>
+        <h1 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">{site.name}</h1>
         <p className="text-lg text-sk-muted">
-          The demo client site used to build and test the plugin. Create a page with the slug <code>home</code> to replace this.
+          {site.description} Create a page with the slug <code>home</code> in the admin to replace this.
         </p>
         <h2 className="mt-6 text-2xl font-semibold tracking-tight">Latest news</h2>
         {posts.length === 0 ? (

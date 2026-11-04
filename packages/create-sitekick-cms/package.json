@@ -1,0 +1,21 @@
+{
+  "name": "create-sitekick-cms",
+  "version": "0.1.0-beta.0",
+  "description": "Create a Sitekick CMS site: Payload 4, Next.js 16 and the @sitekick packages.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "create-sitekick-cms": "./dist/index.js"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test src"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.4",
+    "typescript": "6.0.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

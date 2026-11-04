@@ -217,7 +217,7 @@ Generalised from the civic research agent. Yimby-specific tools stay in Yimby; t
 
 ### Phase 2 — platform (months 2–3)
 - Edit with words (shipped 2026-11-04). Saved views and board view. Google sign-in recipe. Localisation recipe.
-- `create-sitekick-cms` CLI and the template repo. Docs site.
+- `create-sitekick-cms` CLI and template (built 2026-11-04; the template ships inside the CLI, generated from the playground, so there is no separate template repo). First npm publish waits on the `@sitekick` npm org. Docs site.
 - Evals harness and cost dashboard. Plain AI SDK adapter alongside eve.
 - Last Best Comedy and Yimby stay untouched for now (decided 2026-11-04). Their repos and CMSs are reference only: no branches, commits, deploys or CMS writes. Moving them onto the packages is deferred until John says go, and will be planned with him first.
 

@@ -1,4 +1,4 @@
-import { gateway, tool } from 'ai'
+import { gateway, tool, type Tool } from 'ai'
 import { z } from 'zod'
 
 import { fetchWithReceipt } from './receipts'
@@ -18,7 +18,7 @@ const customResponse = z.object({
   results: z.array(z.object({ title: z.string(), url: z.string(), snippet: z.string().optional() })),
 })
 
-export function webSearchTool(env: Record<string, string | undefined> = process.env) {
+export function webSearchTool(env: Record<string, string | undefined> = process.env): Tool {
   const custom = env.SITEKICK_SEARCH_URL?.trim()
   if (custom) {
     return tool({

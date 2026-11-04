@@ -55,7 +55,7 @@
     },
     "packages/agents": {
       "name": "@sitekick/agents",
-      "version": "0.0.1",
+      "version": "0.1.0-beta.0",
       "dependencies": {
         "ai": "7.0.162",
         "zod": "4.6.7",
@@ -79,7 +79,7 @@
     },
     "packages/blocks": {
       "name": "@sitekick/blocks",
-      "version": "0.0.1",
+      "version": "0.1.0-beta.0",
       "dependencies": {
         "@base-ui/react": "1.9.0",
         "@payloadcms/richtext-lexical": "4.0.0-beta.6",
@@ -102,7 +102,7 @@
     },
     "packages/cms": {
       "name": "@sitekick/cms",
-      "version": "0.0.1",
+      "version": "0.1.0-beta.0",
       "dependencies": {
         "@modelcontextprotocol/server": "2.4.0",
         "zod": "4.6.7",
@@ -130,6 +130,17 @@
         "payload": "4.0.0-beta.6",
         "react": "^19",
         "react-dom": "^19",
+      },
+    },
+    "packages/create-sitekick-cms": {
+      "name": "create-sitekick-cms",
+      "version": "0.1.0-beta.0",
+      "bin": {
+        "create-sitekick-cms": "./dist/index.js",
+      },
+      "devDependencies": {
+        "@types/bun": "^1.4.4",
+        "typescript": "6.0.3",
       },
     },
   },
@@ -1053,6 +1064,8 @@
     "convert-source-map": ["convert-source-map@2.0.0", "", {}, "sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg=="],
 
     "cosmiconfig": ["cosmiconfig@7.1.0", "", { "dependencies": { "@types/parse-json": "^4.0.0", "import-fresh": "^3.2.1", "parse-json": "^5.0.0", "path-type": "^4.0.0", "yaml": "^1.10.0" } }, "sha512-AdmX6xUzdNASswsFtmwSt7Vj8po9IuqXm0UXz7QKPuEUmPB4XyjGfaAr2PSuELMwkRMVH1EpIkX5bTZGRB3eCA=="],
+
+    "create-sitekick-cms": ["create-sitekick-cms@workspace:packages/create-sitekick-cms"],
 
     "croner": ["croner@10.0.1", "", {}, "sha512-ixNtAJndqh173VQ4KodSdJEI6nuioBWI0V1ITNKhZZsO0pEMoDxz539T4FTTbSZ/xIOSuDnzxLVRqBVSvPNE2g=="],
 

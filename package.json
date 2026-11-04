@@ -12,7 +12,8 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "generate:types": "turbo run generate:types",
-    "generate:importmap": "turbo run generate:importmap"
+    "generate:importmap": "turbo run generate:importmap",
+    "pack": "bun scripts/pack.ts"
   },
   "devDependencies": {
     "turbo": "2.11.10",

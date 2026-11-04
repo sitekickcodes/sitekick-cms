@@ -17,12 +17,10 @@ import { People } from './collections/People'
 import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
 import { SiteSettings } from './globals/SiteSettings'
-import { siteUrl } from './lib/site'
+import { site, siteUrl } from './lib/site'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
-
-const site = { name: 'Demo Co.', url: siteUrl, accent: '#0f766e' }
 
 /** Payload's MCP server (`/api/mcp`), configured from the collections' agent contracts.
  * The plugin's item type is mirrored structurally in @sitekick/cms (plugin-mcp is the
