@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Typecheck, test, lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: bun install --frozen-lockfile
+      - run: bun run typecheck
+      - run: bun run test
+      - run: bun run lint
+
+  package:
+    # What a client gets: the packages as npm tarballs and a site made by the CLI from them.
+    # Catches anything that only works inside the monorepo (source exports, workspace links,
+    # import paths Node can't resolve). No database: the site is generated and typechecked.
+    name: Pack and create a site
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: bun install --frozen-lockfile
+      - run: bun run pack
+      - name: Create a site from the tarballs
+        run: |
+          git config --global user.email ci@sitekick.co
+          git config --global user.name "Sitekick CI"
+          node packages/create-sitekick-cms/.pack/dist/index.js "$RUNNER_TEMP/ci-site" \
+            --yes --no-people --site-name "CI Site" --accent "#1d4ed8" --packages .pack
+      - name: Typecheck and lint the site
+        working-directory: ${{ runner.temp }}/ci-site
+        run: |
+          bunx tsc --noEmit
+          bun run lint
+          test -n "$(ls src/migrations/*_initial.ts)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: packages
+          path: .pack/*.tgz
+          retention-days: 7

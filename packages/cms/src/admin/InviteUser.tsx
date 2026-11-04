@@ -6,6 +6,7 @@ import { formatAdminURL } from 'payload/shared'
 import React, { useState } from 'react'
 
 import type { Role } from '../access'
+import { InviteLink } from './InviteLink'
 import styles from './InviteUser.module.css'
 
 /**
@@ -23,6 +24,7 @@ export function InviteUser() {
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<Role>('editor')
   const [busy, setBusy] = useState(false)
+  const [handOff, setHandOff] = useState<{ email: string; link: string } | null>(null)
 
   const roles = (user as { roles?: unknown } | null)?.roles
   if (!Array.isArray(roles) || !roles.includes('admin')) return null
@@ -38,13 +40,14 @@ export function InviteUser() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, role }),
       })
-      const json = (await res.json()) as { error?: string; email?: string; id?: number | string }
+      const json = (await res.json()) as { error?: string; email?: string; id?: number | string; link?: string }
       if (!res.ok) {
         toast.error(json.error ?? `HTTP ${res.status}`)
         if (json.id) router.refresh()
         return
       }
-      toast.success(`Invite sent to ${json.email}.`)
+      if (json.link) setHandOff({ email: json.email ?? email, link: json.link })
+      else toast.success(`Invite sent to ${json.email}.`)
       setEmail('')
       setOpen(false)
       router.refresh()
@@ -57,8 +60,17 @@ export function InviteUser() {
 
   if (!open) {
     return (
-      <div className={styles.bar}>
-        <Button onClick={() => setOpen(true)} size="medium" buttonStyle="primary" margin={false}>
+      <div className={styles.barStack}>
+        {handOff && <InviteLink {...handOff} />}
+        <Button
+          onClick={() => {
+            setHandOff(null)
+            setOpen(true)
+          }}
+          size="medium"
+          buttonStyle="primary"
+          margin={false}
+        >
           Invite someone
         </Button>
       </div>
@@ -100,8 +112,7 @@ export function InviteUser() {
         </p>
       </fieldset>
       <div className={styles.hint}>
-        They&apos;ll get an email with a link to choose a password. The link lasts 7 days; you can resend it from their
-        account.
+        They&apos;ll get a link to choose a password. It lasts 7 days; you can send a fresh one from their account.
       </div>
       <div className={styles.actions}>
         <Button type="submit" disabled={busy} size="medium" buttonStyle="primary" margin={false}>

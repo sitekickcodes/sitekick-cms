@@ -6,6 +6,7 @@ import { authPlugin } from './auth'
 import { conventions } from './conventions'
 import { freshCopy } from './conventions/freshCopy'
 import { dashboardPlugin } from './dashboard'
+import { emailPlugin } from './email'
 import { helpPlugin } from './help'
 import { navPlugin } from './nav'
 import { palettePlugin } from './palette'
@@ -30,6 +31,7 @@ export const sitekickCMS =
     const steps: Plugin[] = [
       helpPlugin(options),
       reviewPlugin(options),
+      emailPlugin(options),
       authPlugin(options),
       contractPlugin({ site: options.site, usersSlug: options.usersSlug }),
       ...conventions(options),

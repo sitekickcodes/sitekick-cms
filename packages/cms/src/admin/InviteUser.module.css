@@ -59,3 +59,37 @@
   display: flex;
   gap: 0.75rem;
 }
+.linkBox {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+  padding: 0.9rem 1rem;
+  max-width: 36rem;
+  background: var(--theme-elevation-0, var(--theme-bg));
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: var(--style-radius-m);
+  font-size: 14px;
+  line-height: 1.45;
+}
+.linkBox p {
+  margin: 0;
+}
+.linkRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+/* Wraps under the text in a narrow sidebar, sits beside Copy in the list bar. */
+.linkRow .input {
+  flex: 1 1 14rem;
+  min-width: 0;
+  font-size: 13px;
+}
+.barStack {
+  margin: 0 var(--gutter-h) 1.5rem;
+}
+.barStack .linkBox {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}

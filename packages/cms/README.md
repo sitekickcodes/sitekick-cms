@@ -32,6 +32,15 @@ src/
 - Each module exports a `Plugin` factory `(options: SitekickCMSOptions) => Plugin`. The order
   is decided in `plugin.ts`.
 
+## Email
+
+Invites and password resets are sent through Resend when `RESEND_API_KEY` is set, from
+`EMAIL_FROM` (`Acme <hello@acme.com>`; blank = Resend's test sender) (`email/index.ts`). Without
+a key nothing is sent: invites hand the admin the set-password link to pass on, "Send reset
+email" is hidden, and the message is logged (in full in development, recipient only in
+production, so tokens stay out of hosted logs). A config that sets its own `email` adapter is
+left alone; `email: false` keeps Payload's default.
+
 ## Agent buttons
 
 Off unless the host passes `agents: { basePath: '/api/agents' }` and mounts

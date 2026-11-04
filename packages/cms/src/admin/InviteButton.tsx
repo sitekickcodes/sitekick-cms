@@ -4,6 +4,7 @@ import { Button, toast, useAuth, useConfig, useDocumentInfo, useFormFields } fro
 import { formatAdminURL } from 'payload/shared'
 import React, { useState } from 'react'
 
+import { InviteLink } from './InviteLink'
 import styles from './InviteUser.module.css'
 
 const when = (iso: unknown) =>
@@ -25,6 +26,7 @@ export function InviteButton() {
   const lastLoginAt = useFormFields(([fields]) => fields.lastLoginAt?.value)
   const [busy, setBusy] = useState(false)
   const [sentAt, setSentAt] = useState<string | null>(null)
+  const [handOff, setHandOff] = useState<{ email: string; link: string } | null>(null)
 
   const roles = (user as { roles?: unknown } | null)?.roles
   const admin = Array.isArray(roles) && roles.includes('admin')
@@ -39,10 +41,11 @@ export function InviteButton() {
     try {
       const url = formatAdminURL({ apiRoute: config.routes.api, path: `/${config.admin.user}/${id}/invite` })
       const res = await fetch(url, { method: 'post', credentials: 'include' })
-      const json = (await res.json()) as { error?: string; email?: string; invitedAt?: string }
+      const json = (await res.json()) as { error?: string; email?: string; invitedAt?: string; link?: string }
       if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`)
       setSentAt(json.invitedAt ?? new Date().toISOString())
-      toast.success(`Invite sent to ${json.email}.`)
+      if (json.link) setHandOff({ email: json.email ?? 'them', link: json.link })
+      else toast.success(`Invite sent to ${json.email}.`)
     } catch (err) {
       toast.error(`Invite didn't send: ${err instanceof Error ? err.message : String(err)}`)
     } finally {
@@ -60,8 +63,9 @@ export function InviteButton() {
           ? `Signed in ${signedIn}. Resending sends a fresh set-password link.`
           : invited
             ? `Invited ${invited}; hasn't signed in yet. The link lasts 7 days.`
-            : 'Emails them a link to choose a password and sign in.'}
+            : 'Gives them a link to choose a password and sign in.'}
       </div>
+      {handOff && <InviteLink {...handOff} />}
     </div>
   )
 }

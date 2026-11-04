@@ -4,6 +4,7 @@ import { Button, toast, useAuth, useConfig, useDocumentInfo, useForm, useFormFie
 import { formatAdminURL } from 'payload/shared'
 import React, { useEffect, useState } from 'react'
 
+import { emailSendsFromConfig } from '../email/client'
 import styles from './SetPassword.module.css'
 
 /**
@@ -114,7 +115,8 @@ function AccountButtons({ id, others }: { id: number | string; others: boolean }
           Save
         </Button>
       ) : null}
-      {others && !changing ? (
+      {/* Without a mail provider, Send invite in the sidebar hands over a link instead. */}
+      {others && !changing && emailSendsFromConfig(config) ? (
         <Button buttonStyle="secondary" size="medium" margin={false} disabled={busy} onClick={() => void send()}>
           {busy ? 'Sending…' : 'Send reset email'}
         </Button>

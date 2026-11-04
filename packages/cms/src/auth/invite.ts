@@ -1,5 +1,6 @@
 import type { CollectionSlug, PayloadRequest } from 'payload'
 
+import { canSendEmail } from '../email'
 import type { SiteIdentity, SitekickCMSOptions } from '../types'
 
 /**
@@ -111,7 +112,7 @@ export async function sendInvite(
   req: PayloadRequest,
   options: SitekickCMSOptions,
   userId: number | string,
-): Promise<{ email: string; invitedAt: string }> {
+): Promise<{ email: string; invitedAt: string; emailed: boolean; link?: string }> {
   const { payload } = req
   const { site } = options
   const collection = options.usersSlug ?? 'users'
@@ -133,6 +134,7 @@ export async function sendInvite(
     ? `as an admin on the ${site.name} website. You can edit everything and manage who else has access.`
     : `as an editor on the ${site.name} website. You can edit pages and content.`
 
+  const link = adminURL(req, site, `${req.payload.config.admin.routes.reset}/${token}`)
   const { html, text } = renderAccountEmail({
     site,
     origin,
@@ -141,15 +143,17 @@ export async function sendInvite(
       `${inviter ? `${inviter} added you` : "You've been added"} ${what}`,
       `Choose a password to finish setting up your account. You'll sign in with this email address, ${user.email}.`,
     ],
-    button: { label: 'Set your password', url: adminURL(req, site, `${req.payload.config.admin.routes.reset}/${token}`) },
+    button: { label: 'Set your password', url: link },
     footnote: `This link works for 7 days. If it expires, get a new one at ${adminURL(req, site, req.payload.config.admin.routes.forgot)}.`,
   })
 
-  await payload.sendEmail({ to: user.email, subject: `Set up your ${site.name} website account`, html, text })
+  // No mail provider yet: the admin gets the link to pass on instead of an email nobody receives.
+  const emailed = canSendEmail(payload)
+  if (emailed) await payload.sendEmail({ to: user.email, subject: `Set up your ${site.name} website account`, html, text })
 
   const invitedAt = new Date().toISOString()
   await payload.update({ collection: collection as CollectionSlug, id: userId, data: { invitedAt }, req, overrideAccess: true })
-  return { email: user.email, invitedAt }
+  return emailed ? { email: user.email, invitedAt, emailed } : { email: user.email, invitedAt, emailed, link }
 }
 
 /** Payload's forgot-password email, in the same layout as the invite. */
