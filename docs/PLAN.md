@@ -219,7 +219,7 @@ Generalised from the civic research agent. Yimby-specific tools stay in Yimby; t
 - Edit with words (shipped 2026-11-04). Saved views and board view. Google sign-in recipe. Localisation recipe.
 - `create-sitekick-cms` CLI and the template repo. Docs site.
 - Evals harness and cost dashboard. Plain AI SDK adapter alongside eve.
-- Migrate Last Best Comedy onto the packages as the first real adopter; then Yimby.
+- Last Best Comedy and Yimby stay untouched for now (decided 2026-11-04). Their repos and CMSs are reference only: no branches, commits, deploys or CMS writes. Moving them onto the packages is deferred until John says go, and will be planned with him first.
 
 ### Phase 3 — fleet (month 4+)
 - Sitekick Console: every client CMS in one view through their MCP servers.
