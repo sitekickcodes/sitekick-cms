@@ -36,11 +36,15 @@ export function AuthView({ initPageResult, searchParams, viewType, site: fromPro
       : undefined
   const userCollection = config.collections.find(({ slug }) => slug === config.admin.user)
   const site = fromProps ?? readSiteFromConfig(config) ?? { name: 'Sitekick' }
+  // Signed-out pages get Payload's trimmed client config (no admin.custom), so the
+  // googleSignIn recipe's switch travels as a prop.
+  const google = (config.admin.custom as { sitekick?: { google?: { start: string } | false } } | undefined)?.sitekick?.google || undefined
 
   return (
     <AuthFrame
       site={site}
       initialRecovery={viewType === 'forgot'}
+      google={google}
       loginEnabled={!userCollection?.auth?.disableLocalStrategy}
       prefillEmail={autoLogin?.email}
       prefillPassword={autoLogin?.password}

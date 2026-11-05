@@ -42,6 +42,28 @@ email" is hidden, and the message is logged (in full in development, recipient o
 production, so tokens stay out of hosted logs). A config that sets its own `email` adapter is
 left alone; `email: false` keeps Payload's default.
 
+## Recipes
+
+Opt-in plugins added after `sitekickCMS(...)` in `plugins`, each exported from `@sitekick/cms`.
+
+### Google sign-in
+
+```ts
+plugins: [sitekickCMS({ site }), googleSignIn()]
+```
+
+Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` from a Google Cloud OAuth client (type "Web
+application", redirect URI `<site>/api/users/google/callback`, and `http://localhost:3000/...`
+for development). The sign-in screen then shows "Continue with Google". Until both are set,
+the button is hidden and the endpoints answer 404.
+
+It signs in people who already have an account with that verified email. Invites are still how
+people are added, and email and password keep working. `googleSignIn({ domains: ['acme.com'] })`
+also lets in anyone from that Google Workspace, creating an editor account on first sign-in
+(`role` changes the role). Failures come back to the sign-in screen with a plain message: no
+account, cancelled, or expired. The session is Payload's own cookie, and the last sign-in stamp
+updates (`recipes/google.ts`).
+
 ## Lists
 
 Every collection in the sidebar gets saved views: Payload's query presets, so an editor can

@@ -5,6 +5,7 @@ import { formatAdminURL } from 'payload/shared'
 import React, { useEffect, useRef, useState } from 'react'
 
 import type { SiteIdentity } from '../types'
+import { GoogleButton, GoogleNotice } from './GoogleButton'
 import { Logo } from './Logo'
 import { SigningIn } from './SigningIn'
 import styles from './AuthView.module.css'
@@ -12,6 +13,8 @@ import styles from './AuthView.module.css'
 type Props = {
   site: SiteIdentity
   initialRecovery: boolean
+  /** The googleSignIn recipe's start endpoint, under the API route; absent = no button. */
+  google?: { start: string }
   loginEnabled: boolean
   prefillEmail?: string
   prefillPassword?: string
@@ -31,7 +34,7 @@ type Props = {
  * switch. Only one form is mounted at a time so native field ids stay unique
  * (Payload restores its resend countdown when the recovery form reopens).
  */
-export function AuthFrame({ site, initialRecovery, loginEnabled, ...loginProps }: Props) {
+export function AuthFrame({ site, initialRecovery, google, loginEnabled, ...loginProps }: Props) {
   const [recovery, setRecovery] = useState(initialRecovery)
   const [rememberedEmail, setRememberedEmail] = useState(loginProps.prefillEmail)
   const column = useRef<HTMLDivElement>(null)
@@ -98,7 +101,9 @@ export function AuthFrame({ site, initialRecovery, loginEnabled, ...loginProps }
               Welcome back
             </h1>
             <p className={styles.sub}>Sign in to {site.name.replace(/[.]+$/, "")}.</p>
+            {google ? <GoogleNotice searchParams={loginProps.searchParams} /> : null}
             {loginEnabled ? <LoginForm {...loginProps} prefillEmail={rememberedEmail} /> : null}
+            {google ? <GoogleButton start={google.start} searchParams={loginProps.searchParams} /> : null}
             <SigningIn />
           </div>
         )}

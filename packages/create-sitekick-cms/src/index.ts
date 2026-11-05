@@ -204,6 +204,9 @@ BLOB_READ_WRITE_TOKEN=
 AUTOSEND_API_KEY=
 # Sender on a domain verified in AutoSend, e.g. "Acme <hello@acme.com>".
 EMAIL_FROM=
+# Google sign-in (optional): a Google Cloud OAuth web client with redirect URI <site>/api/users/google/callback.
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
 # Public URL of this site. Blank = the Vercel production URL, or http://localhost:3000.
 NEXT_PUBLIC_SERVER_URL=
 `

@@ -195,3 +195,27 @@
     animation: none;
   }
 }
+
+/* "Continue with Google" (GoogleButton.tsx), only with the googleSignIn recipe. */
+.google { display: grid; gap: 16px; margin-top: 20px; }
+.or { display: flex; align-items: center; gap: 12px; color: var(--color-text-tertiary); font-size: 13px; }
+.or::before, .or::after { content: ''; flex: 1; height: 1px; background: var(--color-border); }
+.googleButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full, 999px);
+  background: var(--color-bg-secondary);
+  color: var(--color-text);
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: border-color var(--sk-motion-hover, 150ms ease), background-color var(--sk-motion-hover, 150ms ease);
+}
+.googleButton:hover { border-color: var(--color-text-tertiary); }
+.googleButton:focus-visible { outline: var(--accessibility-outline, 2px solid currentColor); outline-offset: var(--accessibility-outline-offset, 2px); }
+.googleError { margin: 0 0 20px; padding: 10px 12px; border-radius: 8px; background: var(--color-bg-error-tertiary, var(--color-bg-hover)); color: var(--color-text-error, var(--color-text)); font-size: 14px; line-height: 1.45; }

@@ -4,7 +4,7 @@ import { filterMCPItems } from '@payloadcms/plugin-mcp/internal'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 import { sharpTransformer } from '@payloadcms/transformer-sharp'
-import { sitekickCMS } from '@sitekick/cms'
+import { googleSignIn, sitekickCMS } from '@sitekick/cms'
 import { mcpPluginOptions, type FilterMCPItems } from '@sitekick/cms/agent'
 import path from 'path'
 import { buildConfig, type Plugin } from 'payload'
@@ -84,6 +84,8 @@ export default buildConfig({
         { label: 'Library', icon: 'image', links: ['media'] },
       ],
     }),
+    // "Continue with Google" once GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set.
+    googleSignIn(),
     editorMCP,
   ],
 })
