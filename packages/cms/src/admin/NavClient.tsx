@@ -534,7 +534,7 @@ function FilterFlag({ pathname, search }: { pathname: string; search: string }) 
   return null
 }
 
-const ADMIN_ICONS: Record<string, IconName> = { users: 'users' }
+const ADMIN_ICONS: Record<string, IconName> = { users: 'users', usage: 'chart-column' }
 
 /** The account at the foot: initials (no photo), the address, and a small
  * menu: your profile, Users and API keys, Log out. */

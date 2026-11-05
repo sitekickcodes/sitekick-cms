@@ -8,7 +8,8 @@ import { EntityType, formatAdminURL } from 'payload/shared'
 
 import { accountSlugs, joinAdmin, labelText, resolveArrangement } from '../nav/arrangement'
 import type { NavServerOptions, PinnedDoc, VisibleEntity } from '../nav/types'
-import { countInbox, INBOX_PATH } from '../review'
+import { hasRole } from '../access'
+import { countInbox, INBOX_PATH, USAGE_PATH } from '../review'
 import { NavClient, NavHeader } from './NavClient'
 
 /**
@@ -69,6 +70,11 @@ export async function Nav(props: SitekickNavProps) {
   })
 
   const pinned = user ? await loadPinned(payload, user, usersSlug, adminRoute) : []
+
+  // AI usage sits with the other admin pages in the account menu (the view checks too).
+  if (user && hasRole(user, 'admin') && admin.components?.views?.usage) {
+    nav.account.push({ key: `view:${USAGE_PATH.slice(1)}`, href: formatAdminURL({ adminRoute, path: USAGE_PATH }), label: 'AI usage' })
+  }
 
   // The inbox badge: open proposals plus runs waiting on a person.
   if (user) {

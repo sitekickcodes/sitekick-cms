@@ -12,6 +12,8 @@ export type ReviewPluginOptions = Omit<ReviewCollectionOptions, 'usersSlug'>
 
 /** Where the inbox lives under the admin route. */
 export const INBOX_PATH = '/inbox'
+/** What the agents cost (admin/review/UsageView.tsx), from runs.costUsd. */
+export const USAGE_PATH = '/usage'
 
 /**
  * The review inbox: the `proposals` and `runs` collections under the Inbox
@@ -38,6 +40,12 @@ export const reviewPlugin =
         path: INBOX_PATH,
         exact: true,
         meta: { title: 'Inbox' },
+      },
+      usage: {
+        Component: { path: '@sitekick/cms/admin', exportName: 'UsageView', serverProps: { slugs } },
+        path: USAGE_PATH,
+        exact: true,
+        meta: { title: 'AI usage' },
       },
     }
     return config

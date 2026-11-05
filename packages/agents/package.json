@@ -9,7 +9,8 @@
     ".": "./src/index.ts",
     "./admin": "./src/admin.ts",
     "./eve": "./src/adapters/eve.ts",
-    "./workflow": "./src/adapters/workflow.ts"
+    "./workflow": "./src/adapters/workflow.ts",
+    "./evals": "./src/evals/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

@@ -282,6 +282,47 @@ small-mapping budget. The mapping, when it is worth doing:
 - `ctx.log` → the `actions.requested` hook posting the "Now:" line; `askEditor` → `defineWorkflowTool` with `ctx.ask`.
 - `Runner.run` → start a session over eve's HTTP API, wait for `turn.completed` / `finish`, read the collected patch back from the app.
 
+## Evals
+
+`@sitekick/agents/evals` runs the agents on fixed cases, once per model, and keeps a
+ledger, so a model or prompt change is measured against the last run instead of judged by
+feel.
+
+```ts
+import { draftCase, editCase, runEvals, summarize, formatSummary } from '@sitekick/agents/evals'
+
+const cases = [
+  draftCase({
+    id: 'draft/closure-notice',
+    collections,                                   // the site's sanitized collection configs
+    input: { targetCollection: 'posts', notes: 'Closed Nov 27–28. Back Dec 1.' },
+    expect: { excerpt: (v) => String(v).length <= 160 || 'excerpt too long', title: /clos/i },
+    forbid: ['author'],
+    judge: 'States the closed days and reopening correctly; invents nothing.',
+  }),
+]
+const results = await runEvals({ cases, models: ['anthropic/claude-sonnet-5-5', 'anthropic/claude-haiku-5-5'], ledger: 'evals/ledger.jsonl' })
+console.log(formatSummary(summarize(results)))
+```
+
+- **Isolation.** Each case runs on its own in-memory Payload (the test stub), seeded with
+  the case's documents and given the site's real collection configs and agent contracts.
+  That stands in for a database branch per model: nothing is written anywhere.
+- **Grading.** `expect` checks proposed values exactly: a value, a RegExp, or a function
+  returning `true` or the reason it failed. Nested paths such as `meta.title` work. `forbid`
+  lists fields that must not be proposed. `judge` is a rubric for an LLM judge (the `judge`
+  model, Claude Opus by default) that scores 1 to 5 with a reason. A case passes when every
+  check passes and the judge gives 4 or more.
+- **Ledger.** Each result is a JSONL line: case, model, pass, checks, judge score and reason,
+  cost (agent plus judge), time and git commit. `summarize` gives each model's pass count,
+  mean score, cost and mean time.
+- `draftCase`, `enrichCase` and `editCase` wrap the three agents. A custom case supplies
+  its own `run(payload, { model, runner })`.
+
+A site runs its suite with `bun run evals` (playground: `scripts/evals.ts` and
+`evals/cases.ts`; new sites get both from the CLI). Enrich cases fetch the live web, so the
+playground suite leaves them out to stay repeatable.
+
 ## Tests
 
 `bun test src` (no network, `ai` never called). Coverage: receipts guard
@@ -291,4 +332,5 @@ archive fallback, excerpts; `markdownToLexical` fixtures; contract filtering
 run status machine, lease claim, askEditor; model resolution, allowlist and
 cost; the runner's instrumentation and cost abort; Enrich and Draft end to end
 against an in-memory Payload stub with a scripted runner; HTTP auth, validation,
-enqueue, kill switch; field actions.
+enqueue, kill switch; field actions; the evals harness (grading, isolation, ledger,
+summary) with a scripted runner and judge.

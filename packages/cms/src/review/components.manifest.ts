@@ -10,6 +10,8 @@ export const reviewComponents = {
   RunReview: './review/RunReview',
   /** Server view at `/admin/inbox`: proposals to review and runs in progress. */
   InboxView: './review/InboxView',
+  /** Server view at `/admin/usage`: what the agents cost, admins only. */
+  UsageView: './review/UsageView',
 } as const
 
 export type ReviewComponentName = keyof typeof reviewComponents

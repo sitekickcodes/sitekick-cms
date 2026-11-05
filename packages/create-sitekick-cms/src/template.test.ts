@@ -19,8 +19,11 @@ const options = { name: 'acme-site', siteName: "Acme & Co's", description: 'Widg
 describe('toTemplate', () => {
   test('leaves out demo scripts, migrations and the playground notes', () => {
     expect(template.has('scripts/migrate.ts')).toBe(true)
+    // A new site gets the eval suite, but not the playground's results.
+    expect(template.has('scripts/evals.ts')).toBe(true)
+    expect(template.has('evals/cases.ts')).toBe(true)
     for (const path of template.keys()) {
-      expect(path).not.toMatch(/^scripts\/(seed|agents-live)|^src\/migrations\/|^README\.md$|^AGENTS\.md$/)
+      expect(path).not.toMatch(/^scripts\/(seed|agents-live)|^src\/migrations\/|^README\.md$|^AGENTS\.md$|ledger\.jsonl$/)
     }
   })
 

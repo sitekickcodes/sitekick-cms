@@ -15,7 +15,8 @@ export type Files = Map<string, string>
 
 /** Playground files that stay in the monorepo: demo seeding, live model checks, its history. */
 const PLAYGROUND_ONLY = [
-  /^scripts\/(?!migrate\.ts$)/,
+  /^scripts\/(?!migrate\.ts$|evals\.ts$)/,
+  /^evals\/ledger\.jsonl$/,
   /^src\/migrations\//,
   /^README\.md$/,
   /^AGENTS\.md$/,

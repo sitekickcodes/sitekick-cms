@@ -67,6 +67,7 @@ import { VercelBlobClientUploadHandler as VercelBlobClientUploadHandler_16c82c5e
 import { AuthView as AuthView_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
 import { HelpView as HelpView_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
 import { InboxView as InboxView_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
+import { UsageView as UsageView_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
 import { Dashboard as Dashboard_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
 import { WelcomeWidget as WelcomeWidget_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
 import { CollectionCards as CollectionCards_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
@@ -148,6 +149,7 @@ export const importMap = {
   "@sitekick/cms/admin#AuthView": AuthView_3c4e1d732ae6727d2b5b078221a842c9,
   "@sitekick/cms/admin#HelpView": HelpView_3c4e1d732ae6727d2b5b078221a842c9,
   "@sitekick/cms/admin#InboxView": InboxView_3c4e1d732ae6727d2b5b078221a842c9,
+  "@sitekick/cms/admin#UsageView": UsageView_3c4e1d732ae6727d2b5b078221a842c9,
   "@sitekick/cms/admin#Dashboard": Dashboard_3c4e1d732ae6727d2b5b078221a842c9,
   "@payloadcms/ui/rsc#WelcomeWidget": WelcomeWidget_ab83ff7e88da8d3530831f296ec4756a,
   "@payloadcms/ui/rsc#CollectionCards": CollectionCards_ab83ff7e88da8d3530831f296ec4756a,

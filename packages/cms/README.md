@@ -104,6 +104,21 @@ Publish button, publishes the latest draft; dragging it to Draft unpublishes it.
 is confirmed first, and a failed publish names the fields to fix. Cards show the first
 image field as a thumbnail. `board: false` turns it off.
 
+## AI usage
+
+`/admin/usage`, linked from the account menu for admins, shows what the agents cost. Every
+run records its spend in `runs.costUsd` (from AI Gateway's cost metadata), so the page
+shows:
+- this month against last month, with a projection to the end of the month
+- the budget in `SITEKICK_AI_BUDGET_USD`, if set: a meter, and a warning when the pace would go over
+- spend per day for the last 30 days
+- this month split by agent, model and who started each run
+- what failed runs cost
+- the five most expensive runs
+
+Editors who open it are told only admins can see it (`admin/review/UsageView.tsx`,
+`review/usage.ts`).
+
 ## Agent buttons
 
 Off unless the host passes `agents: { basePath: '/api/agents' }` and mounts

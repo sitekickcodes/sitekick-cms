@@ -218,7 +218,7 @@ Generalised from the civic research agent. Yimby-specific tools stay in Yimby; t
 ### Phase 2 — platform (months 2–3)
 - Edit with words (shipped 2026-11-04). Saved views and board view (shipped 2026-11-05: Payload query presets on every sidebar collection; a Draft / Changed / Published board on collections with drafts, where moving a card publishes or unpublishes after a confirm). Google sign-in recipe (shipped 2026-11-05: `googleSignIn()`, existing accounts plus optional Workspace domains). Localisation recipe (shipped 2026-11-05: `localization()`, translates words and shares structure; checked on a fresh CLI site). Follow-ups: show the default language beside an empty translation, and a Translate agent.
 - `create-sitekick-cms` CLI and template (built 2026-11-04; the template ships inside the CLI, generated from the playground, so there is no separate template repo). First npm publish waits on the `@sitekick` npm org. Docs site.
-- Evals harness and cost dashboard. Plain AI SDK adapter alongside eve.
+- Evals harness and cost dashboard (shipped 2026-11-05: `@sitekick/agents/evals` with exact checks, an Opus judge and a JSONL ledger, isolated per case on the in-memory stub rather than a Neon branch per model; `bun run evals` in the playground and new sites; `/admin/usage` for admins with an optional monthly budget). Plain AI SDK adapter alongside eve (done: `aiSdkRunner` is the default runner; eve stays a documented stub behind the same `Runner` interface).
 - Last Best Comedy and Yimby stay untouched for now (decided 2026-11-04). Their repos and CMSs are reference only: no branches, commits, deploys or CMS writes. Moving them onto the packages is deferred until John says go, and will be planned with him first.
 
 ### Phase 3 — fleet (month 4+)

@@ -17,7 +17,8 @@
     "migrate": "bun scripts/migrate.ts",
     "migrate:create": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:create",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
-    "vercel-build": "bun run migrate && bun run generate:importmap && bun run build"
+    "vercel-build": "bun run migrate && bun run generate:importmap && bun run build",
+    "evals": "bun scripts/evals.ts"
   },
   "dependencies": {
     "@base-ui/react": "1.9.0",

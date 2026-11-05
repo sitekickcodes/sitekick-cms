@@ -1,0 +1,77 @@
+/* AI usage (UsageView.tsx). Payload 4 semantic tokens and the Sitekick `--sk-*` tokens only.
+   One series, so one hue: the accent. Text stays in text tokens. Usable at 390px. */
+.root {
+  --us-muted: var(--color-text-secondary);
+  --us-faint: var(--color-text-tertiary);
+  --us-line: var(--color-border);
+  --us-mark: var(--sk-accent, var(--color-text));
+  padding-bottom: var(--spacing-view-bottom, 56px);
+  color: var(--color-text);
+}
+.root a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.root a:focus-visible, .bar:focus-visible { outline: var(--accessibility-outline, 2px solid currentColor); outline-offset: var(--accessibility-outline-offset, 2px); }
+
+.head { margin: 8px 0 24px; }
+.root .title { margin: 0; font-size: 24px; font-weight: 500; line-height: 1.2; letter-spacing: -0.015em; text-transform: none; }
+.lede { margin: 4px 0 0; max-width: 70ch; color: var(--us-muted); font-size: 14px; line-height: 1.5; }
+.empty { margin: 0; color: var(--us-faint); font-size: 14px; }
+.muted { color: var(--us-faint); }
+
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 12px; margin-bottom: 28px; }
+.tile { display: grid; gap: 4px; align-content: start; padding: 16px 18px; border: 1px solid var(--us-line); border-radius: var(--radius-large, 12px); background: var(--color-bg-secondary); }
+.tileLabel { color: var(--us-muted); font-size: 13px; }
+.tileValue { font-size: 28px; font-weight: 500; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.tileSub { color: var(--us-faint); font-size: 13px; }
+.meter { display: block; height: 6px; margin-top: 6px; border-radius: 3px; background: var(--us-line); overflow: hidden; }
+.meter span { display: block; height: 100%; border-radius: 3px; background: var(--us-mark); }
+/* Over budget is a status, so it gets the error colour and the tile says so in words. */
+.meter span[data-over] { background: var(--color-text-error, #b42318); }
+
+.section { margin-bottom: 28px; }
+.section h2 { margin: 0 0 12px; font-size: 15px; font-weight: 500; text-transform: none; }
+
+/* Daily bars: thin, rounded at the data end, 2px gaps, recessive axis. */
+.chart { position: relative; padding: 18px 0 0; }
+.axisTop { position: absolute; top: 0; left: 0; color: var(--us-faint); font-size: 12px; font-variant-numeric: tabular-nums; }
+.bars { display: grid; grid-template-columns: repeat(30, minmax(0, 1fr)); gap: 2px; align-items: end; height: 160px; margin: 0; padding: 0; list-style: none; border-bottom: 1px solid var(--us-line); }
+.bar { position: relative; height: 100%; display: flex; align-items: flex-end; cursor: default; }
+.fill { display: block; width: 100%; max-width: 18px; margin: 0 auto; border-radius: 4px 4px 0 0; background: var(--us-mark); transition: opacity var(--sk-motion-hover, 150ms ease); }
+.bars:hover .fill { opacity: 0.55; }
+.bars .bar:hover .fill, .bars .bar:focus-visible .fill { opacity: 1; }
+.tip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  z-index: 1;
+  translate: -50% 0;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: var(--color-text);
+  color: var(--color-bg);
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--sk-motion-hover, 150ms ease);
+}
+.bar:hover .tip, .bar:focus-visible .tip { opacity: 1; }
+.bar:nth-child(-n + 5) .tip { left: 0; translate: 0 0; }
+.bar:nth-last-child(-n + 5) .tip { left: auto; right: 0; translate: 0 0; }
+.axis { display: flex; justify-content: space-between; margin-top: 6px; color: var(--us-faint); font-size: 12px; }
+
+.split { display: grid; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); gap: 0 24px; }
+.table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.table th, .table td { padding: 8px 0; border-bottom: 1px solid var(--us-line); text-align: left; font-weight: 400; vertical-align: top; }
+.table thead th { color: var(--us-faint); font-size: 12px; }
+.table td, .table thead th:not(:first-child) { text-align: right; padding-left: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rowLabel { display: block; overflow-wrap: anywhere; }
+.rowBar { display: block; height: 4px; margin-top: 6px; border-radius: 2px; background: var(--us-mark); min-width: 2px; }
+
+.top { display: grid; margin: 0; padding: 0; list-style: none; font-size: 14px; }
+.top li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 4px 16px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--us-line); }
+.top a { overflow-wrap: anywhere; }
+.amount { font-variant-numeric: tabular-nums; }
+@media (max-width: 600px) {
+  .top li { grid-template-columns: minmax(0, 1fr) auto; }
+  .top .muted { grid-column: 1; grid-row: 2; font-size: 12px; }
+}

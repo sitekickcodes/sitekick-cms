@@ -21,6 +21,17 @@ and `EMAIL_FROM` (an address on a domain you've verified in AutoSend, e.g. `Acme
 Until then nothing is emailed: inviting someone shows you their set-password link to send
 yourself, and in development the full message is printed in the server log.
 
+## Agents and their cost
+
+The agent buttons (Draft from notes, Edit with words, Find details) call models through
+Vercel AI Gateway. Admins see what they cost under **AI usage** in the account menu. Set
+`SITEKICK_AI_BUDGET_USD` to see a monthly budget there too.
+
+`bun run evals` grades the agents on this site's own collections (`evals/cases.ts`) and
+appends the results to `evals/ledger.jsonl`. Run it before and after changing a model
+(`--models anthropic/claude-sonnet-5-5,anthropic/claude-haiku-5-5`) or an agent contract.
+It needs AI Gateway access (`bunx vercel env pull .env.local`) and costs a few cents.
+
 ## Where things are
 
 | Path | What |

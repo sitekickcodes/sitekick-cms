@@ -33,6 +33,7 @@ export { CommandPalette } from './CommandPalette'
 export { ProposalReview } from './review/ProposalReview'
 export { RunReview } from './review/RunReview'
 export { InboxView } from './review/InboxView'
+export { UsageView } from './review/UsageView'
 // Lists
 export { BoardLink } from './board/BoardLink'
 export { BoardView } from './board/BoardView'
