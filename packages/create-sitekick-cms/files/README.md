@@ -32,6 +32,15 @@ appends the results to `evals/ledger.jsonl`. Run it before and after changing a 
 (`--models anthropic/claude-sonnet-5-5,anthropic/claude-haiku-5-5`) or an agent contract.
 It needs AI Gateway access (`bunx vercel env pull .env.local`) and costs a few cents.
 
+## Your own features
+
+Anything this site needs that Sitekick doesn't have goes in `src/modules/<name>/`, as a module
+handed to `sitekickCMS({ modules })`. A module's collections get everything the built-in ones
+do: slugs, search details, the board, saved views and the agents. It can also add page
+sections, dashboard cards, command palette entries and help articles. `src/modules/events` is a
+complete example, and `src/modules/README.md` explains the rules. The `@sitekick` packages
+are never edited from here.
+
 ## Where things are
 
 | Path | What |

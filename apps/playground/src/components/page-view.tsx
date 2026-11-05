@@ -1,6 +1,7 @@
 import { RenderBlocks, RichText } from '@sitekick/blocks/react'
 
 import { LivePreview } from '@/components/live-preview'
+import { customBlocks } from '@/modules/frontend'
 import { ScrollToSection } from '@/components/scroll-to-section'
 import type { Page } from '@/payload-types'
 import { cms, isDraft } from '@/lib/cms'
@@ -30,7 +31,7 @@ export async function PageView({ page, section }: { page: Page & { previewing?: 
           </div>
         </header>
       )}
-      <RenderBlocks blocks={layout} anchors={Boolean(page.previewing)} />
+      <RenderBlocks blocks={layout} custom={customBlocks} anchors={Boolean(page.previewing)} />
       {page.previewing && section ? <ScrollToSection section={section} /> : null}
       {page.body ? (
         <section data-block="body" className="px-5 py-12 sm:px-8 sm:py-16 lg:px-12">

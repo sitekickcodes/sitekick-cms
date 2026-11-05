@@ -46,6 +46,8 @@ export type BuildInput = {
   accountPath: string
   logoutPath: string
   help: boolean
+  /** Site modules' commands; `href` under the admin route unless it is a full URL. */
+  extra?: { label: string; href: string; group?: 'Go to' | 'Create' | 'Actions'; hint?: string; keywords?: string[] }[]
 }
 
 export const PALETTE_OPEN_EVENT = 'sitekick:palette:open'
@@ -58,6 +60,10 @@ export function buildCommands(input: BuildInput): Command[] {
   const { adminRoute } = input
   const out: Command[] = [{ id: 'go:dashboard', label: 'Dashboard', group: 'Go to', href: adminRoute, keywords: ['home'] }]
   for (const v of input.views) out.push({ id: `go:view:${v.path}`, label: v.label, group: 'Go to', href: join(adminRoute, v.path) })
+  for (const c of input.extra ?? []) {
+    const href = /^https?:\/\//.test(c.href) ? c.href : join(adminRoute, c.href.startsWith('/') ? c.href : `/${c.href}`)
+    out.push({ id: `module:${c.label}`, label: c.label, group: c.group ?? 'Go to', href, ...(c.hint ? { hint: c.hint } : {}), ...(c.keywords ? { keywords: c.keywords } : {}) })
+  }
   for (const c of input.collections) {
     if (!c.canRead) continue
     out.push({ id: `go:${c.slug}`, label: c.labels.plural, group: 'Go to', href: join(adminRoute, `/collections/${c.slug}`), keywords: [c.slug] })

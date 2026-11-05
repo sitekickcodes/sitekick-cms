@@ -79,6 +79,15 @@ import { RenderBlocks, RichText } from '@sitekick/blocks/react'
 <RichText data={page.body} />
 ```
 
+A site's own sections (from a site module) render through `custom`, keyed by `blockType`:
+
+```tsx
+<RenderBlocks blocks={page.layout} custom={{ upcomingEvents: UpcomingEvents }} />
+```
+
+A section with no renderer shows a note in development and nothing in production. `Band`,
+`SectionHeading` and `Card` are exported so a site's sections match the library.
+
 `RenderBlocks` accepts `components` to swap a renderer per slug, for example a hero that uses `next/image`. Every section root carries `data-block="<slug>"`.
 
 ## Adding a block

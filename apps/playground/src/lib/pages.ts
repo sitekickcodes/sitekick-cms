@@ -13,7 +13,8 @@ import { cms, isDraft } from './cms'
 export async function findPage(slug: string, { proposal }: { proposal?: string } = {}): Promise<(Page & { previewing?: string }) | null> {
   const payload = await cms()
   const draft = await isDraft()
-  const { docs } = await payload.find({ collection: 'pages', where: { slug: { equals: slug } }, limit: 1, depth: 1, draft })
+  // The Local API returns drafts too; outside a preview only published pages are public.
+  const { docs } = await payload.find({ collection: 'pages', where: { slug: { equals: slug }, ...(draft ? {} : { _status: { equals: 'published' } }) }, limit: 1, depth: 1, draft })
   const page = docs[0] ?? null
   if (!page || !draft || !proposal) return page
   const applied = await applyProposalPreview({ payload, headers: await headers(), proposal, collection: 'pages', doc: page })

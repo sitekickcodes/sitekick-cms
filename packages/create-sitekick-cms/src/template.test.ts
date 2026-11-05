@@ -14,7 +14,7 @@ const playground: Files = new Map(
     .map((path) => [path, readFileSync(join(playgroundDir, path), 'utf8')]),
 )
 const template = toTemplate(playground, { version: '1.2.3' })
-const options = { name: 'acme-site', siteName: "Acme & Co's", description: 'Widgets.', accent: '#c2410c', people: true }
+const options = { name: 'acme-site', siteName: "Acme & Co's", description: 'Widgets.', accent: '#c2410c', people: true, events: true }
 
 describe('toTemplate', () => {
   test('leaves out demo scripts, migrations and the playground notes', () => {
@@ -61,6 +61,16 @@ describe('customize', () => {
     expect(files.has('src/collections/People.ts')).toBe(false)
     for (const [path, text] of files) {
       if (path.endsWith('.ts') && path !== 'src/payload-types.ts') expect(text).not.toMatch(/\bPeople\b|'people'/)
+    }
+  })
+
+  test('without Events, the module and its routes go and src/modules stays', () => {
+    const files = customize(template, { ...options, events: false })
+    expect([...files.keys()].filter((p) => /events/.test(p))).toEqual([])
+    expect(files.get('src/modules/index.ts')).toContain('export const modules: SiteModule[] = []')
+    expect(files.has('src/modules/README.md')).toBe(true)
+    for (const [path, text] of files) {
+      if (/\.tsx?$/.test(path) && path !== 'src/payload-types.ts') expect(text).not.toMatch(/modules\/events|eventBlocks|'\/events'/)
     }
   })
 

@@ -42,6 +42,16 @@ email" is hidden, and the message is logged (in full in development, recipient o
 production, so tokens stay out of hosted logs). A config that sets its own `email` adapter is
 left alone; `email: false` keeps Payload's default.
 
+## Site modules
+
+A client's own features live in its repo (`src/modules/<name>/`) and are handed to
+`sitekickCMS({ modules })`, never patched into this package. `defineModule` (`modules/index.ts`)
+takes `collections`, `globals`, `blocks` (added to `layout` fields, or `into`), `nav`,
+`dashboard` cards, palette `commands`, `help` articles (seeded on start-up when missing) and a
+`plugin` escape hatch. Modules are applied before every other step, so their collections get
+all the conventions. A slug clash throws. The playground's `src/modules/events` is the
+worked example; the docs page "Site modules" has the rules.
+
 ## Recipes
 
 Opt-in plugins added after `sitekickCMS(...)` in `plugins`, each exported from `@sitekick/cms`.

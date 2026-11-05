@@ -87,6 +87,8 @@ export type Options = {
   accent: string
   /** Keep the People collection (team, authors, partners; post authors link to it). */
   people: boolean
+  /** Keep the Events module (src/modules/events): the example of a site module. */
+  events: boolean
 }
 
 export function customize(template: Files, opts: Options): Files {
@@ -133,6 +135,19 @@ export function customize(template: Files, opts: Options): Files {
         '',
       ),
     )
+  }
+  if (!opts.events) {
+    // The module folder and its routes go; src/modules stays, empty, for the site's own.
+    for (const path of [...files.keys()]) {
+      if (path.startsWith('src/modules/events/') || path.startsWith('src/app/(frontend)/events/')) files.delete(path)
+    }
+    edit(files, 'src/modules/index.ts', (text) =>
+      replace(replace(text, "import { events } from './events'\n", ''), 'export const modules: SiteModule[] = [events]', 'export const modules: SiteModule[] = []'),
+    )
+    edit(files, 'src/modules/frontend.ts', (text) =>
+      replace(replace(text, "import { eventBlocks } from './events/frontend'\n", ''), 'export const customBlocks: CustomBlockComponents = { ...eventBlocks }', 'export const customBlocks: CustomBlockComponents = {}'),
+    )
+    edit(files, 'src/app/(frontend)/layout.tsx', (text) => replace(text, "  { href: '/events', label: 'Events' },\n", ''))
   }
   return files
 }

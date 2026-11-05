@@ -17,6 +17,8 @@ export type Row = {
   at: string
   href: string
   draft: boolean
+  /** Replaces the "2 days ago" on the right, e.g. an event's date. */
+  aside?: string
 }
 
 /** A collection label (string, locale map or function) as text. */

@@ -17,6 +17,7 @@ import { People } from './collections/People'
 import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
 import { SiteSettings } from './globals/SiteSettings'
+import { modules } from './modules'
 import { site, siteUrl } from './lib/site'
 
 const filename = fileURLToPath(import.meta.url)
@@ -74,6 +75,8 @@ export default buildConfig({
   plugins: [
     sitekickCMS({
       site,
+      // This site's own features (src/modules): added before the Sitekick conventions run.
+      modules,
       // The agent kit's routes are mounted at app/api/agents/[op].
       agents: { basePath: '/api/agents' },
       nav: [

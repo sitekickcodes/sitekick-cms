@@ -23,8 +23,11 @@ export { SigningIn } from './SigningIn'
 export { HelpProvider, useHelp } from './HelpProvider'
 export { HelpView } from './HelpView'
 export { HelpPreviewButton } from './HelpPreviewButton'
-// Dashboard
+// Dashboard, and the pieces a site's own cards are built from
 export { Dashboard } from './Dashboard'
+export { Card as DashboardPanel, Empty as DashboardEmpty } from './dashboard/Card'
+export { Rows as DashboardRows } from './dashboard/Rows'
+export type { CardContext as DashboardCardProps, Row as DashboardRow } from './dashboard/data'
 // Sidebar
 export { Nav } from './Nav'
 export { NavClient, NavHeader } from './NavClient'

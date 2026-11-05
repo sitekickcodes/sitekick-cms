@@ -16,7 +16,7 @@ export function Rows({ rows, empty }: { rows: Row[]; empty: string }) {
             </span>
             <span className={styles.rowAside}>
               {r.draft ? <span className={styles.tag}>Draft</span> : null}
-              {ago(r.at)}
+              {r.aside ?? ago(r.at)}
             </span>
           </a>
         </li>

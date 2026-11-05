@@ -34,7 +34,8 @@ export default buildConfig({
 | `help` | on | The help drawer and its `help-articles` collection. |
 | `invites` | on | One-step invites and the set-password controls. |
 | `email` | on | AutoSend email from the environment, unless the config sets its own `email` adapter. `false` keeps Payload's default. |
-| `dashboard` | on | The home view. |
+| `modules` | none | The site's own features. See [Site modules](./modules.md). |
+| `dashboard` | on | The home view. An object sets extra `cards`, the Create menu order and a date `range`. |
 | `savedViews` | on | Saved views on every collection in the sidebar. |
 | `board` | on | The board view on collections with drafts. |
 | `publicAgentSurface` | on | The public, read-only MCP server, `llms.txt`, OpenAPI and Markdown versions of pages. |

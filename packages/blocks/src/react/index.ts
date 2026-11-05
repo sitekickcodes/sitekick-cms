@@ -1,4 +1,4 @@
-export { RenderBlocks, blockComponents, type BlockComponents } from './render-blocks'
+export { RenderBlocks, blockComponents, type BlockComponents, type CustomBlock, type CustomBlockComponents } from './render-blocks'
 export { RichText, defaultInternalDocToHref, type RichTextProps } from './rich-text'
 export {
   Band,

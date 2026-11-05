@@ -1,5 +1,8 @@
 import type { CollectionConfig, GlobalConfig } from 'payload'
 
+import type { DashboardPluginOptions } from './dashboard/types'
+import type { SiteModule } from './modules'
+
 /** How a client identifies itself in the admin. Everything else is the Sitekick theme. */
 export type SiteIdentity = {
   /** Shown in the sidebar brand row, the tab title and emails. */
@@ -100,8 +103,10 @@ export type SitekickCMSOptions = {
    * the config sets no `email` adapter itself. `false` leaves Payload's default. Default on.
    */
   email?: false
-  /** Dashboard home. Default on. */
-  dashboard?: boolean
+  /** Dashboard home. Default on. An object sets its cards, Create menu and range. */
+  dashboard?: boolean | DashboardPluginOptions
+  /** The site's own features, from `src/modules` (modules/index.ts). Applied first. */
+  modules?: SiteModule[]
   /** Saved views (Payload query presets) on every collection in the sidebar. Default on. */
   savedViews?: boolean
   /** Board view (Draft, Changed, Published columns) on collections with drafts. Default on. */

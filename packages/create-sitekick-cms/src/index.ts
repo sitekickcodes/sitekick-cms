@@ -24,6 +24,7 @@ Options
   --description <text>   One sentence about the site, for agents and search.
   --accent <#rrggbb>     Brand colour. Default: #0f766e.
   --no-people            Leave out the People collection (team, authors, partners).
+  --no-events            Leave out the Events module (the example in src/modules).
   --database-url <url>   Postgres connection string for .env. Default: blank, set it later.
   --no-install           Write the files only.
   --no-git               Don't create a git repository.
@@ -42,6 +43,7 @@ type Args = {
   description?: string
   accent?: string
   people?: boolean
+  events?: boolean
   databaseUrl?: string
   install: boolean
   git: boolean
@@ -64,6 +66,8 @@ function parseArgs(argv: string[]): Args {
     } else if (a === '-y' || a === '--yes') args.yes = true
     else if (a === '--no-people') args.people = false
     else if (a === '--people') args.people = true
+    else if (a === '--no-events') args.events = false
+    else if (a === '--events') args.events = true
     else if (a === '--no-install') args.install = false
     else if (a === '--no-git') args.git = false
     else if (a === '--site-name') args.siteName = value(i++, a)
@@ -112,9 +116,10 @@ async function main() {
   if (args.accent && validAccent(args.accent)) fail(validAccent(args.accent)!)
   const people =
     args.people ?? (rl ? /^y/i.test(await ask('Include People (team, authors, partners)? y/n', 'y')) : true)
+  const events = args.events ?? (rl ? /^y/i.test(await ask('Include Events (calendar, event pages, an upcoming-events section)? y/n', 'y')) : true)
   rl?.close()
 
-  const files = customize(readTemplate(), { name, siteName, description, accent, people })
+  const files = customize(readTemplate(), { name, siteName, description, accent, people, events })
   if (args.packages) usePackageTarballs(files, args.packages)
   writeFiles(target, files)
   writeFileSync(join(target, '.env'), env(args.databaseUrl))

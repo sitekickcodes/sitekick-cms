@@ -24,6 +24,7 @@ export const SECTIONS: Section[] = [
     title: 'Guides',
     pages: [
       { slug: 'editing', title: 'The admin', source: content('editing.md'), description: 'What editors get: sidebar, home, lists, boards, pages, help.' },
+      { slug: 'modules', title: 'Site modules', source: content('modules.md'), description: 'Where a client’s own features go, and how they plug in.' },
       { slug: 'blocks', title: 'Pages and blocks', source: content('blocks.md'), description: 'The block library and how a page is built.' },
       { slug: 'agents', title: 'Agents', source: content('agents.md'), description: 'Draft from notes, Edit with words, Find details, and review.' },
       { slug: 'evals-and-cost', title: 'Evals and cost', source: content('evals-and-cost.md'), description: 'Measuring the agents, and what they spend.' },

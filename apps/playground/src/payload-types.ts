@@ -79,21 +79,22 @@ export type LexicalNodes_8799902D =
   | SerializedHeadingNode<LexicalNodes_8799902D, 'h1' | 'h2' | 'h3' | 'h4'>;
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LexicalNodes_F1E622EB".
+ * via the `definition` "LexicalNodes_D7B46451".
  */
-export type LexicalNodes_F1E622EB =
+export type LexicalNodes_D7B46451 =
   | SerializedTextNode
   | SerializedTabNode
   | SerializedLineBreakNode
-  | SerializedParagraphNode<LexicalNodes_F1E622EB>
+  | SerializedParagraphNode<LexicalNodes_D7B46451>
   | SerializedHorizontalRuleNode
   | SerializedUploadNode<'media'>
-  | SerializedQuoteNode<LexicalNodes_F1E622EB>
+  | SerializedQuoteNode<LexicalNodes_D7B46451>
   | SerializedRelationshipNode<
       | 'pages'
       | 'posts'
       | 'people'
       | 'users'
+      | 'events'
       | 'help-articles'
       | 'proposals'
       | 'runs'
@@ -104,11 +105,11 @@ export type LexicalNodes_F1E622EB =
       | 'payload-migrations'
       | 'payload-query-presets'
     >
-  | SerializedAutoLinkNode<LexicalNodes_F1E622EB, LexicalLinkFields>
-  | SerializedLinkNode<LexicalNodes_F1E622EB, LexicalLinkFields>
-  | SerializedListNode<LexicalNodes_F1E622EB>
-  | SerializedListItemNode<LexicalNodes_F1E622EB>
-  | SerializedHeadingNode<LexicalNodes_F1E622EB>;
+  | SerializedAutoLinkNode<LexicalNodes_D7B46451, LexicalLinkFields>
+  | SerializedLinkNode<LexicalNodes_D7B46451, LexicalLinkFields>
+  | SerializedListNode<LexicalNodes_D7B46451>
+  | SerializedListItemNode<LexicalNodes_D7B46451>
+  | SerializedHeadingNode<LexicalNodes_D7B46451>;
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "LexicalNodes_6E4E4BF6".
@@ -151,6 +152,7 @@ export interface Config {
     people: Person;
     media: Media;
     users: User;
+    events: Event;
     'help-articles': HelpArticle;
     proposals: Proposal;
     runs: Run;
@@ -169,6 +171,7 @@ export interface Config {
     people: PeopleSelect<false> | PeopleSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    events: EventsSelect<false> | EventsSelect<true>;
     'help-articles': HelpArticlesSelect<false> | HelpArticlesSelect<true>;
     proposals: ProposalsSelect<false> | ProposalsSelect<true>;
     runs: RunsSelect<false> | RunsSelect<true>;
@@ -261,7 +264,17 @@ export interface Page {
    * The page, top to bottom. Drag to reorder.
    */
   layout?:
-    | (HeroBlock | RichTextBlock | ImageTextBlock | StatsBlock | QuoteBlock | CardGridBlock | FaqBlock | CtaBlock)[]
+    | (
+        | HeroBlock
+        | RichTextBlock
+        | ImageTextBlock
+        | StatsBlock
+        | QuoteBlock
+        | CardGridBlock
+        | FaqBlock
+        | CtaBlock
+        | UpcomingEvents
+      )[]
     | null;
   /**
    * Copy below the sections. Blank = none.
@@ -752,6 +765,17 @@ export interface CtaBlock {
   blockType: 'cta';
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "UpcomingEvents".
+ */
+export interface UpcomingEvents {
+  heading?: string | null;
+  count: number;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'upcomingEvents';
+}
+/**
  * Shown on /news. Search and sharing details update automatically.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -777,7 +801,7 @@ export interface Post {
    */
   excerpt?: string | null;
   cover?: (number | null) | Media;
-  body: LexicalRichText<LexicalNodes_F1E622EB>;
+  body: LexicalRichText<LexicalNodes_D7B46451>;
   meta?: {
     title?: string | null;
     description?: string | null;
@@ -877,6 +901,68 @@ export interface Person {
   createdAt: string;
 }
 /**
+ * Shown on /events, soonest first. Past events drop off the list on their own.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events".
+ */
+export interface Event {
+  id: number;
+  title: string;
+  /**
+   * URL: /events/<slug>. Blank = from the title.
+   */
+  slug: string;
+  startsAt: string;
+  /**
+   * Blank = no end time shown.
+   */
+  endsAt?: string | null;
+  /**
+   * A place, or "Online". Blank = not shown.
+   */
+  location?: string | null;
+  /**
+   * One or two sentences for the list and search.
+   */
+  summary?: string | null;
+  /**
+   * Tickets or RSVP. Blank = no button.
+   */
+  signup?: string | null;
+  cover?: (number | null) | Media;
+  body?: LexicalRichText<LexicalNodes_D7B46451> | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Used when this page is shared. Without an image, the site uses its default share card.
+     */
+    image?: (number | null) | Media;
+  };
+  createdBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
+  updatedBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
  * The articles shown under Help in the sidebar. Write an article, choose a topic, and publish when it is ready. Drag to set the reading order.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -890,7 +976,7 @@ export interface HelpArticle {
    * The article's shared link. Keep it when changing the title so existing links still work.
    */
   slug: string;
-  topic: 'Getting started' | 'Content' | 'Media' | 'Account';
+  topic: 'Getting started' | 'Content' | 'Media' | 'Account' | 'Events';
   /**
    * A short description to help people find this article in search.
    */
@@ -1186,6 +1272,10 @@ export interface PayloadLockedDocument {
         value: number | User;
       } | null)
     | ({
+        relationTo: 'events';
+        value: number | Event;
+      } | null)
+    | ({
         relationTo: 'help-articles';
         value: number | HelpArticle;
       } | null)
@@ -1295,7 +1385,16 @@ export interface PayloadQueryPreset {
     };
   };
   relatedCollection:
-    'pages' | 'posts' | 'people' | 'media' | 'users' | 'help-articles' | 'proposals' | 'runs' | 'payload-mcp-api-keys';
+    | 'pages'
+    | 'posts'
+    | 'people'
+    | 'media'
+    | 'users'
+    | 'events'
+    | 'help-articles'
+    | 'proposals'
+    | 'runs'
+    | 'payload-mcp-api-keys';
   /**
    * This is a temporary field used to determine if updating the preset would remove the user's access to it. When `true`, this record will be deleted after running the preset's `validate` function.
    */
@@ -1354,6 +1453,14 @@ export interface PagesSelect<T extends boolean = true> {
         cardGrid?: T | CardGridBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         cta?: T | CtaBlockSelect<T>;
+        upcomingEvents?:
+          | T
+          | {
+              heading?: T;
+              count?: T;
+              id?: T;
+              blockName?: T;
+            };
       };
   body?: T;
   cover?: T;
@@ -1649,6 +1756,33 @@ export interface UsersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events_select".
+ */
+export interface EventsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  startsAt?: T;
+  endsAt?: T;
+  location?: T;
+  summary?: T;
+  signup?: T;
+  cover?: T;
+  body?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  createdBy?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "help-articles_select".
  */
 export interface HelpArticlesSelect<T extends boolean = true> {
@@ -1926,6 +2060,7 @@ export interface CollectionQueryWidget {
       | 'people'
       | 'media'
       | 'users'
+      | 'events'
       | 'help-articles'
       | 'proposals'
       | 'runs'
@@ -1958,6 +2093,7 @@ export interface ActivityWidget {
           | 'people'
           | 'media'
           | 'users'
+          | 'events'
           | 'help-articles'
           | 'proposals'
           | 'runs'

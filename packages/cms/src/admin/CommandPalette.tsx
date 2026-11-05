@@ -57,6 +57,7 @@ export function CommandPalette({ children }: { children?: ReactNode }) {
         accountPath: config.admin.routes.account,
         logoutPath: config.admin.routes.logout,
         help: custom?.help ?? true,
+        extra: custom?.commands ?? [],
       }),
     [adminRoute, collections, config.globals, config.admin.routes, permissions, custom],
   )
