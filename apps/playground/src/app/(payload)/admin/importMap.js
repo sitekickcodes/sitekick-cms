@@ -25,6 +25,8 @@ import { SEOPreview as SEOPreview_3c4e1d732ae6727d2b5b078221a842c9 } from '@site
 import { LLMInstructionsMenuItem as LLMInstructionsMenuItem_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
 import { SEOAutofill as SEOAutofill_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
 import { EditButton as EditButton_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
+import { BoardLink as BoardLink_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
+import { BoardView as BoardView_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
 import { RelationshipCell as RelationshipCell_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
 import { InlineToolbarFeatureClient as InlineToolbarFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { RelationshipFeatureClient as RelationshipFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
@@ -45,6 +47,14 @@ import { HelpPreviewButton as HelpPreviewButton_3c4e1d732ae6727d2b5b078221a842c9
 import { StatusCell as StatusCell_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
 import { ProposalReview as ProposalReview_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
 import { RunReview as RunReview_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
+import { QueryPresetsHeading as QueryPresetsHeading_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
+import { QueryPresetsGroupByCell as QueryPresetsGroupByCell_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
+import { QueryPresetsGroupByField as QueryPresetsGroupByField_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
+import { QueryPresetsColumnsCell as QueryPresetsColumnsCell_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
+import { QueryPresetsColumnField as QueryPresetsColumnField_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
+import { QueryPresetsWhereCell as QueryPresetsWhereCell_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
+import { QueryPresetsWhereField as QueryPresetsWhereField_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
+import { QueryPresetsAccessCell as QueryPresetsAccessCell_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
 import { LLMInstructionsDescription as LLMInstructionsDescription_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
 import { LLMInstructionsCell as LLMInstructionsCell_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
 import { Nav as Nav_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
@@ -61,7 +71,6 @@ import { Dashboard as Dashboard_3c4e1d732ae6727d2b5b078221a842c9 } from '@siteki
 import { WelcomeWidget as WelcomeWidget_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
 import { CollectionCards as CollectionCards_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
 import { CollectionQueryWidget as CollectionQueryWidget_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
-import { QueryPresetsWhereField as QueryPresetsWhereField_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
 import { CollectionQuerySortField as CollectionQuerySortField_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
 import { ActivityWidget as ActivityWidget_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
 import { CollectionFilter as CollectionFilter_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
@@ -97,6 +106,8 @@ export const importMap = {
   "@payloadcms/ui#LLMInstructionsMenuItem": LLMInstructionsMenuItem_3817bf644402e67bfe6577f60ef982de,
   "@sitekick/cms/admin#SEOAutofill": SEOAutofill_3c4e1d732ae6727d2b5b078221a842c9,
   "@sitekick/cms/admin#EditButton": EditButton_3c4e1d732ae6727d2b5b078221a842c9,
+  "@sitekick/cms/admin#BoardLink": BoardLink_3c4e1d732ae6727d2b5b078221a842c9,
+  "@sitekick/cms/admin#BoardView": BoardView_3c4e1d732ae6727d2b5b078221a842c9,
   "@sitekick/cms/admin#RelationshipCell": RelationshipCell_3c4e1d732ae6727d2b5b078221a842c9,
   "@payloadcms/richtext-lexical/client#InlineToolbarFeatureClient": InlineToolbarFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#RelationshipFeatureClient": RelationshipFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
@@ -117,6 +128,14 @@ export const importMap = {
   "@sitekick/cms/admin#StatusCell": StatusCell_3c4e1d732ae6727d2b5b078221a842c9,
   "@sitekick/cms/admin#ProposalReview": ProposalReview_3c4e1d732ae6727d2b5b078221a842c9,
   "@sitekick/cms/admin#RunReview": RunReview_3c4e1d732ae6727d2b5b078221a842c9,
+  "@payloadcms/ui#QueryPresetsHeading": QueryPresetsHeading_3817bf644402e67bfe6577f60ef982de,
+  "@payloadcms/ui#QueryPresetsGroupByCell": QueryPresetsGroupByCell_3817bf644402e67bfe6577f60ef982de,
+  "@payloadcms/ui#QueryPresetsGroupByField": QueryPresetsGroupByField_3817bf644402e67bfe6577f60ef982de,
+  "@payloadcms/ui#QueryPresetsColumnsCell": QueryPresetsColumnsCell_3817bf644402e67bfe6577f60ef982de,
+  "@payloadcms/ui#QueryPresetsColumnField": QueryPresetsColumnField_3817bf644402e67bfe6577f60ef982de,
+  "@payloadcms/ui#QueryPresetsWhereCell": QueryPresetsWhereCell_3817bf644402e67bfe6577f60ef982de,
+  "@payloadcms/ui#QueryPresetsWhereField": QueryPresetsWhereField_3817bf644402e67bfe6577f60ef982de,
+  "@payloadcms/ui#QueryPresetsAccessCell": QueryPresetsAccessCell_3817bf644402e67bfe6577f60ef982de,
   "@payloadcms/ui#LLMInstructionsDescription": LLMInstructionsDescription_3817bf644402e67bfe6577f60ef982de,
   "@payloadcms/ui/rsc#LLMInstructionsCell": LLMInstructionsCell_ab83ff7e88da8d3530831f296ec4756a,
   "@sitekick/cms/admin#Nav": Nav_3c4e1d732ae6727d2b5b078221a842c9,
@@ -133,7 +152,6 @@ export const importMap = {
   "@payloadcms/ui/rsc#WelcomeWidget": WelcomeWidget_ab83ff7e88da8d3530831f296ec4756a,
   "@payloadcms/ui/rsc#CollectionCards": CollectionCards_ab83ff7e88da8d3530831f296ec4756a,
   "@payloadcms/ui/rsc#CollectionQueryWidget": CollectionQueryWidget_ab83ff7e88da8d3530831f296ec4756a,
-  "@payloadcms/ui#QueryPresetsWhereField": QueryPresetsWhereField_3817bf644402e67bfe6577f60ef982de,
   "@payloadcms/ui#CollectionQuerySortField": CollectionQuerySortField_3817bf644402e67bfe6577f60ef982de,
   "@payloadcms/ui/rsc#ActivityWidget": ActivityWidget_ab83ff7e88da8d3530831f296ec4756a,
   "@payloadcms/ui#CollectionFilter": CollectionFilter_3817bf644402e67bfe6577f60ef982de,

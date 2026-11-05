@@ -8,6 +8,7 @@ import { freshCopy } from './conventions/freshCopy'
 import { dashboardPlugin } from './dashboard'
 import { emailPlugin } from './email'
 import { helpPlugin } from './help'
+import { listsPlugin } from './lists'
 import { navPlugin } from './nav'
 import { palettePlugin } from './palette'
 import { reviewPlugin } from './review'
@@ -36,6 +37,7 @@ export const sitekickCMS =
       contractPlugin({ site: options.site, usersSlug: options.usersSlug }),
       ...conventions(options),
       agentUIPlugin(options),
+      listsPlugin(options),
       navPlugin(options),
       dashboardPlugin(options),
       palettePlugin(options),

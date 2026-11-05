@@ -33,6 +33,9 @@ export { CommandPalette } from './CommandPalette'
 export { ProposalReview } from './review/ProposalReview'
 export { RunReview } from './review/RunReview'
 export { InboxView } from './review/InboxView'
+// Lists
+export { BoardLink } from './board/BoardLink'
+export { BoardView } from './board/BoardView'
 // Agent buttons (placed by agent/ui.ts from the contract)
 export { AltTextButton } from './agents/AltTextButton'
 export { DraftButton } from './agents/DraftButton'

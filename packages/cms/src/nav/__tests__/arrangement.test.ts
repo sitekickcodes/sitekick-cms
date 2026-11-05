@@ -140,6 +140,7 @@ describe('helpers', () => {
   test('parseEditPath', () => {
     expect(parseEditPath('/admin', '/admin/collections/pages/42')).toEqual({ slug: 'pages', id: '42' })
     expect(parseEditPath('/admin', '/admin/collections/pages/create')).toBeNull()
+    expect(parseEditPath('/admin', '/admin/collections/pages/board')).toBeNull()
     expect(parseEditPath('/admin', '/admin/collections/pages')).toBeNull()
     expect(parseEditPath('/admin', '/admin/collections/pages/42/versions')).toBeNull()
     expect(parseEditPath('/admin', '/admin/globals/site')).toBeNull()

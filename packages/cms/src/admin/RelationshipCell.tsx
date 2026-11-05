@@ -16,8 +16,8 @@ import { formatDocTitle } from '@payloadcms/ui/shared'
  * page (the observer never fires there) shows every relationship as missing
  * when the value is right there. This asks straight away through the same
  * batched loader (`useListRelationships`, one request per related
- * collection), says "Loading…" while it waits, and keeps the empty state for
- * rows that really have no value.
+ * collection), says "Loading…" while it waits, and shows a dash for rows
+ * that really have no value.
  */
 type Ref = { relationTo: string; value: number | string }
 
@@ -81,13 +81,13 @@ export function RelationshipCell(props: DefaultCellComponentProps<RelationshipFi
   // table's first column keeps what a custom Cell otherwise loses: the link
   // to the row's doc in list views, the select button in list drawers, and
   // the pencil that opens the row in a drawer in join tables (all decided by
-  // RenderDefaultCell from `link` and its table/drawer context). No refs →
-  // no cellData → its "<No Author>" empty state.
+  // RenderDefaultCell from `link` and its table/drawer context). No refs → a
+  // dash, not Payload's "<No Author>".
   return (
     <RenderDefaultCell
       clientProps={{
         ...props,
-        cellData: all.length > 0 ? text : undefined,
+        cellData: all.length > 0 ? text : '—',
         field: { ...field, type: 'text' } as unknown as TextFieldClient,
       }}
       columnIndex={props.columnIndex ?? 0}

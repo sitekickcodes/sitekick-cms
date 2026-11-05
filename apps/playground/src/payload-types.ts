@@ -79,16 +79,16 @@ export type LexicalNodes_8799902D =
   | SerializedHeadingNode<LexicalNodes_8799902D, 'h1' | 'h2' | 'h3' | 'h4'>;
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LexicalNodes_EBEEF149".
+ * via the `definition` "LexicalNodes_F1E622EB".
  */
-export type LexicalNodes_EBEEF149 =
+export type LexicalNodes_F1E622EB =
   | SerializedTextNode
   | SerializedTabNode
   | SerializedLineBreakNode
-  | SerializedParagraphNode<LexicalNodes_EBEEF149>
+  | SerializedParagraphNode<LexicalNodes_F1E622EB>
   | SerializedHorizontalRuleNode
   | SerializedUploadNode<'media'>
-  | SerializedQuoteNode<LexicalNodes_EBEEF149>
+  | SerializedQuoteNode<LexicalNodes_F1E622EB>
   | SerializedRelationshipNode<
       | 'pages'
       | 'posts'
@@ -102,12 +102,13 @@ export type LexicalNodes_EBEEF149 =
       | 'payload-locked-documents'
       | 'payload-preferences'
       | 'payload-migrations'
+      | 'payload-query-presets'
     >
-  | SerializedAutoLinkNode<LexicalNodes_EBEEF149, LexicalLinkFields>
-  | SerializedLinkNode<LexicalNodes_EBEEF149, LexicalLinkFields>
-  | SerializedListNode<LexicalNodes_EBEEF149>
-  | SerializedListItemNode<LexicalNodes_EBEEF149>
-  | SerializedHeadingNode<LexicalNodes_EBEEF149>;
+  | SerializedAutoLinkNode<LexicalNodes_F1E622EB, LexicalLinkFields>
+  | SerializedLinkNode<LexicalNodes_F1E622EB, LexicalLinkFields>
+  | SerializedListNode<LexicalNodes_F1E622EB>
+  | SerializedListItemNode<LexicalNodes_F1E622EB>
+  | SerializedHeadingNode<LexicalNodes_F1E622EB>;
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "LexicalNodes_6E4E4BF6".
@@ -158,6 +159,7 @@ export interface Config {
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
+    'payload-query-presets': PayloadQueryPreset;
     'payload-llm-instructions': PayloadLlmInstruction;
   };
   collectionsJoins: {};
@@ -175,6 +177,7 @@ export interface Config {
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
+    'payload-query-presets': PayloadQueryPresetsSelect<false> | PayloadQueryPresetsSelect<true>;
     'payload-llm-instructions': PayloadLlmInstructionsSelect<false> | PayloadLlmInstructionsSelect<true>;
   };
   db: {
@@ -774,7 +777,7 @@ export interface Post {
    */
   excerpt?: string | null;
   cover?: (number | null) | Media;
-  body: LexicalRichText<LexicalNodes_EBEEF149>;
+  body: LexicalRichText<LexicalNodes_F1E622EB>;
   meta?: {
     title?: string | null;
     description?: string | null;
@@ -1247,6 +1250,56 @@ export interface PayloadMigration {
   id: number;
   name?: string | null;
   batch?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-query-presets".
+ */
+export interface PayloadQueryPreset {
+  id: number;
+  title: string;
+  groupBy?: string | null;
+  columns?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  where?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  isShared?: boolean | null;
+  access?: {
+    read?: {
+      constraint?: ('everyone' | 'onlyMe' | 'specificUsers') | null;
+      users?: (number | User)[] | null;
+    };
+    update?: {
+      constraint?: ('everyone' | 'onlyMe' | 'specificUsers') | null;
+      users?: (number | User)[] | null;
+    };
+    delete?: {
+      constraint?: ('everyone' | 'onlyMe' | 'specificUsers') | null;
+      users?: (number | User)[] | null;
+    };
+  };
+  relatedCollection:
+    'pages' | 'posts' | 'people' | 'media' | 'users' | 'help-articles' | 'proposals' | 'runs' | 'payload-mcp-api-keys';
+  /**
+   * This is a temporary field used to determine if updating the preset would remove the user's access to it. When `true`, this record will be deleted after running the preset's `validate` function.
+   */
+  isTemp?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1725,6 +1778,43 @@ export interface PayloadPreferencesSelect<T extends boolean = true> {
 export interface PayloadMigrationsSelect<T extends boolean = true> {
   name?: T;
   batch?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-query-presets_select".
+ */
+export interface PayloadQueryPresetsSelect<T extends boolean = true> {
+  title?: T;
+  groupBy?: T;
+  columns?: T;
+  where?: T;
+  isShared?: T;
+  access?:
+    | T
+    | {
+        read?:
+          | T
+          | {
+              constraint?: T;
+              users?: T;
+            };
+        update?:
+          | T
+          | {
+              constraint?: T;
+              users?: T;
+            };
+        delete?:
+          | T
+          | {
+              constraint?: T;
+              users?: T;
+            };
+      };
+  relatedCollection?: T;
+  isTemp?: T;
   updatedAt?: T;
   createdAt?: T;
 }

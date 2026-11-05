@@ -102,6 +102,10 @@ export type SitekickCMSOptions = {
   email?: false
   /** Dashboard home. Default on. */
   dashboard?: boolean
+  /** Saved views (Payload query presets) on every collection in the sidebar. Default on. */
+  savedViews?: boolean
+  /** Board view (Draft, Changed, Published columns) on collections with drafts. Default on. */
+  board?: boolean
   /** Public read-only MCP server, llms.txt and OpenAPI. Default on. */
   publicAgentSurface?: boolean
   /**

@@ -100,7 +100,7 @@ export default buildConfig({
 - **Sidebar.** Arrangement as data (areas → links, icon, label override, filtered links with a query string). Collapsed areas, pinned and recent documents, "More" for unplaced collections, Users and API keys in the account menu, help at the foot. Built on `NavWrapper`, `groupNavItems` and `RenderServerComponent`, no Payload class names inside. Lifted from Yimby's `nav/`.
 - **Home.** Greeting in the editor's time zone, a Create menu, and streamed cards: drafts waiting, proposals to review, runs in progress, scheduled publishes, recent edits, site pulse (PostHog or Vercel Analytics when configured). Each card is a Suspense boundary. Dismissible welcome stored in user preferences, read server-side so it never flashes.
 - **Command palette.** Cmd+K: jump to any document, create in any collection, run an action, open a help guide. Payload's search endpoint plus a static command registry contributed by recipes.
-- **Lists.** Filter count badge, filter panel opens on arrival at a filtered list, status as coloured tags, custom relationship cells (fixes the stock "<No X>"), saved views (phase 2), board view by status (phase 2).
+- **Lists.** Filter count badge, filter panel opens on arrival at a filtered list, status as coloured tags, custom relationship cells (fixes the stock "<No X>"), saved views (Payload query presets), board view by status at `/collections/<slug>/board`.
 - **Edit view.** Tabs renamed Content / History, API tab hidden. Status, SEO, preview and activity in the sidebar. Row labels show a real title. Clicking an image opens the media drawer. Live preview with phone, tablet and desktop sizes. Open, mailto and tel buttons inside link, email and phone inputs.
 - **Help drawer.** Non-modal left drawer, searchable, minimisable, never touches the route or an unsaved form. Content from a `help-articles` collection with drafts and preview; recipes ship their own articles. Shareable as `/admin?help=<id>`.
 - **Sign-in and users.** Branded auth frame, "Signing in…" overlay, no autofocus (1Password), set-password on create, "Send reset email" on someone else's account, one-step invite, invited and last-sign-in stamps, `name` for display with `email` as title.
@@ -216,7 +216,7 @@ Generalised from the civic research agent. Yimby-specific tools stay in Yimby; t
 - Exit: a demo where an editor creates a partner by name, the agent enriches it, the editor reviews per field and accepts; and writes a post from notes.
 
 ### Phase 2 — platform (months 2–3)
-- Edit with words (shipped 2026-11-04). Saved views and board view. Google sign-in recipe. Localisation recipe.
+- Edit with words (shipped 2026-11-04). Saved views and board view (shipped 2026-11-05: Payload query presets on every sidebar collection; a Draft / Changed / Published board on collections with drafts, where moving a card publishes or unpublishes after a confirm). Google sign-in recipe. Localisation recipe.
 - `create-sitekick-cms` CLI and template (built 2026-11-04; the template ships inside the CLI, generated from the playground, so there is no separate template repo). First npm publish waits on the `@sitekick` npm org. Docs site.
 - Evals harness and cost dashboard. Plain AI SDK adapter alongside eve.
 - Last Best Comedy and Yimby stay untouched for now (decided 2026-11-04). Their repos and CMSs are reference only: no branches, commits, deploys or CMS writes. Moving them onto the packages is deferred until John says go, and will be planned with him first.

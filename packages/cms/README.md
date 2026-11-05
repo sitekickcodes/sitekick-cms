@@ -19,6 +19,7 @@ src/
   help/             help-articles collection and the drawer
   nav/              sidebar arrangement engine
   dashboard/        home view
+  lists/            saved views and the board view
 ```
 
 ## Rules
@@ -40,6 +41,21 @@ both are, nothing is sent: invites hand the admin the set-password link to pass 
 email" is hidden, and the message is logged (in full in development, recipient only in
 production, so tokens stay out of hosted logs). A config that sets its own `email` adapter is
 left alone; `email: false` keeps Payload's default.
+
+## Lists
+
+Every collection in the sidebar gets saved views: Payload's query presets, so an editor can
+save filters, columns, sort and grouping under a name, for themselves or shared
+(`lists/index.ts`). They need the `payload-query-presets` table, so add a migration after
+upgrading. `savedViews: false` turns them off; a collection that sets `enableQueryPresets`
+keeps its own choice.
+
+Collections with drafts also get a board at `/admin/collections/<slug>/board`, opened from the
+"Board" button beside Create new. It has three columns: Draft (not on the site), Changed (live,
+with edits that aren't published) and Published. Dragging a card to Published, or using its
+Publish button, publishes the latest draft; dragging it to Draft unpublishes it. Every move
+is confirmed first, and a failed publish names the fields to fix. Cards show the first
+image field as a thumbnail. `board: false` turns it off.
 
 ## Agent buttons
 

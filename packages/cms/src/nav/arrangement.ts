@@ -216,7 +216,8 @@ export function parseEditPath(adminRoute: string, pathname: string): { slug: str
   const rest = pathname.slice(`${base}/collections/`.length).split('/')
   const [slug, id, ...more] = rest
   if (!slug || !id || more.length) return null
-  if (id === 'create' || id === 'trash') return null
+  // Collection views that aren't documents (lists/index.ts adds `board`).
+  if (id === 'create' || id === 'trash' || id === 'board') return null
   return { slug, id }
 }
 
