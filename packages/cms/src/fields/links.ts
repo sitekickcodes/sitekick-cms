@@ -61,6 +61,11 @@ const withButton = <A extends TextField['admin'] | EmailField['admin']>(button: 
     components: { ...admin?.components, afterInput: [button, ...(admin?.components?.afterInput ?? [])] },
   }) as A
 const withOpenLink = (admin: TextField['admin']) => withButton(OPEN_LINK, admin)
+/** Addresses and numbers are the same in every language (recipes/localization.ts reads this). */
+const shared = (field: { custom?: Record<string, unknown> }) => ({
+  ...field.custom,
+  sitekick: { localized: false, ...(field.custom?.sitekick as object | undefined) },
+})
 const withHook = (field: Text, hook: FieldHook) => ({
   ...field.hooks,
   beforeValidate: [...(field.hooks?.beforeValidate ?? []), hook],
@@ -69,6 +74,7 @@ const withHook = (field: Text, hook: FieldHook) => ({
 export function externalLink(field: Text): TextField {
   return {
     ...field,
+    custom: shared(field),
     type: 'text',
     hooks: withHook(field, tidyLink(false)),
     admin: withOpenLink({ placeholder: 'https://', ...field.admin }),
@@ -82,6 +88,7 @@ export function externalLink(field: Text): TextField {
 export function siteLink(field: Text): TextField {
   return {
     ...field,
+    custom: shared(field),
     type: 'text',
     hooks: withHook(field, tidyLink(true)),
     admin: withOpenLink({ placeholder: '/page-on-this-site or https://', ...field.admin }),
@@ -97,6 +104,7 @@ export function siteLink(field: Text): TextField {
 export function emailField(field: Omit<EmailField, 'type'> & { type?: 'email' | 'text' }): EmailField {
   return {
     ...field,
+    custom: shared(field),
     type: 'email',
     hooks: { ...field.hooks, beforeValidate: [...(field.hooks?.beforeValidate ?? []), tidyEmailHook] },
     admin: withButton(EMAIL_LINK, field.admin),
@@ -104,12 +112,12 @@ export function emailField(field: Omit<EmailField, 'type'> & { type?: 'email' | 
 }
 
 export function tidyEmail(field: Text): TextField {
-  return { ...field, type: 'text', hooks: withHook(field, tidyEmailHook), admin: withButton(EMAIL_LINK, field.admin) } as TextField
+  return { ...field, custom: shared(field), type: 'text', hooks: withHook(field, tidyEmailHook), admin: withButton(EMAIL_LINK, field.admin) } as TextField
 }
 
 /** Tidy only (https:// on a bare domain, trimmed), no check: public-form input. */
 export function lenientLink(field: Text): TextField {
-  return { ...field, type: 'text', hooks: withHook(field, tidyLink(false)) } as TextField
+  return { ...field, custom: shared(field), type: 'text', hooks: withHook(field, tidyLink(false)) } as TextField
 }
 
 /** "(415) 555-0123" for a US number (10 digits, or 11 starting with 1), with
@@ -130,6 +138,7 @@ export function formatPhone(value: unknown): unknown {
 export function phoneField(field: Text): TextField {
   return {
     ...field,
+    custom: shared(field),
     type: 'text',
     hooks: withHook(field, ({ value }) => formatPhone(value)),
     admin: withButton(CALL_LINK, { placeholder: '(415) 555-0123', ...field.admin }),

@@ -64,6 +64,31 @@ also lets in anyone from that Google Workspace, creating an editor account on fi
 account, cancelled, or expired. The session is Payload's own cookie, and the last sign-in stamp
 updates (`recipes/google.ts`).
 
+### Localisation
+
+```ts
+plugins: [sitekickCMS({ site }), localization({ locales: ['en', 'es'] })]
+```
+
+Sets up Payload's localisation (the locale switcher in the admin, fallback to the default
+locale) and marks which fields are translated, so nothing is hand-marked. Words are
+translated, and structure is shared. Text, textarea and rich text fields are translated
+wherever they are, inside groups, arrays and blocks too, so a translator fills in the same
+page in another language rather than rebuilding it. Slugs, `href`/`url` fields, the link,
+email and phone field builders, dates, numbers, choices, relationships and images are shared.
+The automatic SEO title and description follow each language.
+
+By default it covers every collection in the sidebar and every global, but not accounts or
+Sitekick's own collections (help, proposals, runs). `collections` and `globals` narrow that;
+a field with `localized` set, or `custom: { sitekick: { localized: false } }`, keeps its
+choice. Locale codes get their own names in the switcher (`es` shows as "Español"); pass
+`{ code, label }` to change one.
+
+It changes the database (translated values move to `_locales` tables), so create a migration;
+existing content becomes the default locale's. The frontend asks for a language with
+`payload.find({ ..., locale })`; putting the locale in the URL (`/es/about-us`) is the site's
+routing. Agent proposals still write the default locale.
+
 ## Lists
 
 Every collection in the sidebar gets saved views: Payload's query presets, so an editor can
