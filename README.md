@@ -21,6 +21,8 @@ Status: phase 2, first beta (`0.1.0-beta.0`). Read [`docs/PLAN.md`](docs/PLAN.md
 - `create-sitekick-cms` — generates a client app from the playground.
 - `apps/playground` — the demo client site used to build and test everything, deployed on
   Vercel + Neon.
+- `apps/docs` — the docs site: guides in `apps/docs/content`, and the package READMEs as the
+  reference. `bun run dev` in `apps/docs` serves it on port 3400.
 
 ## Start a site
 
