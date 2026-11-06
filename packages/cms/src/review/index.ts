@@ -2,18 +2,15 @@ import type { CollectionSlug, Payload, PayloadRequest, Plugin } from 'payload'
 
 import type { SitekickCMSOptions } from '../types'
 import { proposalsCollection, reviewSlugs, runsCollection, type ReviewCollectionOptions } from './collections'
+import { INBOX_PATH, USAGE_PATH } from './shared'
 
 export { proposalsCollection, runsCollection, reviewSlugs } from './collections'
 export type { ReviewCollectionOptions } from './collections'
 export * from './shared'
-export { fieldLabel, fieldAtPath, renderValue, lexicalParagraphs, type Rendered } from './render'
+export { fieldLabel, fieldAtPath, renderValue, lexicalBlocks, lexicalParagraphs, type Rendered, type RichItem } from './render'
 
 export type ReviewPluginOptions = Omit<ReviewCollectionOptions, 'usersSlug'>
 
-/** Where the inbox lives under the admin route. */
-export const INBOX_PATH = '/inbox'
-/** What the agents cost (admin/review/UsageView.tsx), from runs.costUsd. */
-export const USAGE_PATH = '/usage'
 
 /**
  * The review inbox: the `proposals` and `runs` collections under the Inbox

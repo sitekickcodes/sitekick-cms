@@ -8,6 +8,7 @@ import { ACTIVE_RUN_STATUSES, RUN_STATUS_MAP, asQuestion, asSteps, type RunStatu
 import { StatusTag } from '../StatusTag'
 import { money, relative, type RunView } from './model'
 import styles from './review.module.css'
+import { useInboxCrumbs } from './useInboxCrumbs'
 
 const POLL_MS = 3000
 
@@ -18,6 +19,7 @@ const POLL_MS = 3000
  * the person prefers reduced motion (CSS).
  */
 export function RunReviewClient({ initial }: { initial: RunView }) {
+  useInboxCrumbs(initial.title)
   const router = useRouter()
   const [run, setRun] = useState(initial)
   // A server refresh (below) re-resolves the target and proposal links.
@@ -82,7 +84,6 @@ export function RunReviewClient({ initial }: { initial: RunView }) {
     <>
       <header className={styles.head}>
         <div>
-          <h1 className={styles.title}>{run.title}</h1>
           <p className={styles.lede}>
             {run.target ? (
               <>

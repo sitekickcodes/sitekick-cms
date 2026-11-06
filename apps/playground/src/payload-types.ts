@@ -1021,7 +1021,7 @@ export interface HelpArticle {
   _status?: ('draft' | 'published') | null;
 }
 /**
- * Changes an agent would like to make. Open one to accept or reject each field; nothing reaches the site until you do.
+ * Changes an agent would like to make. Accept or reject each field; nothing reaches the site until you do.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "proposals".
@@ -1108,7 +1108,7 @@ export interface Proposal {
   createdAt: string;
 }
 /**
- * Agent jobs, live. Open one to follow its progress, answer a question, cancel it or try again.
+ * Agent jobs, live: follow the progress, answer a question, cancel or try again.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "runs".

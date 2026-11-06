@@ -8,6 +8,7 @@ import { hostOf, readableExcerpt } from '../../review/shared'
 import { StatusTag } from '../StatusTag'
 import { relative, type FieldView, type ProposalView } from './model'
 import styles from './review.module.css'
+import { useInboxCrumbs } from './useInboxCrumbs'
 import { ProposalPreview, SectionList } from './Sections'
 import { Value } from './Value'
 
@@ -18,6 +19,7 @@ import { Value } from './Value'
  * link to the document the first acceptance created.
  */
 export function ProposalReviewClient({ initial }: { initial: ProposalView }) {
+  useInboxCrumbs(initial.title)
   const [view, setView] = useState(initial)
   const [busy, setBusy] = useState<string | null>(null)
   const [now, setNow] = useState(() => Date.now())
@@ -75,7 +77,6 @@ export function ProposalReviewClient({ initial }: { initial: ProposalView }) {
     <>
       <header className={styles.head}>
         <div>
-          <h1 className={styles.title}>{view.title}</h1>
           <p className={styles.lede}>
             {view.target.doc ? (
               <>

@@ -13,12 +13,19 @@ import { rowLabelOf } from '../conventions/rowLabelOf'
 export type Rendered =
   | { kind: 'empty' }
   | { kind: 'text'; text: string }
-  | { kind: 'paragraphs'; items: string[] }
+  | { kind: 'rich'; items: RichItem[] }
   | { kind: 'list'; items: string[] }
   | { kind: 'ref'; collection: string; id: string; label: string; src?: string }
   | { kind: 'image'; src: string; credit?: string }
   | { kind: 'links'; items: Array<{ label: string; href: string }> }
   | { kind: 'json'; text: string }
+
+/** One block of rich text as the review shows it: headings stay headings, lists stay lists. */
+export type RichItem =
+  | { type: 'heading'; text: string; level: number }
+  | { type: 'paragraph'; text: string }
+  | { type: 'quote'; text: string }
+  | { type: 'list'; ordered: boolean; items: string[] }
 
 /** Where a value points when the field is a relationship or upload. */
 export type RefTarget = { collection: string; id: string }
@@ -106,7 +113,27 @@ function textOf(node: unknown): string {
   return (n.children ?? []).map(textOf).join('')
 }
 
-/** One string per top-level block; list items get a bullet, headings keep their text. */
+/** The top-level blocks of a Lexical tree, keeping what kind of block each is. */
+export function lexicalBlocks(value: unknown): RichItem[] {
+  if (!isLexical(value)) return []
+  const out: RichItem[] = []
+  for (const block of value.root.children ?? []) {
+    const b = block as { type?: string; tag?: string; listType?: string; children?: unknown[] }
+    if (b.type === 'list') {
+      const items = (b.children ?? []).map((item) => textOf(item).trim()).filter(Boolean)
+      if (items.length) out.push({ type: 'list', ordered: b.listType === 'number', items })
+      continue
+    }
+    const text = textOf(b).trim()
+    if (!text) continue
+    if (b.type === 'heading') out.push({ type: 'heading', text, level: Number(String(b.tag ?? 'h2').slice(1)) || 2 })
+    else if (b.type === 'quote') out.push({ type: 'quote', text })
+    else out.push({ type: 'paragraph', text })
+  }
+  return out
+}
+
+/** One string per top-level block, for plain text (search, labels); list items get a bullet. */
 export function lexicalParagraphs(value: unknown): string[] {
   if (!isLexical(value)) return []
   const out: string[] = []
@@ -134,8 +161,8 @@ export function renderValue(value: unknown, field: FlattenedField | null): Rende
   const ref = refTarget(field, value)
   if (ref) return { kind: 'ref', ...ref, label: `${titleCase(ref.collection)} #${ref.id}` }
   if (isLexical(value)) {
-    const items = lexicalParagraphs(value)
-    return items.length ? { kind: 'paragraphs', items } : { kind: 'empty' }
+    const items = lexicalBlocks(value)
+    return items.length ? { kind: 'rich', items } : { kind: 'empty' }
   }
   if (typeof value === 'boolean') return { kind: 'text', text: value ? 'Yes' : 'No' }
   if (typeof value === 'number') return { kind: 'text', text: String(value) }

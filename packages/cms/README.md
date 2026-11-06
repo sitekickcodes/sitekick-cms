@@ -46,7 +46,7 @@ left alone; `email: false` keeps Payload's default.
 
 A client's own features live in its repo (`src/modules/<name>/`) and are handed to
 `sitekickCMS({ modules })`, never patched into this package. `defineModule` (`modules/index.ts`)
-takes `collections`, `globals`, `blocks` (added to `layout` fields, or `into`), `nav`,
+takes `collections`, `globals`, `fields` (added to existing collections), `blocks` (added to `layout` fields, or `into`), `nav`,
 `dashboard` cards, palette `commands`, `help` articles (seeded on start-up when missing) and a
 `plugin` escape hatch. Modules are applied before every other step, so their collections get
 all the conventions. A slug clash throws. The playground's `src/modules/events` is the

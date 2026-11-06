@@ -11,6 +11,8 @@ export { SEODescription, SEOImage, SEOOverview, SEOPreview, SEOTitle } from './S
 export { SEOAutofill, SEOAutofillNote } from './SEOAutofill'
 export { StatusCell, StatusTag, Tag } from './StatusTag'
 export { CheckboxesField } from './CheckboxesField'
+// Recipes
+export { TranslationHint } from './TranslationHint'
 // Auth and users
 export { AuthView } from './AuthView'
 export { Icon } from './Icon'

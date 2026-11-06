@@ -11,12 +11,24 @@ export function Value({ value }: { value: Rendered }) {
       return <p className={styles.empty}>Blank</p>
     case 'text':
       return <p>{value.text}</p>
-    case 'paragraphs':
+    case 'rich':
       return (
         <>
-          {value.items.map((p, i) => (
-            <p key={i}>{p}</p>
-          ))}
+          {value.items.map((item, i) => {
+            if (item.type === 'heading') return <p key={i} className={styles.richHeading} data-level={item.level}>{item.text}</p>
+            if (item.type === 'quote') return <blockquote key={i} className={styles.richQuote}>{item.text}</blockquote>
+            if (item.type === 'list') {
+              const List = item.ordered ? 'ol' : 'ul'
+              return (
+                <List key={i}>
+                  {item.items.map((text, j) => (
+                    <li key={j}>{text}</li>
+                  ))}
+                </List>
+              )
+            }
+            return <p key={i}>{item.text}</p>
+          })}
         </>
       )
     case 'list':

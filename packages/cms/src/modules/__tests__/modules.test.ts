@@ -30,6 +30,14 @@ describe('applyModules', () => {
     expect((pages.fields[2] as { blocks: Block[] }).blocks).toHaveLength(1)
   })
 
+  test('fields for an existing collection are appended; clashes and unknown collections stop the build', () => {
+    const dept = defineModule({ name: 'dept', fields: { pages: [{ name: 'department', type: 'text' }] } })
+    const { config } = applyModules(base, [dept])
+    expect(config.collections![0]!.fields.map((f) => ('name' in f ? f.name : f.type))).toEqual(['title', 'slug', 'layout', 'department'])
+    expect(() => applyModules(base, [defineModule({ name: 'x', fields: { pages: [{ name: 'title', type: 'text' }] } })])).toThrow('pages already has a field "title"')
+    expect(() => applyModules(base, [defineModule({ name: 'x', fields: { nope: [] } })])).toThrow('no collection "nope"')
+  })
+
   test('a clashing slug or a missing target field stops the build', () => {
     expect(() => applyModules(base, [defineModule({ name: 'dupe', collections: [{ slug: 'pages', fields: [] }] })])).toThrow('Module "dupe": a collection "pages" already exists')
     expect(() => applyModules(base, [defineModule({ name: 'x', blocks: [upcoming], into: { pages: 'sections' } })])).toThrow('pages has no blocks field "sections"')

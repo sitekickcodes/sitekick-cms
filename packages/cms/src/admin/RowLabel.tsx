@@ -2,7 +2,7 @@
 
 import { useRowLabel } from '@payloadcms/ui'
 
-import { rowLabelOf } from '../conventions/rowLabelOf'
+import { choiceLabelOf, rowLabelOf } from '../conventions/rowLabelOf'
 import styles from './RowLabel.module.css'
 
 /**
@@ -11,9 +11,9 @@ import styles from './RowLabel.module.css'
  * Put on every array without a label of its own by the rowLabels convention
  * (conventions/rowLabels.ts), through admin.components.RowLabel.
  */
-export function AutoRowLabel({ fallback }: { fallback?: string }) {
+export function AutoRowLabel({ fallback, choices }: { fallback?: string; choices?: Record<string, Record<string, string>> }) {
   const { data, rowNumber } = useRowLabel<Record<string, unknown>>()
-  const label = rowLabelOf(data)
+  const label = rowLabelOf(data) ?? choiceLabelOf(data, choices)
   if (label) return <span>{label.length > 90 ? `${label.slice(0, 88)}…` : label}</span>
   return <span>{`${fallback ?? 'Item'} ${String((rowNumber ?? 0) + 1).padStart(2, '0')}`}</span>
 }

@@ -7,7 +7,7 @@ import { conventionManifest } from './manifest'
 export const conventions = (options: SitekickCMSOptions): Plugin[] => {
   const on: Record<string, boolean> = {
     tabs: true, rowLabels: true, relationshipCells: true, uploadPreview: true, seo: true, slugs: true,
-    groups: true, preview: true,
+    groups: true, preview: true, drafts: true,
     ...options.conventions,
   }
   return conventionManifest.filter(({ key }) => on[key] !== false).map(({ plugin }) => plugin(options))

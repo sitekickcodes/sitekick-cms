@@ -17,6 +17,9 @@ import type { CollectionConfig, Config, Field, GlobalConfig, Plugin } from 'payl
  * Sitekick's own (help, proposals, runs). `collections` and `globals` narrow it. A field that
  * sets `localized` itself, or `custom.sitekick.localized: false`, keeps its choice.
  *
+ * While a translation is empty, each translated field shows the default language's text under
+ * it (admin/TranslationHint.tsx), so a translator works from the original in place.
+ *
  * Adding it changes the database (translated values move to `_locales` tables), so create a
  * migration. Existing content becomes the default locale's.
  */
@@ -33,6 +36,9 @@ export type LocalizationOptions = {
   /** Only these global slugs. Default: every global. */
   globals?: string[]
 }
+
+/** Under every translated field: the default language's text while the translation is empty. */
+export const TRANSLATION_HINT = '@sitekick/cms/admin#TranslationHint'
 
 /** Never translated: Sitekick's own collections. Accounts and `payload-*` are skipped too. */
 const OWN = ['help-articles', 'proposals', 'runs']
@@ -78,7 +84,7 @@ export function localizeFields(fields: Field[]): Field[] {
         if (field.localized !== undefined || SHARED_NAMES.has(field.name) || !TRANSLATED.has(field.type)) return field
         // A unique value can't differ per locale without breaking its index.
         if ('unique' in field && field.unique) return field
-        return { ...field, localized: true } as Field
+        return { ...field, localized: true, admin: { ...field.admin, components: { ...field.admin?.components, afterInput: [...(field.admin?.components?.afterInput ?? []), TRANSLATION_HINT] } } } as Field
       case 'group':
       case 'row':
       case 'collapsible':

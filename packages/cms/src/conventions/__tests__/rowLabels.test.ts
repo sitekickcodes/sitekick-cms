@@ -38,16 +38,16 @@ describe('withRowLabels', () => {
     ]
     const out = withRowLabels(fields)
 
-    expect(rowLabel(out[0]!)).toEqual({ path: ROW_LABEL, clientProps: { fallback: 'Person' } })
+    expect(rowLabel(out[0]!)).toEqual({ path: ROW_LABEL, clientProps: { fallback: 'Person', choices: {} } })
 
     const tabs = out[1] as Extract<Field, { type: 'tabs' }>
     const row = tabs.tabs[0]!.fields[0] as Extract<Field, { type: 'row' }>
     const links = row.fields[0] as ArrayField
     expect(links.admin?.components?.RowLabel).toBe('@/custom#Label')
-    expect(rowLabel(links.fields[0]!)).toEqual({ path: ROW_LABEL, clientProps: { fallback: 'Faqs' } })
+    expect(rowLabel(links.fields[0]!)).toEqual({ path: ROW_LABEL, clientProps: { fallback: 'Faqs', choices: {} } })
 
     const blocks = out[2] as Extract<Field, { type: 'blocks' }>
-    expect(rowLabel((blocks.blocks[0] as Block).fields[0]!)).toEqual({ path: ROW_LABEL, clientProps: { fallback: 'Items' } })
+    expect(rowLabel((blocks.blocks[0] as Block).fields[0]!)).toEqual({ path: ROW_LABEL, clientProps: { fallback: 'Items', choices: {} } })
   })
 
   test('blocks get a section header with their type, unless they bring a Label', () => {

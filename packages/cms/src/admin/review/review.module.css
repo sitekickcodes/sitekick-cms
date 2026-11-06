@@ -44,7 +44,11 @@
 .paneLabel { display: block; margin-bottom: 6px; color: var(--rv-faint); font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
 .pane p { margin: 0 0 8px; overflow-wrap: anywhere; }
 .pane p:last-child { margin-bottom: 0; }
-.pane ul { margin: 0; padding-left: 18px; }
+.pane ul, .pane ol { margin: 0 0 8px; padding-left: 18px; }
+/* Rich text in a diff: headings read as headings (not h-tags, so the page outline stays the review's). */
+.richHeading { font-weight: 600; font-size: 15px; letter-spacing: -0.005em; }
+.richHeading[data-level='3'], .richHeading[data-level='4'] { font-size: 14px; }
+.richQuote { margin: 0 0 8px; padding-left: 12px; border-left: 2px solid var(--rv-line); color: var(--rv-muted); }
 .empty { color: var(--rv-faint); font-style: italic; }
 .json { margin: 0; max-height: 280px; overflow: auto; font-family: var(--font-mono, ui-monospace, monospace); font-size: 12px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
 .ref { display: inline-flex; align-items: center; gap: 10px; }
@@ -114,6 +118,7 @@
 .sectionHead { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; margin-bottom: 12px; }
 .sectionHead h2 { margin: 0; font-size: 18px; font-weight: 500; line-height: 1.25; letter-spacing: -0.01em; text-transform: none; }
 .count { color: var(--rv-faint); font-size: 13px; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px 20px; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 16px 0 0; padding: 0; list-style: none; }
 .chip { display: inline-flex; align-items: center; min-height: 30px; padding: 0 12px; border-radius: var(--radius-full, 999px); border: 1px solid var(--rv-line); color: var(--rv-muted); font-size: 13px; text-decoration: none; transition: background-color var(--rv-motion), color var(--rv-motion); }
 .chip:hover { background: var(--rv-hover); color: var(--color-text); }

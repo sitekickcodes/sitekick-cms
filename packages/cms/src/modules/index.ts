@@ -25,6 +25,12 @@ export type SiteModule = {
   collections?: CollectionConfig[]
   globals?: GlobalConfig[]
   /**
+   * Fields added to collections that already exist, by slug: `{ people: [department] }`.
+   * Appended after the collection's own fields (use `admin.position: 'sidebar'` to put one in
+   * the sidebar). A name the collection already has stops the build.
+   */
+  fields?: Record<string, Field[]>
+  /**
    * Page sections. Added to every collection's top-level `layout` blocks field (the one
    * `layoutField()` makes), or to the fields named in `into`, e.g. `{ pages: 'layout' }`.
    * Render them with `RenderBlocks`'s `custom` prop from `@sitekick/blocks/react`.
@@ -100,6 +106,18 @@ export function applyModules(config: Config, modules: SiteModule[]): { config: C
       next.globals!.push(global)
     }
   }
+  for (const module of modules) {
+    for (const [slug, fields] of Object.entries(module.fields ?? {})) {
+      const index = next.collections!.findIndex((c) => c.slug === slug)
+      if (index === -1) throw new Error(`Module "${module.name}": no collection "${slug}" to add fields to`)
+      const target = next.collections![index]!
+      const names = new Set(fieldNames(target.fields))
+      for (const field of fields) {
+        if ('name' in field && names.has(field.name)) throw new Error(`Module "${module.name}": ${slug} already has a field "${field.name}"`)
+      }
+      next.collections![index] = { ...target, fields: [...target.fields, ...fields] }
+    }
+  }
   // Blocks after every module's collections are in, so a module can add sections to another's pages.
   for (const module of modules) {
     if (module.blocks?.length) next = { ...next, collections: next.collections!.map((c) => withBlocks(c, module)) }
@@ -122,6 +140,15 @@ export function applyModules(config: Config, modules: SiteModule[]): { config: C
       helpTopics: [...new Set(help.map((a) => a.topic))].filter((t) => !(DEFAULT_HELP_TOPICS as readonly string[]).includes(t)),
     },
   }
+}
+
+/** Names at the top level, through unnamed tabs, rows and collapsibles (where a new field would clash). */
+function fieldNames(fields: Field[]): string[] {
+  return fields.flatMap((f) => {
+    if (f.type === 'tabs') return f.tabs.flatMap((t) => ('name' in t && t.name ? [t.name] : fieldNames(t.fields)))
+    if (f.type === 'row' || f.type === 'collapsible') return fieldNames(f.fields)
+    return 'name' in f ? [f.name] : []
+  })
 }
 
 function withBlocks(collection: CollectionConfig, module: SiteModule): CollectionConfig {

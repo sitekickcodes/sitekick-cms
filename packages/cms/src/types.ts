@@ -91,6 +91,8 @@ export type SitekickCMSOptions = {
     seo: boolean
     /** Slug from title; copies get -2, -3. */
     slugs: boolean
+    /** Autosave collections validate drafts, so opening Create New doesn't save an empty one. */
+    drafts: boolean
   }>
   /** Users collection slug. Default `users`. */
   usersSlug?: string

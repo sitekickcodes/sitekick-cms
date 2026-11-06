@@ -97,7 +97,7 @@ describe('render', () => {
     const doc = {
       root: {
         children: [
-          { type: 'heading', children: [{ type: 'text', text: 'Hello' }] },
+          { type: 'heading', tag: 'h2', children: [{ type: 'text', text: 'Hello' }] },
           { type: 'paragraph', children: [{ type: 'text', text: 'One ' }, { type: 'text', text: 'two' }] },
           { type: 'list', children: [{ type: 'listitem', children: [{ type: 'text', text: 'a' }] }, { type: 'listitem', children: [{ type: 'text', text: 'b' }] }] },
           { type: 'paragraph', children: [] },
@@ -105,7 +105,15 @@ describe('render', () => {
       },
     }
     expect(lexicalParagraphs(doc)).toEqual(['Hello', 'One two', '• a', '• b'])
-    expect(renderValue(doc, null)).toEqual({ kind: 'paragraphs', items: ['Hello', 'One two', '• a', '• b'] })
+    // The review keeps the structure: a heading, a paragraph, a list.
+    expect(renderValue(doc, null)).toEqual({
+      kind: 'rich',
+      items: [
+        { type: 'heading', text: 'Hello', level: 2 },
+        { type: 'paragraph', text: 'One two' },
+        { type: 'list', ordered: false, items: ['a', 'b'] },
+      ],
+    })
   })
   test('primitives, arrays, refs and objects', () => {
     expect(renderValue('', null)).toEqual({ kind: 'empty' })

@@ -49,6 +49,7 @@ the public catalog exactly like a built-in one, with no extra wiring.
 | Key | What it does |
 | --- | --- |
 | `collections`, `globals` | Payload collections and globals. A slug that already exists stops the build. |
+| `fields` | Fields added to an existing collection, such as `{ people: [department] }`. A name the collection already has stops the build. |
 | `blocks` | Page sections, added to every `layout` field (the one `layoutField()` makes). `into: { pages: 'layout' }` picks the fields. Edit with words can use them straight away. |
 | `nav` | The module's area in the sidebar, used when the site's `nav` doesn't already place those links. |
 | `dashboard` | Cards on the home screen: server components by import-map path. Build them from `DashboardPanel` and `DashboardRows` in `@sitekick/cms/admin` so they match. |

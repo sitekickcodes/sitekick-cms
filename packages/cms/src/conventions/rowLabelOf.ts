@@ -43,3 +43,32 @@ function firstLine(root: unknown): string {
   }
   return ''
 }
+
+const ADDRESS_KEYS = ['url', 'href', 'link', 'website', 'email', 'phone']
+
+/**
+ * For a row with no words of its own (a social link: a platform and a URL): the choice it
+ * made, by its option label, and the address, shortened. "LinkedIn · linkedin.com/in/lee".
+ */
+export function choiceLabelOf(data: unknown, choices: Record<string, Record<string, string>> = {}): string | null {
+  if (!data || typeof data !== 'object') return null
+  const row = data as Record<string, unknown>
+  const parts: string[] = []
+  for (const [name, options] of Object.entries(choices)) {
+    const v = row[name]
+    if (typeof v === 'string' && v) {
+      parts.push(options[v] ?? v)
+      break
+    }
+  }
+  for (const key of ADDRESS_KEYS) {
+    const v = row[key]
+    if (typeof v === 'string' && v.trim()) {
+      parts.push(shortAddress(v.trim()))
+      break
+    }
+  }
+  return parts.length ? parts.join(' · ') : null
+}
+
+const shortAddress = (value: string) => value.replace(/^(https?:\/\/)?(www\.)?/i, '').replace(/^mailto:|^tel:/i, '').replace(/\/$/, '')

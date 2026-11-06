@@ -1,0 +1,25 @@
+/* The default language's text under an empty translated field (TranslationHint.tsx). */
+.hint {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  margin: 6px 0 0;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--color-text) 4%, transparent);
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.lang {
+  flex: none;
+  color: var(--color-text-tertiary);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}

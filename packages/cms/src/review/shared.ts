@@ -195,3 +195,8 @@ export function readableExcerpt(excerpt: string): string {
     .replace(/\s{2,}/g, ' ')
     .trim()
 }
+
+/** Where the inbox lives under the admin route. */
+export const INBOX_PATH = '/inbox'
+/** What the agents cost (admin/review/UsageView.tsx), from runs.costUsd. */
+export const USAGE_PATH = '/usage'

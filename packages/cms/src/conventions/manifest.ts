@@ -1,6 +1,7 @@
 import type { Plugin } from 'payload'
 
 import type { SitekickCMSOptions } from '../types'
+import { draftsConvention } from './drafts'
 import { groupsConvention } from './groups'
 import { previewConvention } from './preview'
 import { relationshipCellsConvention } from './relationshipCells'
@@ -25,6 +26,7 @@ export type ConventionKey = keyof NonNullable<SitekickCMSOptions['conventions']>
  *   relationshipCells list-view cells
  *   uploadPreview     last of the walkers: it must see the SEO image field
  *   preview           Preview buttons from custom.sitekick.seo.pathPrefix
+ *   drafts            validated drafts on autosave collections, so Create New saves nothing
  */
 export const conventionManifest: { key: ConventionKey; plugin: (options: SitekickCMSOptions) => Plugin }[] = [
   { key: 'groups', plugin: groupsConvention },
@@ -35,4 +37,5 @@ export const conventionManifest: { key: ConventionKey; plugin: (options: Sitekic
   { key: 'relationshipCells', plugin: relationshipCellsConvention },
   { key: 'uploadPreview', plugin: uploadPreviewConvention },
   { key: 'preview', plugin: previewConvention },
+  { key: 'drafts', plugin: draftsConvention },
 ]

@@ -5,7 +5,8 @@ import type { SitekickCMSOptions } from '../types'
 /**
  * Gives every array field without a RowLabel of its own the AutoRowLabel
  * (admin/RowLabel.tsx): rows read as "Maya Reyes" or "Reform the rules",
- * not "Team 01". Walks collections, globals, blocks and nested fields; the
+ * or for a row with only a choice and an address, "LinkedIn · linkedin.com/in/lee",
+ * not "Team 01" or "Social 01". Walks collections, globals, blocks and nested fields; the
  * fallback keeps Payload's singular label. Blocks get BlockRowLabel: the
  * section's type and heading in place of the "Untitled" block name.
  */
@@ -25,6 +26,18 @@ function withBlockLabel(block: Block): Block {
   return { ...block, admin: { ...block.admin, components: { ...block.admin?.components, Label: { path: BLOCK_ROW_LABEL, clientProps: { blockLabel } } } } }
 }
 
+/** Option labels of a row's own select fields, so a row can say "LinkedIn", not "linkedin". */
+export function choicesOf(fields: Field[]): Record<string, Record<string, string>> {
+  const out: Record<string, Record<string, string>> = {}
+  for (const field of fields) {
+    if (field.type !== 'select' || field.hasMany) continue
+    out[field.name] = Object.fromEntries(
+      field.options.map((o) => (typeof o === 'string' ? [o, o] : [o.value, typeof o.label === 'string' ? o.label : o.value])),
+    )
+  }
+  return out
+}
+
 export function withRowLabels(fields: Field[]): Field[] {
   return fields.map((field): Field => {
     if (field.type === 'array') {
@@ -35,7 +48,7 @@ export function withRowLabels(fields: Field[]): Field[] {
         fields: inner,
         admin: {
           ...field.admin,
-          components: { ...field.admin?.components, RowLabel: { path: ROW_LABEL, clientProps: { fallback: singular(field) } } },
+          components: { ...field.admin?.components, RowLabel: { path: ROW_LABEL, clientProps: { fallback: singular(field), choices: choicesOf(field.fields) } } },
         },
       } as Field
     }

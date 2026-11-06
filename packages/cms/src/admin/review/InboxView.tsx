@@ -10,14 +10,23 @@ import styles from './review.module.css'
 
 const LIMIT = 100
 
-type ProposalRow = { id: string; title: string; collection: string; collectionLabel: string; kind?: string; agent?: string; createdAt?: string; href: string }
-type RunRow = { id: string; title: string; collection: string; collectionLabel: string; stage?: string; now?: string; status: string; href: string }
+type ProposalRow = { id: string; title: string; collection: string; collectionLabel: string; kind?: string; agent?: string; createdAt?: string; href: string; startedBy?: string }
+type RunRow = { id: string; title: string; collection: string; collectionLabel: string; stage?: string; now?: string; status: string; href: string; startedBy?: string }
+
+/** A relationship value (id, populated doc or `{ value }`) as an id string. */
+const idOf = (v: unknown): string | undefined => {
+  if (typeof v === 'string' || typeof v === 'number') return String(v)
+  if (v && typeof v === 'object') return idOf((v as { value?: unknown; id?: unknown }).value ?? (v as { id?: unknown }).id)
+  return undefined
+}
 
 /**
  * `/admin/inbox`: what needs a person. "To review" lists open proposals
  * newest first; "In progress" lists runs that are queued, running or
  * waiting. Both read with the signed-in editor's access. `?collection=`
- * narrows both lists; the chips come from what is actually there.
+ * narrows both lists (the chips come from what is actually there), and
+ * `?started=me` to what the editor started themselves. Each row says who
+ * started it.
  */
 export async function InboxView(props: AdminViewServerProps & { slugs?: ReviewCollectionOptions }) {
   const { i18n, initPageResult, locale, params, payload, permissions, searchParams, user, viewActions } = props
@@ -29,6 +38,14 @@ export async function InboxView(props: AdminViewServerProps & { slugs?: ReviewCo
   }
   const slugs = reviewSlugs(props.slugs)
   const filter = typeof searchParams?.collection === 'string' && searchParams.collection ? searchParams.collection : null
+  const mine = searchParams?.started === 'me'
+  const me = String(req.user?.id)
+  const inboxURL = ({ collection = filter, started = mine }: { collection?: string | null; started?: boolean }) => {
+    const q = new URLSearchParams()
+    if (collection) q.set('collection', collection)
+    if (started) q.set('started', 'me')
+    return `${adminRoute}/inbox${q.size ? `?${q}` : ''}`
+  }
   const label = (slug: string) => {
     const config = payload.collections[slug as CollectionSlug]?.config
     return config ? labelOf(config.labels?.singular, i18n, slug) : slug || 'Document'
@@ -36,8 +53,11 @@ export async function InboxView(props: AdminViewServerProps & { slugs?: ReviewCo
 
   const [proposals, runs] = await Promise.all([loadProposals(req, slugs.proposalsSlug, adminRoute, label), loadRuns(req, slugs.runsSlug, adminRoute, label)])
   const collections = [...new Set([...proposals.map((p) => p.collection), ...runs.map((r) => r.collection)])].filter(Boolean).sort()
-  const shownProposals = filter ? proposals.filter((p) => p.collection === filter) : proposals
-  const shownRuns = filter ? runs.filter((r) => r.collection === filter) : runs
+  const keep = (row: { collection: string; startedBy?: string }) => (!filter || row.collection === filter) && (!mine || row.startedBy === me)
+  const shownProposals = proposals.filter(keep)
+  const shownRuns = runs.filter(keep)
+  const names = await namesOf(req, [...proposals, ...runs].map((r) => r.startedBy))
+  const startedBy = (id: string | undefined) => (!id ? 'Started automatically' : id === me ? 'Started by you' : `Started by ${names[id] ?? 'someone'}`)
   const now = Date.now()
 
   return (
@@ -60,22 +80,38 @@ export async function InboxView(props: AdminViewServerProps & { slugs?: ReviewCo
             <div>
               <h1 className={styles.title}>Inbox</h1>
               <p className={styles.lede}>Changes agents would like to make, and the work they are doing now. Nothing goes live until you accept it.</p>
-              {collections.length > 1 ? (
-                <ul className={styles.chips} aria-label="Filter by collection">
-                  <li>
-                    <a className={styles.chip} href={`${adminRoute}/inbox`} aria-current={filter ? undefined : 'true'}>
-                      All
-                    </a>
-                  </li>
-                  {collections.map((slug) => (
-                    <li key={slug}>
-                      <a className={styles.chip} href={`${adminRoute}/inbox?collection=${encodeURIComponent(slug)}`} aria-current={filter === slug ? 'true' : undefined}>
-                        {label(slug)}
+              <div className={styles.filters}>
+                {collections.length > 1 ? (
+                  <ul className={styles.chips} aria-label="Filter by collection">
+                    <li>
+                      <a className={styles.chip} href={inboxURL({ collection: null })} aria-current={filter ? undefined : 'true'}>
+                        All
                       </a>
                     </li>
-                  ))}
-                </ul>
-              ) : null}
+                    {collections.map((slug) => (
+                      <li key={slug}>
+                        <a className={styles.chip} href={inboxURL({ collection: slug })} aria-current={filter === slug ? 'true' : undefined}>
+                          {label(slug)}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+                {proposals.length + runs.length > 0 ? (
+                  <ul className={styles.chips} aria-label="Filter by who started it">
+                    <li>
+                      <a className={styles.chip} href={inboxURL({ started: false })} aria-current={mine ? undefined : 'true'}>
+                        Anyone
+                      </a>
+                    </li>
+                    <li>
+                      <a className={styles.chip} href={inboxURL({ started: true })} aria-current={mine ? 'true' : undefined}>
+                        Started by me
+                      </a>
+                    </li>
+                  </ul>
+                ) : null}
+              </div>
             </div>
           </header>
 
@@ -97,6 +133,7 @@ export async function InboxView(props: AdminViewServerProps & { slugs?: ReviewCo
                         {p.kind ? <span>{p.kind}</span> : null}
                         {p.agent ? <span>{p.agent}</span> : null}
                         {p.createdAt ? <span>{relative(p.createdAt, now)}</span> : null}
+                        <span>{startedBy(p.startedBy)}</span>
                       </div>
                     </div>
                     <div className={styles.rowSide}>
@@ -109,7 +146,7 @@ export async function InboxView(props: AdminViewServerProps & { slugs?: ReviewCo
               </ul>
             ) : (
               <p className={styles.emptyState}>
-                {filter ? `Nothing to review for ${label(filter).toLowerCase()}.` : 'Nothing to review. When an agent proposes a change it will appear here.'}
+                {mine ? 'Nothing you started is waiting for review.' : filter ? `Nothing to review for ${label(filter).toLowerCase()}.` : 'Nothing to review. When an agent proposes a change it will appear here.'}
               </p>
             )}
           </section>
@@ -131,6 +168,7 @@ export async function InboxView(props: AdminViewServerProps & { slugs?: ReviewCo
                         {r.collection ? <span>{r.collectionLabel}</span> : null}
                         {r.stage ? <span>{r.stage}</span> : null}
                         {r.now ? <span>Now: {r.now}</span> : null}
+                        <span>{startedBy(r.startedBy)}</span>
                       </div>
                     </div>
                     <div className={styles.rowSide}>
@@ -140,7 +178,7 @@ export async function InboxView(props: AdminViewServerProps & { slugs?: ReviewCo
                 ))}
               </ul>
             ) : (
-              <p className={styles.emptyState}>No agents are working right now.</p>
+              <p className={styles.emptyState}>{mine ? 'Nothing you started is running.' : 'No agents are working right now.'}</p>
             )}
           </section>
         </div>
@@ -159,7 +197,8 @@ async function loadProposals(req: PayloadRequest, slug: string, adminRoute: stri
       where: { status: { equals: 'open' } } as never,
       sort: '-createdAt',
       limit: LIMIT,
-      depth: 0,
+      // The run (one level) says who started the work.
+      depth: 1,
       req,
       overrideAccess: false,
     })
@@ -175,6 +214,7 @@ async function loadProposals(req: PayloadRequest, slug: string, adminRoute: stri
         agent: typeof doc.agent === 'string' ? doc.agent : undefined,
         createdAt: typeof doc.createdAt === 'string' ? doc.createdAt : undefined,
         href: `${adminRoute}/collections/${slug}/${String(doc.id)}`,
+        startedBy: idOf((doc.run as { triggeredBy?: unknown } | null | undefined)?.triggeredBy),
       }
     })
   } catch {
@@ -206,9 +246,30 @@ async function loadRuns(req: PayloadRequest, slug: string, adminRoute: string, l
         now: typeof doc.now === 'string' && doc.now ? doc.now : undefined,
         status: typeof doc.status === 'string' ? doc.status : 'queued',
         href: `${adminRoute}/collections/${slug}/${String(doc.id)}`,
+        startedBy: idOf(doc.triggeredBy),
       }
     })
   } catch {
     return []
+  }
+}
+
+/** Display names for the people who started work, read with the viewer's access. */
+async function namesOf(req: PayloadRequest, ids: (string | undefined)[]): Promise<Record<string, string>> {
+  const unique = [...new Set(ids.filter((id): id is string => Boolean(id)))]
+  if (!unique.length) return {}
+  try {
+    const { docs } = await req.payload.find({
+      collection: (req.payload.config.admin.user ?? 'users') as CollectionSlug,
+      where: { id: { in: unique } },
+      depth: 0,
+      limit: unique.length,
+      pagination: false,
+      req,
+      overrideAccess: false,
+    })
+    return Object.fromEntries(docs.map((d) => [String(d.id), String((d as { name?: string; email?: string }).name || (d as { email?: string }).email || d.id)]))
+  } catch {
+    return {}
   }
 }
