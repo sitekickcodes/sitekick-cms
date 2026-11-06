@@ -56,6 +56,16 @@ worked example; the docs page "Site modules" has the rules.
 
 Opt-in plugins added after `sitekickCMS(...)` in `plugins`, each exported from `@sitekick/cms`.
 
+### Forms
+
+`forms()` is a site module: `sitekickCMS({ modules: [forms()] })`. Editors build forms from
+six field types and put one on any page with the Form section, rendered by `FormSection` from
+`@sitekick/blocks/react`. Submissions arrive only through `POST /api/forms/:id/submit`, which
+handles a honeypot, a minimum fill time, a 5-per-10-minutes limit per hashed sender, and
+answer checks. They land in Forms › Submissions with a New / Handled / Spam status, and the
+form's notify list gets an email with Reply-To set to the sender. Forms and submissions are
+private (`recipes/forms`).
+
 ### Google sign-in
 
 ```ts

@@ -85,6 +85,9 @@ A site's own sections (from a site module) render through `custom`, keyed by `bl
 <RenderBlocks blocks={page.layout} custom={{ upcomingEvents: UpcomingEvents }} />
 ```
 
+`FormSection` renders the Form section from the forms recipe in `@sitekick/cms`
+(`custom={{ formBlock: FormSection }}`).
+
 A section with no renderer shows a note in development and nothing in production. `Band`,
 `SectionHeading` and `Card` are exported so a site's sections match the library.
 

@@ -13,6 +13,8 @@ export { StatusCell, StatusTag, Tag } from './StatusTag'
 export { CheckboxesField } from './CheckboxesField'
 // Recipes
 export { TranslationHint } from './TranslationHint'
+export { SubmissionAnswers } from './forms/SubmissionAnswers'
+export { SubmissionsCard } from './forms/SubmissionsCard'
 // Auth and users
 export { AuthView } from './AuthView'
 export { Icon } from './Icon'

@@ -142,10 +142,10 @@ export function customize(template: Files, opts: Options): Files {
       if (path.startsWith('src/modules/events/') || path.startsWith('src/app/(frontend)/events/')) files.delete(path)
     }
     edit(files, 'src/modules/index.ts', (text) =>
-      replace(replace(text, "import { events } from './events'\n", ''), 'export const modules: SiteModule[] = [events]', 'export const modules: SiteModule[] = []'),
+      replace(replace(text, "import { events } from './events'\n", ''), 'export const modules: SiteModule[] = [forms(), events]', 'export const modules: SiteModule[] = [forms()]'),
     )
     edit(files, 'src/modules/frontend.ts', (text) =>
-      replace(replace(text, "import { eventBlocks } from './events/frontend'\n", ''), 'export const customBlocks: CustomBlockComponents = { ...eventBlocks }', 'export const customBlocks: CustomBlockComponents = {}'),
+      replace(replace(text, "import { eventBlocks } from './events/frontend'\n", ''), 'export const customBlocks: CustomBlockComponents = { formBlock: FormSection, ...eventBlocks }', 'export const customBlocks: CustomBlockComponents = { formBlock: FormSection }'),
     )
     edit(files, 'src/app/(frontend)/layout.tsx', (text) => replace(text, "  { href: '/events', label: 'Events' },\n", ''))
   }

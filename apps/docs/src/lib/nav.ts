@@ -34,6 +34,7 @@ export const SECTIONS: Section[] = [
   {
     title: 'Recipes',
     pages: [
+      { slug: 'recipes/forms', title: 'Forms', source: content('recipes/forms.md'), description: 'Forms editors build, submissions in the admin, spam kept out.' },
       { slug: 'recipes/google-sign-in', title: 'Google sign-in', source: content('recipes/google-sign-in.md'), description: '“Continue with Google” for people who already have an account.' },
       { slug: 'recipes/localisation', title: 'Localisation', source: content('recipes/localisation.md'), description: 'Content in more than one language.' },
     ],

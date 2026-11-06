@@ -79,21 +79,23 @@ export type LexicalNodes_8799902D =
   | SerializedHeadingNode<LexicalNodes_8799902D, 'h1' | 'h2' | 'h3' | 'h4'>;
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LexicalNodes_D7B46451".
+ * via the `definition` "LexicalNodes_10481330".
  */
-export type LexicalNodes_D7B46451 =
+export type LexicalNodes_10481330 =
   | SerializedTextNode
   | SerializedTabNode
   | SerializedLineBreakNode
-  | SerializedParagraphNode<LexicalNodes_D7B46451>
+  | SerializedParagraphNode<LexicalNodes_10481330>
   | SerializedHorizontalRuleNode
   | SerializedUploadNode<'media'>
-  | SerializedQuoteNode<LexicalNodes_D7B46451>
+  | SerializedQuoteNode<LexicalNodes_10481330>
   | SerializedRelationshipNode<
       | 'pages'
       | 'posts'
       | 'people'
       | 'users'
+      | 'forms'
+      | 'form-submissions'
       | 'events'
       | 'help-articles'
       | 'proposals'
@@ -105,11 +107,11 @@ export type LexicalNodes_D7B46451 =
       | 'payload-migrations'
       | 'payload-query-presets'
     >
-  | SerializedAutoLinkNode<LexicalNodes_D7B46451, LexicalLinkFields>
-  | SerializedLinkNode<LexicalNodes_D7B46451, LexicalLinkFields>
-  | SerializedListNode<LexicalNodes_D7B46451>
-  | SerializedListItemNode<LexicalNodes_D7B46451>
-  | SerializedHeadingNode<LexicalNodes_D7B46451>;
+  | SerializedAutoLinkNode<LexicalNodes_10481330, LexicalLinkFields>
+  | SerializedLinkNode<LexicalNodes_10481330, LexicalLinkFields>
+  | SerializedListNode<LexicalNodes_10481330>
+  | SerializedListItemNode<LexicalNodes_10481330>
+  | SerializedHeadingNode<LexicalNodes_10481330>;
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "LexicalNodes_6E4E4BF6".
@@ -152,6 +154,8 @@ export interface Config {
     people: Person;
     media: Media;
     users: User;
+    forms: Form;
+    'form-submissions': FormSubmission;
     events: Event;
     'help-articles': HelpArticle;
     proposals: Proposal;
@@ -171,6 +175,8 @@ export interface Config {
     people: PeopleSelect<false> | PeopleSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    forms: FormsSelect<false> | FormsSelect<true>;
+    'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
     events: EventsSelect<false> | EventsSelect<true>;
     'help-articles': HelpArticlesSelect<false> | HelpArticlesSelect<true>;
     proposals: ProposalsSelect<false> | ProposalsSelect<true>;
@@ -273,6 +279,7 @@ export interface Page {
         | CardGridBlock
         | FaqBlock
         | CtaBlock
+        | FormBlock
         | UpcomingEvents
       )[]
     | null;
@@ -766,6 +773,230 @@ export interface CtaBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FormBlock".
+ */
+export interface FormBlock {
+  /**
+   * Build forms under Forms in the sidebar.
+   */
+  form: number | Form;
+  heading?: string | null;
+  /**
+   * A line above the form. Blank = none.
+   */
+  intro?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'formBlock';
+}
+/**
+ * Forms for the site: contact, sign-up, enquiries. Put one on a page with the Form section.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "forms".
+ */
+export interface Form {
+  id: number;
+  /**
+   * For you and the notification email, e.g. "Contact".
+   */
+  title: string;
+  fields?: (Text | Email | Phone | Textarea | Select | Checkbox)[] | null;
+  submitLabel?: string | null;
+  /**
+   * Shown in place of the form once it is sent.
+   */
+  confirmation?: string | null;
+  /**
+   * Blank = submissions only appear under Submissions.
+   */
+  notify?:
+    | {
+        email: string;
+        id?: string | null;
+      }[]
+    | null;
+  createdBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
+  updatedBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "Text".
+ */
+export interface Text {
+  /**
+   * What the field asks, e.g. "Your email".
+   */
+  label: string;
+  /**
+   * Example text inside the empty field. Blank = none.
+   */
+  placeholder?: string | null;
+  required?: boolean | null;
+  /**
+   * Two half-width fields sit side by side.
+   */
+  width?: ('full' | 'half') | null;
+  /**
+   * Shown under the field. Blank = none.
+   */
+  help?: string | null;
+  key?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'text';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "Email".
+ */
+export interface Email {
+  /**
+   * What the field asks, e.g. "Your email".
+   */
+  label: string;
+  /**
+   * Example text inside the empty field. Blank = none.
+   */
+  placeholder?: string | null;
+  required?: boolean | null;
+  /**
+   * Two half-width fields sit side by side.
+   */
+  width?: ('full' | 'half') | null;
+  /**
+   * Shown under the field. Blank = none.
+   */
+  help?: string | null;
+  key?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'email';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "Phone".
+ */
+export interface Phone {
+  /**
+   * What the field asks, e.g. "Your email".
+   */
+  label: string;
+  /**
+   * Example text inside the empty field. Blank = none.
+   */
+  placeholder?: string | null;
+  required?: boolean | null;
+  /**
+   * Two half-width fields sit side by side.
+   */
+  width?: ('full' | 'half') | null;
+  /**
+   * Shown under the field. Blank = none.
+   */
+  help?: string | null;
+  key?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'phone';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "Textarea".
+ */
+export interface Textarea {
+  /**
+   * What the field asks, e.g. "Your email".
+   */
+  label: string;
+  /**
+   * Example text inside the empty field. Blank = none.
+   */
+  placeholder?: string | null;
+  required?: boolean | null;
+  /**
+   * Two half-width fields sit side by side.
+   */
+  width?: ('full' | 'half') | null;
+  /**
+   * Shown under the field. Blank = none.
+   */
+  help?: string | null;
+  key?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'textarea';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "Select".
+ */
+export interface Select {
+  /**
+   * What the field asks, e.g. "Your email".
+   */
+  label: string;
+  options: {
+    label: string;
+    id?: string | null;
+  }[];
+  required?: boolean | null;
+  /**
+   * Two half-width fields sit side by side.
+   */
+  width?: ('full' | 'half') | null;
+  /**
+   * Shown under the field. Blank = none.
+   */
+  help?: string | null;
+  key?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'select';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "Checkbox".
+ */
+export interface Checkbox {
+  /**
+   * What the field asks, e.g. "Your email".
+   */
+  label: string;
+  required?: boolean | null;
+  /**
+   * Two half-width fields sit side by side.
+   */
+  width?: ('full' | 'half') | null;
+  /**
+   * Shown under the field. Blank = none.
+   */
+  help?: string | null;
+  key?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'checkbox';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "UpcomingEvents".
  */
 export interface UpcomingEvents {
@@ -801,7 +1032,7 @@ export interface Post {
    */
   excerpt?: string | null;
   cover?: (number | null) | Media;
-  body: LexicalRichText<LexicalNodes_D7B46451>;
+  body: LexicalRichText<LexicalNodes_10481330>;
   meta?: {
     title?: string | null;
     description?: string | null;
@@ -901,6 +1132,52 @@ export interface Person {
   createdAt: string;
 }
 /**
+ * What people sent through the site’s forms, newest first. Mark each one handled when it’s dealt with.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "form-submissions".
+ */
+export interface FormSubmission {
+  id: number;
+  summary?: string | null;
+  answers?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  status?: ('new' | 'handled' | 'spam') | null;
+  form?: (number | null) | Form;
+  /**
+   * The page it was sent from.
+   */
+  page?: string | null;
+  sender?: string | null;
+  createdBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
+  updatedBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Shown on /events, soonest first. Past events drop off the list on their own.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -931,7 +1208,7 @@ export interface Event {
    */
   signup?: string | null;
   cover?: (number | null) | Media;
-  body?: LexicalRichText<LexicalNodes_D7B46451> | null;
+  body?: LexicalRichText<LexicalNodes_10481330> | null;
   meta?: {
     title?: string | null;
     description?: string | null;
@@ -976,7 +1253,7 @@ export interface HelpArticle {
    * The article's shared link. Keep it when changing the title so existing links still work.
    */
   slug: string;
-  topic: 'Getting started' | 'Content' | 'Media' | 'Account' | 'Events';
+  topic: 'Getting started' | 'Content' | 'Media' | 'Account' | 'Forms' | 'Events';
   /**
    * A short description to help people find this article in search.
    */
@@ -1272,6 +1549,14 @@ export interface PayloadLockedDocument {
         value: number | User;
       } | null)
     | ({
+        relationTo: 'forms';
+        value: number | Form;
+      } | null)
+    | ({
+        relationTo: 'form-submissions';
+        value: number | FormSubmission;
+      } | null)
+    | ({
         relationTo: 'events';
         value: number | Event;
       } | null)
@@ -1390,6 +1675,8 @@ export interface PayloadQueryPreset {
     | 'people'
     | 'media'
     | 'users'
+    | 'forms'
+    | 'form-submissions'
     | 'events'
     | 'help-articles'
     | 'proposals'
@@ -1453,6 +1740,15 @@ export interface PagesSelect<T extends boolean = true> {
         cardGrid?: T | CardGridBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         cta?: T | CtaBlockSelect<T>;
+        formBlock?:
+          | T
+          | {
+              form?: T;
+              heading?: T;
+              intro?: T;
+              id?: T;
+              blockName?: T;
+            };
         upcomingEvents?:
           | T
           | {
@@ -1753,6 +2049,121 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "forms_select".
+ */
+export interface FormsSelect<T extends boolean = true> {
+  title?: T;
+  fields?:
+    | T
+    | {
+        text?:
+          | T
+          | {
+              label?: T;
+              placeholder?: T;
+              required?: T;
+              width?: T;
+              help?: T;
+              key?: T;
+              id?: T;
+              blockName?: T;
+            };
+        email?:
+          | T
+          | {
+              label?: T;
+              placeholder?: T;
+              required?: T;
+              width?: T;
+              help?: T;
+              key?: T;
+              id?: T;
+              blockName?: T;
+            };
+        phone?:
+          | T
+          | {
+              label?: T;
+              placeholder?: T;
+              required?: T;
+              width?: T;
+              help?: T;
+              key?: T;
+              id?: T;
+              blockName?: T;
+            };
+        textarea?:
+          | T
+          | {
+              label?: T;
+              placeholder?: T;
+              required?: T;
+              width?: T;
+              help?: T;
+              key?: T;
+              id?: T;
+              blockName?: T;
+            };
+        select?:
+          | T
+          | {
+              label?: T;
+              options?:
+                | T
+                | {
+                    label?: T;
+                    id?: T;
+                  };
+              required?: T;
+              width?: T;
+              help?: T;
+              key?: T;
+              id?: T;
+              blockName?: T;
+            };
+        checkbox?:
+          | T
+          | {
+              label?: T;
+              required?: T;
+              width?: T;
+              help?: T;
+              key?: T;
+              id?: T;
+              blockName?: T;
+            };
+      };
+  submitLabel?: T;
+  confirmation?: T;
+  notify?:
+    | T
+    | {
+        email?: T;
+        id?: T;
+      };
+  createdBy?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "form-submissions_select".
+ */
+export interface FormSubmissionsSelect<T extends boolean = true> {
+  summary?: T;
+  answers?: T;
+  status?: T;
+  form?: T;
+  page?: T;
+  sender?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2060,6 +2471,8 @@ export interface CollectionQueryWidget {
       | 'people'
       | 'media'
       | 'users'
+      | 'forms'
+      | 'form-submissions'
       | 'events'
       | 'help-articles'
       | 'proposals'
@@ -2093,6 +2506,8 @@ export interface ActivityWidget {
           | 'people'
           | 'media'
           | 'users'
+          | 'forms'
+          | 'form-submissions'
           | 'events'
           | 'help-articles'
           | 'proposals'
