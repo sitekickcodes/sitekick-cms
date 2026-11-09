@@ -12,11 +12,10 @@ We're in beta prerelease mode (`.changeset/pre.json`), so versions go `0.1.0-bet
 
 To see what would be published without publishing anything, run `bun run release -- --dry-run`. It needs no npm login.
 
-## One-time setup (not done yet)
+## Setup
 
-1. **Claim the `@sitekick` scope on npm.** Create the `sitekick` organisation at npmjs.com, because packages under `@sitekick/` can only be published by its members. `create-sitekick-cms` is unscoped; check that the name is still free.
-2. **Add an automation token.** Create a granular access token at npmjs.com with publish rights to the `@sitekick` packages and `create-sitekick-cms`. Save it as the repository secret `NPM_TOKEN`: Settings › Secrets and variables › Actions. Until that secret exists, the workflow says "no npm login" and publishes nothing.
-3. **Let Actions open PRs:** Settings › Actions › General › Workflow permissions › "Allow GitHub Actions to create and approve pull requests".
-4. **First publish.** The current version (`0.1.0-beta.0`) has never been published, so the first push to main after steps 1 and 2 publishes it. No changeset is needed.
-
-After the first publish, npm's trusted publishing can replace the token. Link each package to this repository's Release workflow on npmjs.com, then delete `NPM_TOKEN`.
+- **npm:** the `sitekick` org exists (owner: johngilesyoder). `0.1.0-beta.0` of all four packages was published on 2026-11-09, with provenance.
+- **Staged publishing:** npm held that first publish until an owner approved each package with 2FA (package page › Staged Packages › Approve). Token publishes keep working that way until npm removes direct token publishing in January 2027.
+- **Still to do:**
+  1. **Trusted publishing.** On each package's npmjs.com page, open Settings › Trusted publishing and choose GitHub Actions: organization `sitekickcodes`, repository `sitekick-cms`, workflow `release.yml`, and allow direct publishing. Then delete the `NPM_TOKEN` secret and revoke the token on npm.
+  2. **Let Actions open PRs** (org-wide): github.com/organizations/sitekickcodes/settings/actions › "Allow GitHub Actions to create and approve pull requests". Without it, the Version packages PR can't be opened.
