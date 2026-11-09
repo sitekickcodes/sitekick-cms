@@ -129,8 +129,6 @@ function publishManifest(m: Manifest): Manifest {
     peerDependencies: pinWorkspace(m.peerDependencies),
     exports: exports as unknown as Record<string, string>,
     files: ['dist'],
-    repository: { type: 'git', url: 'git+https://github.com/sitekickcodes/sitekick-cms.git', directory: `packages/${m.name.split('/')[1]}` },
-    homepage: 'https://github.com/sitekickcodes/sitekick-cms',
     publishConfig: { access: 'public' },
   }
 }

@@ -3,8 +3,19 @@
   "version": "0.1.0-beta.0",
   "description": "Sitekick CMS: the Payload 4 plugin. Admin shell, theme, editing conventions, invites, agent contract, MCP, review inbox.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sitekickcodes/sitekick-cms.git",
+    "directory": "packages/cms"
+  },
+  "homepage": "https://github.com/sitekickcodes/sitekick-cms#readme",
+  "bugs": {
+    "url": "https://github.com/sitekickcodes/sitekick-cms/issues"
+  },
   "type": "module",
-  "sideEffects": ["*.css"],
+  "sideEffects": [
+    "*.css"
+  ],
   "exports": {
     ".": "./src/index.ts",
     "./admin": "./src/admin/index.ts",
