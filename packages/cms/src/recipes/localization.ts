@@ -18,7 +18,9 @@ import type { CollectionConfig, Config, Field, GlobalConfig, Plugin } from 'payl
  * sets `localized` itself, or `custom.sitekick.localized: false`, keeps its choice.
  *
  * While a translation is empty, each translated field shows the default language's text under
- * it (admin/TranslationHint.tsx), so a translator works from the original in place.
+ * it (admin/TranslationHint.tsx), so a translator works from the original in place. With the
+ * agent buttons on, "Translate from English" asks the Translate agent for the missing
+ * translations, which the editor then reviews per field.
  *
  * Adding it changes the database (translated values move to `_locales` tables), so create a
  * migration. Existing content becomes the default locale's.
@@ -35,10 +37,17 @@ export type LocalizationOptions = {
   collections?: string[]
   /** Only these global slugs. Default: every global. */
   globals?: string[]
+  /**
+   * "Translate from <default language>" on translated documents, when the agent buttons are on
+   * (sitekickCMS `agents`). Default on.
+   */
+  translateButton?: boolean
 }
 
 /** Under every translated field: the default language's text while the translation is empty. */
 export const TRANSLATION_HINT = '@sitekick/cms/admin#TranslationHint'
+/** The Translate agent's button (`@sitekick/agents`), in a translated document's controls. */
+export const TRANSLATE_BUTTON = '@sitekick/cms/admin#TranslateButton'
 
 /** Never translated: Sitekick's own collections. Accounts and `payload-*` are skipped too. */
 const OWN = ['help-articles', 'proposals', 'runs']
@@ -54,10 +63,23 @@ export const localization =
     const defaultLocale = options.defaultLocale ?? locales[0]!.code
     if (!locales.some((l) => l.code === defaultLocale)) throw new Error(`localization: defaultLocale "${defaultLocale}" is not in locales`)
 
+    // With the agent buttons on (sitekickCMS `agents`), translated collections get "Translate".
+    const custom = (config.admin?.custom ?? {}) as { sitekick?: { agents?: Record<string, unknown> } }
+    const agents = custom.sitekick?.agents
+    const translate: string[] = []
+    const collections = (config.collections ?? []).map((c) => {
+      if (!collectionWanted(c, options)) return c
+      const next = { ...c, fields: localizeFields(c.fields) }
+      if (!agents || options.translateButton === false) return next
+      translate.push(c.slug)
+      const edit = next.admin?.components?.edit
+      return { ...next, admin: { ...next.admin, components: { ...next.admin?.components, edit: { ...edit, beforeDocumentControls: [...(edit?.beforeDocumentControls ?? []), TRANSLATE_BUTTON] } } } }
+    })
     return {
       ...config,
       localization: config.localization || { locales, defaultLocale, fallback: options.fallback ?? true },
-      collections: (config.collections ?? []).map((c) => (collectionWanted(c, options) ? { ...c, fields: localizeFields(c.fields) } : c)),
+      ...(agents ? { admin: { ...config.admin, custom: { ...custom, sitekick: { ...custom.sitekick, agents: { ...agents, translate } } } } } : {}),
+      collections,
       globals: (config.globals ?? []).map((g) => (globalWanted(g, options) ? { ...g, fields: localizeFields(g.fields) } : g)),
     }
   }

@@ -72,4 +72,16 @@ describe('localization', () => {
     expect(out.collections!.every((c) => localized(c.fields).length === 0)).toBe(true)
     expect(() => localization({ locales: ['en'], defaultLocale: 'de' })(base)).toThrow('not in locales')
   })
+
+  test('with the agent buttons on, translated collections get Translate; without, nothing', () => {
+    const withAgents = { ...base, admin: { custom: { sitekick: { agents: { basePath: '/api/agents', enrich: [], draft: [], edit: [] } } } } } as unknown as Config
+    const out = localization({ locales: ['en', 'fr'] })(withAgents) as Config
+    const controls = (slug: string) => out.collections!.find((c) => c.slug === slug)!.admin?.components?.edit?.beforeDocumentControls ?? []
+    expect(controls('pages')).toEqual(['@sitekick/cms/admin#TranslateButton'])
+    expect(controls('users')).toEqual([])
+    expect((out.admin!.custom as { sitekick: { agents: { translate: string[] } } }).sitekick.agents.translate).toEqual(['pages'])
+    const off = localization({ locales: ['en', 'fr'] })(base) as Config
+    expect(off.collections!.find((c) => c.slug === 'pages')!.admin?.components?.edit).toBeUndefined()
+    expect(off.admin).toBeUndefined()
+  })
 })

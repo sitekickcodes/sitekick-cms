@@ -1413,7 +1413,7 @@ export interface Proposal {
   /**
    * Blank = a general edit.
    */
-  kind?: ('enrich' | 'draft' | 'edit' | 'field-action') | null;
+  kind?: ('enrich' | 'draft' | 'edit' | 'translate' | 'field-action') | null;
   /**
    * Set by your decisions. Open until every field has one.
    */
@@ -1426,6 +1426,10 @@ export interface Proposal {
    * Blank = a new document is created when the first field is accepted.
    */
   targetId?: string | null;
+  /**
+   * The language accepting writes to (a translation). Blank = the default language.
+   */
+  locale?: string | null;
   patch:
     | {
         [k: string]: unknown;
@@ -2370,6 +2374,7 @@ export interface ProposalsSelect<T extends boolean = true> {
   status?: T;
   targetCollection?: T;
   targetId?: T;
+  locale?: T;
   patch?: T;
   decisions?: T;
   summary?: T;

@@ -22,6 +22,7 @@ export const AGENT_COMPONENTS = {
   draft: '@sitekick/cms/admin#DraftButton',
   edit: '@sitekick/cms/admin#EditButton',
   altText: '@sitekick/cms/admin#AltTextButton',
+  translate: '@sitekick/cms/admin#TranslateButton',
 } as const
 
 export type AgentsClientConfig = {
@@ -29,6 +30,8 @@ export type AgentsClientConfig = {
   enrich: string[]
   draft: string[]
   edit: string[]
+  /** Collections with a Translate button: set by the localisation recipe, which runs after this. */
+  translate?: string[]
 }
 
 const actionsOf = (collection: CollectionConfig): AgentAction[] => sitekickCustom(collection).agent?.actions ?? []

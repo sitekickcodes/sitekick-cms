@@ -5,6 +5,7 @@ import * as migration_20261105_210539_saved_views from './20261105_210539_saved_
 import * as migration_20261105_230557_events_module from './20261105_230557_events_module';
 import * as migration_20261106_171138_forms from './20261106_171138_forms';
 import * as migration_20261109_212425_redirects from './20261109_212425_redirects';
+import * as migration_20261109_220044_translate_proposals from './20261109_220044_translate_proposals';
 
 export const migrations = [
   {
@@ -40,6 +41,11 @@ export const migrations = [
   {
     up: migration_20261109_212425_redirects.up,
     down: migration_20261109_212425_redirects.down,
-    name: '20261109_212425_redirects'
+    name: '20261109_212425_redirects',
+  },
+  {
+    up: migration_20261109_220044_translate_proposals.up,
+    down: migration_20261109_220044_translate_proposals.down,
+    name: '20261109_220044_translate_proposals'
   },
 ];

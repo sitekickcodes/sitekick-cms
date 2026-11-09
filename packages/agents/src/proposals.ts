@@ -15,7 +15,7 @@ export type AgentContract = {
   notes?: string
 }
 
-export type ProposalKind = 'enrich' | 'draft' | 'edit' | 'field-action'
+export type ProposalKind = 'enrich' | 'draft' | 'edit' | 'translate' | 'field-action'
 
 export function agentContractFor(payload: Pick<AgentPayload, 'config'>, collection: string): AgentContract | null {
   const config = payload.config.collections.find((c) => c.slug === collection)
@@ -101,6 +101,13 @@ export type CreateProposalArgs = {
   agent: string
   /** Pre-read target, to save a round trip; read when omitted and targetId is set. */
   target?: Doc | null
+  /** The language the proposal writes, on a localised site. Omitted = the default language. */
+  locale?: string
+  /**
+   * In place of the collection's own contract, for an agent whose scope is decided another way
+   * (Translate: every localised field). Private collections are still refused.
+   */
+  contract?: AgentContract
 }
 
 export type CreateProposalResult = {
@@ -126,10 +133,21 @@ export function patchToData(patch: Patch): Record<string, unknown> {
   return data
 }
 
-export async function supersedeOpenProposals(payload: AgentPayload, targetCollection: string, targetId: string | number, agent: string): Promise<void> {
+/**
+ * A new proposal replaces the open ones for the same document, in the same language: a French
+ * translation doesn't retire research waiting in the default language, or the other way round.
+ */
+export async function supersedeOpenProposals(payload: AgentPayload, targetCollection: string, targetId: string | number, agent: string, locale?: string): Promise<void> {
   await payload.update({
     collection: 'proposals',
-    where: { and: [{ targetCollection: { equals: targetCollection } }, { targetId: { equals: String(targetId) } }, { status: { equals: 'open' } }] },
+    where: {
+      and: [
+        { targetCollection: { equals: targetCollection } },
+        { targetId: { equals: String(targetId) } },
+        { status: { equals: 'open' } },
+        locale ? { locale: { equals: locale } } : { locale: { exists: false } },
+      ],
+    },
     data: { status: 'superseded' },
     overrideAccess: true,
     context: { sitekickAgent: agent },
@@ -137,24 +155,26 @@ export async function supersedeOpenProposals(payload: AgentPayload, targetCollec
 }
 
 export async function createProposal(payload: AgentPayload, args: CreateProposalArgs): Promise<CreateProposalResult> {
-  const contract = agentContractFor(payload, args.targetCollection)
+  const own = agentContractFor(payload, args.targetCollection)
+  const isPrivate = Boolean((payload.config.collections.find((c) => c.slug === args.targetCollection)?.custom as { sitekick?: { private?: boolean } } | undefined)?.sitekick?.private)
+  const contract = args.contract && !isPrivate ? args.contract : own
   const target =
     args.target !== undefined
       ? args.target
       : args.targetId !== undefined
-        ? await payload.findByID({ collection: args.targetCollection, id: args.targetId, depth: 0, overrideAccess: true, disableErrors: true })
+        ? await payload.findByID({ collection: args.targetCollection, id: args.targetId, depth: 0, overrideAccess: true, disableErrors: true, ...(args.locale ? { locale: args.locale, fallbackLocale: false as const } : {}) })
         : null
   const { propose, direct, dropped } = filterPatchByContract({ contract, patch: args.patch, current: target })
   const context = { sitekickAgent: args.agent }
 
   if (Object.keys(direct).length && args.targetId !== undefined) {
     // review: 'none' + fillEmptyOnly: the contract says these never need eyes.
-    await payload.update({ collection: args.targetCollection, id: args.targetId, data: patchToData(direct), overrideAccess: true, context })
+    await payload.update({ collection: args.targetCollection, id: args.targetId, data: patchToData(direct), overrideAccess: true, context, ...(args.locale ? { locale: args.locale } : {}) })
   }
 
   if (!Object.keys(propose).length) return { id: null, proposed: {}, direct, dropped }
 
-  if (args.targetId !== undefined) await supersedeOpenProposals(payload, args.targetCollection, args.targetId, args.agent)
+  if (args.targetId !== undefined) await supersedeOpenProposals(payload, args.targetCollection, args.targetId, args.agent, args.locale)
 
   const droppedLines = Object.entries(dropped).map(([path, why]) => `${path}: ${why}`)
   const summary = [args.summary?.trim(), droppedLines.length ? `Not proposed: ${droppedLines.join('; ')}.` : null].filter(Boolean).join('\n\n')
@@ -169,6 +189,7 @@ export async function createProposal(payload: AgentPayload, args: CreateProposal
       patch: propose,
       ...(summary ? { summary } : {}),
       ...(args.runId !== undefined ? { run: args.runId } : {}),
+      ...(args.locale ? { locale: args.locale } : {}),
       agent: args.agent,
     },
     overrideAccess: true,

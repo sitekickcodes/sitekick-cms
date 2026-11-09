@@ -5,6 +5,7 @@ import { altText, rewrite, seo, shorten, translate } from './actions'
 import { runDraft } from './agents/draft'
 import { runEdit } from './agents/edit'
 import { nameOf, runEnrich } from './agents/enrich'
+import { runTranslate } from './agents/translate'
 import type { AgentPayload } from './payload'
 import type { Runner } from './runner'
 import { AgentsDisabledError, agentsDisabled, getRun, startRun } from './runs'
@@ -33,6 +34,10 @@ const enqueueBody = z.discriminatedUnion('agent', [
     agent: z.literal('edit'),
     input: z.object({ targetCollection: z.string().min(1), targetId: z.union([z.string(), z.number()]), instruction: z.string().trim().min(3).max(2_000) }),
   }),
+  z.object({
+    agent: z.literal('translate'),
+    input: z.object({ targetCollection: z.string().min(1), targetId: z.union([z.string(), z.number()]), locale: z.string().min(2).max(20), mode: z.enum(['missing', 'all']).optional() }),
+  }),
 ])
 export type EnqueueBody = z.infer<typeof enqueueBody>
 
@@ -59,6 +64,13 @@ export type AgentRoutesOptions = {
   runner?: Runner
   /** Keep a promise alive after the response. Default: @vercel/functions' waitUntil when present, else fire-and-forget. */
   background?: (work: Promise<unknown>) => void
+}
+
+/** A language's name as the site labels it (`Français`), else its code. */
+const localeLabel = (payload: AgentPayload, code: string): string => {
+  const locales = payload.config.localization ? payload.config.localization.locales : []
+  const found = locales.find((l) => (typeof l === 'string' ? l : l.code) === code)
+  return found && typeof found === 'object' && typeof found.label === 'string' ? found.label : code
 }
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
@@ -110,6 +122,8 @@ export function createAgentRoutes(options: AgentRoutesOptions): AgentRoutes {
       const title =
         b.agent === 'enrich'
           ? `Find details: ${nameOf(await payload.findByID({ collection: b.input.targetCollection, id: b.input.targetId, depth: 0, overrideAccess: true, disableErrors: true }))}`
+          : b.agent === 'translate'
+            ? `Translate to ${localeLabel(payload, b.input.locale)}: ${nameOf(await payload.findByID({ collection: b.input.targetCollection, id: b.input.targetId, depth: 0, overrideAccess: true, disableErrors: true }))}`
           : b.agent === 'edit'
             ? `Edit: ${b.input.instruction.length > 60 ? `${b.input.instruction.slice(0, 59)}…` : b.input.instruction}`
             : `Draft: ${b.input.title ?? (b.input.url ? new URL(b.input.url).hostname : 'from notes')}`
@@ -122,7 +136,14 @@ export function createAgentRoutes(options: AgentRoutesOptions): AgentRoutes {
         triggeredBy: user.id,
       })
       const common = { runId: run.id, runner: options.runner, triggeredBy: user.id }
-      const work = b.agent === 'enrich' ? runEnrich(payload, b.input, common) : b.agent === 'edit' ? runEdit(payload, b.input, common) : runDraft(payload, b.input, common)
+      const work =
+        b.agent === 'enrich'
+          ? runEnrich(payload, b.input, common)
+          : b.agent === 'edit'
+            ? runEdit(payload, b.input, common)
+            : b.agent === 'translate'
+              ? runTranslate(payload, b.input, common)
+              : runDraft(payload, b.input, common)
       ;(await background)(work.catch(() => {}))
       return json({ runId: run.id }, 202)
     } catch (err) {

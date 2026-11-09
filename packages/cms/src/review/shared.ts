@@ -14,7 +14,7 @@ export const RUNS_SLUG = 'runs'
 /** Every agent or review write names itself so outbox hooks can skip it. */
 export const REVIEW_AGENT_CONTEXT = { sitekickAgent: 'review' } as const
 
-export const PROPOSAL_KINDS = ['enrich', 'draft', 'edit', 'field-action'] as const
+export const PROPOSAL_KINDS = ['enrich', 'draft', 'edit', 'translate', 'field-action'] as const
 export type ProposalKind = (typeof PROPOSAL_KINDS)[number]
 
 export const PROPOSAL_STATUSES = ['open', 'accepted', 'partial', 'rejected', 'superseded'] as const

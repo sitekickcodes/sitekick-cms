@@ -88,6 +88,13 @@ export function proposalsCollection(options: ReviewCollectionOptions = {}): Coll
         index: true,
         admin: { position: 'sidebar', description: 'Blank = a new document is created when the first field is accepted.' },
       },
+      {
+        name: 'locale',
+        label: 'Language',
+        type: 'text',
+        index: true,
+        admin: { position: 'sidebar', readOnly: true, description: 'The language accepting writes to (a translation). Blank = the default language.' },
+      },
       ownedJson('patch', { required: true }),
       ownedJson('decisions'),
       { name: 'summary', type: 'textarea', admin: { description: 'The agent’s own account: what it found and what it could not.' } },

@@ -212,6 +212,29 @@ the instruction as an `editor:` receipt. A plan that keeps everything in order f
 the run without a proposal. Accepting is refused (409) if the sections changed since
 (see docs/REVIEW-SPEC.md).
 
+## Translate
+
+Input `{ targetCollection, targetId, locale, mode? }` on a site with more than one language
+(`config.localization`, the localisation recipe in `@sitekick/cms`). It reads the document in
+the default locale and in `locale` with `fallbackLocale: false`, so an untranslated field reads
+as empty. Then:
+
+- `translatableFields`: top-level fields holding localised words (text, textarea, rich text,
+  inside groups, arrays and blocks too)
+- `collectPieces`: every string to translate, in page order. Rich text gives one piece per
+  text node, so formatting survives. With `mode: 'missing'` (the default), only pieces that
+  are empty in `locale` are collected.
+- one model call (purpose `actions`, batches of 120), answered as a JSON object keyed by
+  piece number. Missing keys are asked for once more, then the run fails.
+- `applyPieces`: the source's structure (row ids, shared values) with the translations in
+  place and existing translations kept
+
+The proposal carries `locale`. Each field's `current` is the value in that language, and the
+receipt is the original text. The contract is replaced by "every translatable field, review
+required": translating adds no facts. Private collections are still refused. A French
+proposal only supersedes open French proposals for the same document. Accepting writes with
+`locale`, as a draft.
+
 ## Field actions
 
 `altText` (vision call on the media URL, ≤125 chars), `seo` (meta title ≤60,

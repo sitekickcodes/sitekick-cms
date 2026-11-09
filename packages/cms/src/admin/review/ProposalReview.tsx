@@ -41,7 +41,8 @@ export async function ProposalReview(props: DocumentViewServerProps) {
   const targetId = typeof doc.targetId === 'string' || typeof doc.targetId === 'number' ? doc.targetId : null
   const targetLabel = target ? labelOf(target.labels?.singular, i18n, targetSlug) : targetSlug || 'document'
 
-  const targetDoc = target && targetId !== null ? await loadDoc(req, target, targetId, adminRoute) : null
+  const locale = typeof doc.locale === 'string' && doc.locale ? doc.locale : null
+  const targetDoc = target && targetId !== null ? await loadDoc(req, target, targetId, adminRoute, locale) : null
   const runsSlug = runsSlugOf(initPageResult.collectionConfig)
   const runDoc = await loadLink(req, payload.collections[runsSlug as CollectionSlug]?.config, relId(doc.run), adminRoute)
 
@@ -67,6 +68,7 @@ export async function ProposalReview(props: DocumentViewServerProps) {
     title: typeof doc.title === 'string' ? doc.title : `Proposal #${String(id)}`,
     status: (typeof doc.status === 'string' ? doc.status : 'open') as ProposalStatus,
     kind: typeof doc.kind === 'string' ? doc.kind : undefined,
+    ...(locale ? { language: localeName(payload.config.localization, locale, i18n.language) } : {}),
     agent: typeof doc.agent === 'string' ? doc.agent : undefined,
     summary: typeof doc.summary === 'string' && doc.summary.trim() ? doc.summary : undefined,
     createdAt: typeof doc.createdAt === 'string' ? doc.createdAt : undefined,
@@ -82,7 +84,8 @@ export async function ProposalReview(props: DocumentViewServerProps) {
     decisions,
     decideURL: formatAdminURL({ apiRoute, path: `/${collectionSlug}/${encodeURIComponent(String(id))}/decide` }),
     adminRoute,
-    ...(fields.some((f) => f.sections) && target && targetDoc ? await previewURLs(req, target, targetDoc.data, String(id), firstChange(fields)) : {}),
+    // The preview shows the default language; for a translation it would only mislead.
+    ...(!locale && fields.some((f) => f.sections) && target && targetDoc ? await previewURLs(req, target, targetDoc.data, String(id), firstChange(fields)) : {}),
   }
 
   return (
@@ -173,6 +176,7 @@ async function loadDoc(
   config: SanitizedCollectionConfig,
   id: string | number,
   adminRoute: string,
+  locale: string | null = null,
 ): Promise<{ data: Record<string, unknown>; link: DocLink } | null> {
   try {
     const data = (await req.payload.findByID({
@@ -183,9 +187,16 @@ async function loadDoc(
       req,
       overrideAccess: false,
       disableErrors: true,
+      // In that language only: an untranslated field shows as empty, not as the original.
+      // (`object`: a site without languages types `locale` as never.)
+      ...(locale ? ({ locale, fallbackLocale: false } as object) : {}),
     })) as Record<string, unknown> | null
     if (!data) return null
-    return { data, link: { title: titleOf(config, data, `#${String(id)}`), href: `${adminRoute}/collections/${config.slug}/${String(id)}` } }
+    // Untitled in that language yet: name it by the original, as the document list does.
+    const fallbackTitle = locale && !data[config.admin?.useAsTitle ?? 'title'] ? await req.payload.findByID({ collection: config.slug, id, depth: 0, draft: Boolean(config.versions?.drafts), req, overrideAccess: false, disableErrors: true }).catch(() => null) : null
+    // A translation links to the document in that language.
+    const href = `${adminRoute}/collections/${config.slug}/${String(id)}${locale ? `?locale=${encodeURIComponent(locale)}` : ''}`
+    return { data, link: { title: titleOf(config, data, fallbackTitle ? titleOf(config, fallbackTitle as unknown as Record<string, unknown>, `#${String(id)}`) : `#${String(id)}`), href } }
   } catch {
     return null
   }
@@ -224,4 +235,18 @@ async function reviewerName(req: PayloadRequest, value: unknown): Promise<string
   if (!loaded) return undefined
   const { name, email } = loaded.data
   return typeof name === 'string' && name.trim() ? name : typeof email === 'string' ? email : loaded.link.title
+}
+
+/** A locale's label from the localisation config (`Français`), else its code. */
+function localeName(localization: unknown, code: string, language: string): string {
+  const locales = localization && typeof localization === 'object' ? ((localization as { locales?: unknown[] }).locales ?? []) : []
+  for (const l of locales) {
+    if (typeof l === 'string' && l === code) return l
+    if (l && typeof l === 'object' && (l as { code?: unknown }).code === code) {
+      const label = (l as { label?: unknown }).label
+      if (typeof label === 'string') return label
+      if (label && typeof label === 'object') return String((label as Record<string, unknown>)[language] ?? Object.values(label)[0] ?? code)
+    }
+  }
+  return code
 }

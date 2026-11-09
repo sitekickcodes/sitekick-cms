@@ -101,6 +101,10 @@ export function decideEndpoint({ proposalsSlug, usersSlug }: ReviewEndpointOptio
       const target = payload.collections[targetCollection as CollectionSlug]
       if (!target) return json({ error: `Unknown collection "${targetCollection}".` }, 422)
       const drafts = Boolean(target.config.versions?.drafts)
+      // A translation reads and writes its own language only; untranslated fields read empty.
+      const locale = typeof proposal.locale === 'string' && proposal.locale ? proposal.locale : null
+      // (`object`: a site without languages types `locale` as never.)
+      const inLocale: object = locale ? { locale, fallbackLocale: false } : {}
       let targetId: string | number | null =
         typeof proposal.targetId === 'string' && proposal.targetId.trim() ? proposal.targetId : typeof proposal.targetId === 'number' ? proposal.targetId : null
 
@@ -120,6 +124,7 @@ export function decideEndpoint({ proposalsSlug, usersSlug }: ReviewEndpointOptio
               draft: drafts,
               req,
               overrideAccess: false,
+              ...inLocale,
             })) as unknown as Record<string, unknown>
             assertUnchangedSections(target.config.fields, toWrite, patch, current)
             const values = await importImages(current)
@@ -135,6 +140,7 @@ export function decideEndpoint({ proposalsSlug, usersSlug }: ReviewEndpointOptio
               req,
               overrideAccess: false,
               context: { ...REVIEW_AGENT_CONTEXT },
+              ...(locale ? ({ locale } as object) : {}),
             })
           } else {
             const values = await importImages(Object.fromEntries(toWrite.map((path) => [path, patch[path]?.value])))

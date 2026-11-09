@@ -20,7 +20,12 @@ export type CollectionLike = {
 }
 
 export interface AgentPayload {
-  config: { collections: CollectionLike[]; serverURL?: string }
+  config: {
+    collections: CollectionLike[]
+    serverURL?: string
+    /** Set when the site has more than one language (the localisation recipe). */
+    localization?: { defaultLocale: string; locales: Array<string | { code: string; label?: unknown }> } | false
+  }
   findByID(args: {
     collection: string
     id: string | number
@@ -29,6 +34,10 @@ export interface AgentPayload {
     disableErrors?: boolean
     /** Latest draft, for collections with drafts. */
     draft?: boolean
+    /** Which language to read, on a localised site. */
+    locale?: string
+    /** `false`: an untranslated field reads as empty instead of the default language's value. */
+    fallbackLocale?: false | string
   }): Promise<Doc | null>
   find(args: {
     collection: string
@@ -48,6 +57,7 @@ export interface AgentPayload {
     overrideAccess?: boolean
     context?: AgentContext
     depth?: number
+    locale?: string
   }): Promise<unknown>
   auth(args: { headers: Headers }): Promise<{ user?: ({ id: string | number } & Record<string, unknown>) | null }>
 }

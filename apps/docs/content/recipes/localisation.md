@@ -16,6 +16,14 @@ the language ("Title — Español"). Shared fields, such as the slug, show no ma
 the same in every language. Publishing is per language ("Publish in Español"), and a missing
 translation falls back to the default language on the site.
 
+While a field is empty in the language being edited, the default language's text shows under it,
+so a translator works from the original in place.
+
+With the [agent buttons](../agents.md) on, a document in another language has **Translate from
+English**. It translates whatever has no translation yet and shows the result as a proposal to
+review field by field. Accepting writes that language only, as a draft. Turn the button off with
+`localization({ ..., translateButton: false })`.
+
 ## What is translated
 
 **Words are translated; structure is shared.** Text, long text and rich text fields are

@@ -96,6 +96,11 @@ export function ProposalReviewClient({ initial }: { initial: ProposalView }) {
               <StatusTag value={view.status} map={PROPOSAL_STATUS_MAP} />
             </li>
             {view.kind ? <li>{view.kind}</li> : null}
+            {view.language ? (
+              <li>
+                <span className={styles.metaKey}>Language</span> {view.language}
+              </li>
+            ) : null}
             {view.agent ? (
               <li>
                 <span className={styles.metaKey}>Agent</span> {view.agent}

@@ -9,6 +9,7 @@ make, field by field, with the sources it used. An editor accepts or rejects eac
 | --- | --- | --- |
 | Draft from notes | Beside Create New | Paste notes, a link or both. The agent writes a draft (title, excerpt, body, search details) using only what you gave it. Accepting creates the document as a draft. |
 | Edit with words | On a saved page | Describe the change: "add an FAQ about parking below the hero". The agent proposes the page's sections in their new order. |
+| Translate from English | On a saved document, with the admin switched to another language (sites with [localisation](./recipes/localisation.md)) | Translates the text that has no translation in that language yet. The menu has "Translate everything again" for when the original has changed. Accepting writes that language only. |
 | Find details | On a saved record | Searches the web for a person's or organisation's website, bio, photo and social links, and quotes the page each value came from. |
 | Describe image | On an image's alt text | Writes alt text from the image. |
 | Write search details | On a document | Writes the search title and description from the content. |
@@ -53,6 +54,22 @@ every section in order: keep this one, change these fields of that one, add a ne
 The result is checked against the block rules, such as one hero and required fields, and
 sent back to the agent to fix if needed. Facts it can't know are written as
 `[placeholders]` for the editor to fill in, never invented.
+
+## Translate
+
+The agent reads the document in the default language and in the language being written. It
+collects every translated piece of text, including inside groups, lists and page sections, in
+the order they appear on the page, and translates them in one go, so the wording reads as one
+page. Rich text is translated piece by piece, so headings, lists, links and bold stay as they
+are. Names, numbers, dates, prices and addresses are kept.
+
+By default only empty translations are filled. Fields that already have a translation are
+left alone, and the review says when a field was only partly filled. A translation proposal
+shows "now" as that language currently is, and it doesn't replace proposals waiting in other
+languages. Translating adds no new facts, so it may write every translated field whatever
+the collection's `writable` list says. Private collections are still off limits.
+
+A typical page takes 15 to 20 seconds.
 
 ## Models and cost
 

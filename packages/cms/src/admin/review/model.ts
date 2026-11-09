@@ -25,6 +25,8 @@ export type ProposalView = {
   title: string
   status: ProposalStatus
   kind?: string
+  /** A translation's language, as the site names it (`Français`). */
+  language?: string
   agent?: string
   summary?: string
   createdAt?: string
