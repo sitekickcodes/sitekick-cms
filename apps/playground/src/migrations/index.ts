@@ -4,6 +4,7 @@ import * as migration_20261103_172016_add_review_and_api_keys from './20261103_1
 import * as migration_20261105_210539_saved_views from './20261105_210539_saved_views';
 import * as migration_20261105_230557_events_module from './20261105_230557_events_module';
 import * as migration_20261106_171138_forms from './20261106_171138_forms';
+import * as migration_20261109_212425_redirects from './20261109_212425_redirects';
 
 export const migrations = [
   {
@@ -34,6 +35,11 @@ export const migrations = [
   {
     up: migration_20261106_171138_forms.up,
     down: migration_20261106_171138_forms.down,
-    name: '20261106_171138_forms'
+    name: '20261106_171138_forms',
+  },
+  {
+    up: migration_20261109_212425_redirects.up,
+    down: migration_20261109_212425_redirects.down,
+    name: '20261109_212425_redirects'
   },
 ];

@@ -1,8 +1,8 @@
 import { Band, Card, CardBody, CardTitle, RichText, SectionHeading } from '@sitekick/blocks/react'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
 
 import { cms, isDraft } from '@/lib/cms'
+import { pageNotFound } from '@/lib/missing'
 import type { Event } from '@/payload-types'
 
 import type { UpcomingEventsData } from '../block'
@@ -64,7 +64,7 @@ export async function EventPage({ slug }: { slug: string }) {
   const draft = await isDraft()
   const { docs } = await payload.find({ collection: 'events', where: { slug: { equals: slug }, ...(draft ? {} : { _status: { equals: 'published' } }) }, limit: 1, depth: 1, draft })
   const event = docs[0]
-  if (!event) notFound()
+  if (!event) return pageNotFound(`/events/${slug}`)
   return (
     <article className="prose">
       <p className="lede">{when(event.startsAt, event.endsAt)}</p>

@@ -45,6 +45,7 @@ import { InviteButton as InviteButton_3c4e1d732ae6727d2b5b078221a842c9 } from '@
 import { InviteUser as InviteUser_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
 import { SubmissionAnswers as SubmissionAnswers_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
 import { StatusCell as StatusCell_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
+import { ImportRedirects as ImportRedirects_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
 import { OpenLink as OpenLink_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
 import { HelpPreviewButton as HelpPreviewButton_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
 import { ProposalReview as ProposalReview_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
@@ -80,6 +81,7 @@ import { CollectionFilter as CollectionFilter_3817bf644402e67bfe6577f60ef982de }
 import { UploadDropzoneWidget as UploadDropzoneWidget_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
 import { UploadDropzoneCollectionsField as UploadDropzoneCollectionsField_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
 import { SubmissionsCard as SubmissionsCard_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
+import { MissingPagesCard as MissingPagesCard_3c4e1d732ae6727d2b5b078221a842c9 } from '@sitekick/cms/admin'
 import { ComingUp as ComingUp_c34735eae7f06e3dc0ac37a06c52b22a } from '../../../modules/events/admin/ComingUp'
 
 /** @type import('payload').ImportMap */
@@ -131,6 +133,7 @@ export const importMap = {
   "@sitekick/cms/admin#InviteUser": InviteUser_3c4e1d732ae6727d2b5b078221a842c9,
   "@sitekick/cms/admin#SubmissionAnswers": SubmissionAnswers_3c4e1d732ae6727d2b5b078221a842c9,
   "@sitekick/cms/admin#StatusCell": StatusCell_3c4e1d732ae6727d2b5b078221a842c9,
+  "@sitekick/cms/admin#ImportRedirects": ImportRedirects_3c4e1d732ae6727d2b5b078221a842c9,
   "@sitekick/cms/admin#OpenLink": OpenLink_3c4e1d732ae6727d2b5b078221a842c9,
   "@sitekick/cms/admin#HelpPreviewButton": HelpPreviewButton_3c4e1d732ae6727d2b5b078221a842c9,
   "@sitekick/cms/admin#ProposalReview": ProposalReview_3c4e1d732ae6727d2b5b078221a842c9,
@@ -166,5 +169,6 @@ export const importMap = {
   "@payloadcms/ui/rsc#UploadDropzoneWidget": UploadDropzoneWidget_ab83ff7e88da8d3530831f296ec4756a,
   "@payloadcms/ui#UploadDropzoneCollectionsField": UploadDropzoneCollectionsField_3817bf644402e67bfe6577f60ef982de,
   "@sitekick/cms/admin#SubmissionsCard": SubmissionsCard_3c4e1d732ae6727d2b5b078221a842c9,
+  "@sitekick/cms/admin#MissingPagesCard": MissingPagesCard_3c4e1d732ae6727d2b5b078221a842c9,
   "/modules/events/admin/ComingUp#ComingUp": ComingUp_c34735eae7f06e3dc0ac37a06c52b22a
 }

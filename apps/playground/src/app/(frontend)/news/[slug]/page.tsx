@@ -1,7 +1,7 @@
 import { RichText } from '@payloadcms/richtext-lexical/react'
-import { notFound } from 'next/navigation'
 
 import { cms, isDraft } from '@/lib/cms'
+import { pageNotFound } from '@/lib/missing'
 
 export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -9,7 +9,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   const draft = await isDraft()
   const { docs } = await payload.find({ collection: 'posts', where: { slug: { equals: slug }, ...(draft ? {} : { _status: { equals: 'published' } }) }, limit: 1, draft })
   const post = docs[0]
-  if (!post) notFound()
+  if (!post) return pageNotFound(`/news/${slug}`)
   return (
     <article className="prose">
       <h1>{post.title}</h1>

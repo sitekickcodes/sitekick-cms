@@ -142,7 +142,7 @@ export function customize(template: Files, opts: Options): Files {
       if (path.startsWith('src/modules/events/') || path.startsWith('src/app/(frontend)/events/')) files.delete(path)
     }
     edit(files, 'src/modules/index.ts', (text) =>
-      replace(replace(text, "import { events } from './events'\n", ''), 'export const modules: SiteModule[] = [forms(), events]', 'export const modules: SiteModule[] = [forms()]'),
+      replace(replace(text, "import { events } from './events'\n", ''), 'export const modules: SiteModule[] = [forms(), redirects(), events]', 'export const modules: SiteModule[] = [forms(), redirects()]'),
     )
     edit(files, 'src/modules/frontend.ts', (text) =>
       replace(replace(text, "import { eventBlocks } from './events/frontend'\n", ''), 'export const customBlocks: CustomBlockComponents = { formBlock: FormSection, ...eventBlocks }', 'export const customBlocks: CustomBlockComponents = { formBlock: FormSection }'),

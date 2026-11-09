@@ -67,7 +67,7 @@ describe('customize', () => {
   test('without Events, the module and its routes go and src/modules stays', () => {
     const files = customize(template, { ...options, events: false })
     expect([...files.keys()].filter((p) => /events/.test(p))).toEqual([])
-    expect(files.get('src/modules/index.ts')).toContain('export const modules: SiteModule[] = [forms()]')
+    expect(files.get('src/modules/index.ts')).toContain('export const modules: SiteModule[] = [forms(), redirects()]')
     expect(files.has('src/modules/README.md')).toBe(true)
     for (const [path, text] of files) {
       if (/\.tsx?$/.test(path) && path !== 'src/payload-types.ts') expect(text).not.toMatch(/modules\/events|eventBlocks|'\/events'/)

@@ -20,9 +20,10 @@ export function Tag({ label, tone = 'neutral' }: { label: string; tone?: Tone })
 
 export type StatusMap = Record<string, { label: string; tone: Tone }>
 
-/** A value as its Tag, or nothing when the map has no entry for it. */
+/** A value as its Tag, or nothing when the map has no entry for it. Checkboxes look up `true` / `false`. */
 export function StatusTag({ value, map }: { value: unknown; map: StatusMap }) {
-  const tag = typeof value === 'string' ? map[value] : undefined
+  const key = typeof value === 'string' ? value : typeof value === 'boolean' ? String(value) : value == null ? 'false' : undefined
+  const tag = key !== undefined ? map[key] : undefined
   return tag ? <Tag {...tag} /> : null
 }
 

@@ -13,6 +13,7 @@
     "./access": "./src/access/index.ts",
     "./agent": "./src/agent/index.ts",
     "./public": "./src/public/index.ts",
+    "./redirects": "./src/recipes/redirects/proxy.ts",
     "./theme.css": "./src/theme/theme.css",
     "./admin.css": "./src/theme/admin.css"
   },

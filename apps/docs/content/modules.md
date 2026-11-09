@@ -7,7 +7,7 @@ modules**, and never as changes to the `@sitekick` packages.
 | Layer | Where | What goes there |
 | --- | --- | --- |
 | Core | `@sitekick/cms`, `blocks`, `agents` | What every site gets. Versioned on npm, never edited from a site. |
-| Recipes | Opt-in plugins in the packages | Features more than one client needs, such as [Google sign-in](./recipes/google-sign-in.md) and [localisation](./recipes/localisation.md). |
+| Recipes | Opt-in plugins in the packages | Features more than one client needs, such as [forms](./recipes/forms.md), [redirects](./recipes/redirects.md), [Google sign-in](./recipes/google-sign-in.md) and [localisation](./recipes/localisation.md). |
 | Site modules | `src/modules/<name>/` in the site | Anything one client needs. |
 
 ## A module

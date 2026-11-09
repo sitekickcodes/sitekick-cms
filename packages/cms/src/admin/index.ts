@@ -15,6 +15,8 @@ export { CheckboxesField } from './CheckboxesField'
 export { TranslationHint } from './TranslationHint'
 export { SubmissionAnswers } from './forms/SubmissionAnswers'
 export { SubmissionsCard } from './forms/SubmissionsCard'
+export { ImportRedirects } from './redirects/ImportRedirects'
+export { MissingPagesCard } from './redirects/MissingPagesCard'
 // Auth and users
 export { AuthView } from './AuthView'
 export { Icon } from './Icon'

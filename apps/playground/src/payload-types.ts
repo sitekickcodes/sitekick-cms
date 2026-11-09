@@ -79,16 +79,16 @@ export type LexicalNodes_8799902D =
   | SerializedHeadingNode<LexicalNodes_8799902D, 'h1' | 'h2' | 'h3' | 'h4'>;
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LexicalNodes_10481330".
+ * via the `definition` "LexicalNodes_0E21D94C".
  */
-export type LexicalNodes_10481330 =
+export type LexicalNodes_0E21D94C =
   | SerializedTextNode
   | SerializedTabNode
   | SerializedLineBreakNode
-  | SerializedParagraphNode<LexicalNodes_10481330>
+  | SerializedParagraphNode<LexicalNodes_0E21D94C>
   | SerializedHorizontalRuleNode
   | SerializedUploadNode<'media'>
-  | SerializedQuoteNode<LexicalNodes_10481330>
+  | SerializedQuoteNode<LexicalNodes_0E21D94C>
   | SerializedRelationshipNode<
       | 'pages'
       | 'posts'
@@ -96,6 +96,8 @@ export type LexicalNodes_10481330 =
       | 'users'
       | 'forms'
       | 'form-submissions'
+      | 'redirects'
+      | 'missing-pages'
       | 'events'
       | 'help-articles'
       | 'proposals'
@@ -107,11 +109,11 @@ export type LexicalNodes_10481330 =
       | 'payload-migrations'
       | 'payload-query-presets'
     >
-  | SerializedAutoLinkNode<LexicalNodes_10481330, LexicalLinkFields>
-  | SerializedLinkNode<LexicalNodes_10481330, LexicalLinkFields>
-  | SerializedListNode<LexicalNodes_10481330>
-  | SerializedListItemNode<LexicalNodes_10481330>
-  | SerializedHeadingNode<LexicalNodes_10481330>;
+  | SerializedAutoLinkNode<LexicalNodes_0E21D94C, LexicalLinkFields>
+  | SerializedLinkNode<LexicalNodes_0E21D94C, LexicalLinkFields>
+  | SerializedListNode<LexicalNodes_0E21D94C>
+  | SerializedListItemNode<LexicalNodes_0E21D94C>
+  | SerializedHeadingNode<LexicalNodes_0E21D94C>;
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "LexicalNodes_6E4E4BF6".
@@ -156,6 +158,8 @@ export interface Config {
     users: User;
     forms: Form;
     'form-submissions': FormSubmission;
+    redirects: Redirect;
+    'missing-pages': MissingPage;
     events: Event;
     'help-articles': HelpArticle;
     proposals: Proposal;
@@ -177,6 +181,8 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
+    redirects: RedirectsSelect<false> | RedirectsSelect<true>;
+    'missing-pages': MissingPagesSelect<false> | MissingPagesSelect<true>;
     events: EventsSelect<false> | EventsSelect<true>;
     'help-articles': HelpArticlesSelect<false> | HelpArticlesSelect<true>;
     proposals: ProposalsSelect<false> | ProposalsSelect<true>;
@@ -1032,7 +1038,7 @@ export interface Post {
    */
   excerpt?: string | null;
   cover?: (number | null) | Media;
-  body: LexicalRichText<LexicalNodes_10481330>;
+  body: LexicalRichText<LexicalNodes_0E21D94C>;
   meta?: {
     title?: string | null;
     description?: string | null;
@@ -1178,6 +1184,101 @@ export interface FormSubmission {
   createdAt: string;
 }
 /**
+ * Old addresses that send visitors somewhere else. Changing a page’s address adds one here for you. New and changed redirects start working within a couple of minutes.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "redirects".
+ */
+export interface Redirect {
+  id: number;
+  /**
+   * The path people arrive at, e.g. /about-us. A full old URL works too.
+   */
+  from: string;
+  /**
+   * A page on this site (/contact) or a full web address.
+   */
+  to: string;
+  /**
+   * On: the old address is gone for good (search engines move it over). Off: temporary, e.g. during an event.
+   */
+  permanent?: boolean | null;
+  /**
+   * Why it’s here. Only you see it.
+   */
+  note?: string | null;
+  source?: ('manual' | 'slug' | 'import' | 'missing') | null;
+  /**
+   * Times a visitor was sent on.
+   */
+  hits?: number | null;
+  lastHitAt?: string | null;
+  createdBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
+  updatedBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Addresses visitors tried that don’t exist, most visited first. Open one and say where it should go, or mark it Ignored.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "missing-pages".
+ */
+export interface MissingPage {
+  id: number;
+  path: string;
+  /**
+   * A page on this site (/contact) or a full web address. Saving adds the redirect and marks this fixed.
+   */
+  redirectTo?: string | null;
+  /**
+   * Ignored stops it showing up, e.g. for an address that was never real.
+   */
+  status?: ('open' | 'redirected' | 'ignored') | null;
+  hits?: number | null;
+  lastSeenAt?: string | null;
+  /**
+   * The last page that linked here, when the browser said.
+   */
+  referrer?: string | null;
+  createdBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
+  updatedBy?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null);
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Shown on /events, soonest first. Past events drop off the list on their own.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1208,7 +1309,7 @@ export interface Event {
    */
   signup?: string | null;
   cover?: (number | null) | Media;
-  body?: LexicalRichText<LexicalNodes_10481330> | null;
+  body?: LexicalRichText<LexicalNodes_0E21D94C> | null;
   meta?: {
     title?: string | null;
     description?: string | null;
@@ -1253,7 +1354,7 @@ export interface HelpArticle {
    * The article's shared link. Keep it when changing the title so existing links still work.
    */
   slug: string;
-  topic: 'Getting started' | 'Content' | 'Media' | 'Account' | 'Forms' | 'Events';
+  topic: 'Getting started' | 'Content' | 'Media' | 'Account' | 'Forms' | 'Website' | 'Events';
   /**
    * A short description to help people find this article in search.
    */
@@ -1557,6 +1658,14 @@ export interface PayloadLockedDocument {
         value: number | FormSubmission;
       } | null)
     | ({
+        relationTo: 'redirects';
+        value: number | Redirect;
+      } | null)
+    | ({
+        relationTo: 'missing-pages';
+        value: number | MissingPage;
+      } | null)
+    | ({
         relationTo: 'events';
         value: number | Event;
       } | null)
@@ -1677,6 +1786,8 @@ export interface PayloadQueryPreset {
     | 'users'
     | 'forms'
     | 'form-submissions'
+    | 'redirects'
+    | 'missing-pages'
     | 'events'
     | 'help-articles'
     | 'proposals'
@@ -2167,6 +2278,39 @@ export interface FormSubmissionsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "redirects_select".
+ */
+export interface RedirectsSelect<T extends boolean = true> {
+  from?: T;
+  to?: T;
+  permanent?: T;
+  note?: T;
+  source?: T;
+  hits?: T;
+  lastHitAt?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "missing-pages_select".
+ */
+export interface MissingPagesSelect<T extends boolean = true> {
+  path?: T;
+  redirectTo?: T;
+  status?: T;
+  hits?: T;
+  lastSeenAt?: T;
+  referrer?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "events_select".
  */
 export interface EventsSelect<T extends boolean = true> {
@@ -2473,6 +2617,8 @@ export interface CollectionQueryWidget {
       | 'users'
       | 'forms'
       | 'form-submissions'
+      | 'redirects'
+      | 'missing-pages'
       | 'events'
       | 'help-articles'
       | 'proposals'
@@ -2508,6 +2654,8 @@ export interface ActivityWidget {
           | 'users'
           | 'forms'
           | 'form-submissions'
+          | 'redirects'
+          | 'missing-pages'
           | 'events'
           | 'help-articles'
           | 'proposals'

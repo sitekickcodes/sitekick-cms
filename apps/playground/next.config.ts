@@ -12,6 +12,8 @@ const nextConfig: NextConfig = {
     localPatterns: [{ pathname: '/api/media/file/**' }],
     remotePatterns: [{ protocol: 'https', hostname: '*.public.blob.vercel-storage.com' }],
   },
+  // app/global-not-found.tsx: a 404 for addresses no route matches (two root layouts, site and admin).
+  experimental: { globalNotFound: true },
   turbopack: {
     root: path.resolve(dirname, '../..'),
   },

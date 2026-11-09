@@ -1,0 +1,12 @@
+/* The redirects recipe's admin pieces: import from a spreadsheet, above the list. */
+.bar { margin: 0 var(--gutter-h) 1.5rem; display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+.form { display: grid; gap: 0.9rem; margin: 0 var(--gutter-h) 1.5rem; padding: 1.25rem; max-width: 44rem; background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: var(--radius-large, 12px); }
+.label { display: block; margin-bottom: 0.35rem; font-size: 14px; font-weight: 500; }
+.hint { margin: 0; font-size: 13px; line-height: 1.45; color: var(--color-text-secondary); }
+.textarea { width: 100%; min-height: 10rem; padding: 0.6rem 0.75rem; font: 13px/1.5 var(--font-mono, ui-monospace, monospace); color: inherit; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-medium, 8px); resize: vertical; }
+.textarea:focus { outline: 0; border-color: var(--sk-accent, currentColor); box-shadow: 0 0 0 1.5px var(--sk-accent, currentColor); }
+.actions { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+.result { margin: 0 var(--gutter-h) 1.5rem; max-width: 44rem; padding: 0.9rem 1rem; font-size: 14px; line-height: 1.45; background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: var(--radius-large, 12px); }
+.result p { margin: 0; }
+.errors { margin: 0.5rem 0 0; padding-left: 1.1rem; font-size: 13px; color: var(--color-text-secondary); }
+.errors li + li { margin-top: 0.2rem; }

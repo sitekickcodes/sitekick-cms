@@ -81,7 +81,7 @@ export default buildConfig({
       agents: { basePath: '/api/agents' },
       nav: [
         { label: 'Inbox', icon: 'inbox', links: [{ to: 'view:/inbox', label: 'Inbox' }] },
-        { label: 'Website', icon: 'globe', links: ['pages', 'site-settings'] },
+        { label: 'Website', icon: 'globe', links: ['pages', 'redirects', 'missing-pages', 'site-settings'] },
         { label: 'News', icon: 'newspaper', links: ['posts'] },
         { label: 'People', icon: 'users', links: ['people'] },
         { label: 'Library', icon: 'image', links: ['media'] },
