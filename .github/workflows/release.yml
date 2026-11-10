@@ -32,16 +32,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          registry-url: https://registry.npmjs.org
       # Trusted publishing needs npm 11.5.1 or later.
       - run: npm install -g npm@^11.5.1
       - run: bun install --frozen-lockfile
-      - uses: changesets/action@v1
+      # v2 reads Changesets v3 (pre mode keeps used changesets in .changeset/pre/).
+      - uses: changesets/action@v2.1.2
         with:
-          version: bun run version
-          publish: bun run release
-          title: Version packages
-          commit: Version packages
+          version-script: bun run version
+          publish-script: bun run release
+          pr-title: Version packages
+          commit-message: Version packages
+          github-token: ${{ secrets.GITHUB_TOKEN }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
