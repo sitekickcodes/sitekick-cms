@@ -91,7 +91,7 @@ export function redirectsCollection(): CollectionConfig {
 /** Typing an address on a missing page turns it into a redirect. */
 const redirectFromMissing: CollectionAfterChangeHook = async ({ doc, previousDoc, req }) => {
   const to = typeof doc.redirectTo === 'string' ? doc.redirectTo : ''
-  if (!to || to === previousDoc?.redirectTo || doc.status !== 'open') return doc
+  if (!to || to === previousDoc?.redirectTo || doc.status === 'ignored') return doc
   const existing = await req.payload.find({ collection: REDIRECTS_SLUG as CollectionSlug, where: { from: { equals: doc.path } }, limit: 1, depth: 0, overrideAccess: true, req })
   const data = { from: doc.path, to, source: 'missing' }
   if (existing.docs[0]) await req.payload.update({ collection: REDIRECTS_SLUG as CollectionSlug, id: existing.docs[0].id, data: data as never, overrideAccess: true, req })
@@ -99,11 +99,13 @@ const redirectFromMissing: CollectionAfterChangeHook = async ({ doc, previousDoc
   return doc
 }
 
-const checkTarget: CollectionBeforeValidateHook = ({ data }) => {
+/** A target given in this save: tidy it, and mark the page fixed in the same save (the editor sees it at once). */
+const checkTarget: CollectionBeforeValidateHook = ({ data, originalDoc }) => {
   if (data && typeof data.redirectTo === 'string' && data.redirectTo.trim()) {
     const to = normalizeTarget(data.redirectTo)
     if (!to) throw new APIError('“Send people to” should be a path like /contact, or a full web address.', 400, undefined, true)
     data.redirectTo = to
+    if (to !== originalDoc?.redirectTo && (data.status ?? originalDoc?.status) === 'open') data.status = 'redirected'
   }
   return data
 }

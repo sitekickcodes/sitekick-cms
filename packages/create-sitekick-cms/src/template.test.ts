@@ -22,6 +22,11 @@ describe('toTemplate', () => {
     // A new site gets the eval suite, but not the playground's results.
     expect(template.has('scripts/evals.ts')).toBe(true)
     expect(template.has('evals/cases.ts')).toBe(true)
+    // The admin suite tests the playground's own demo content.
+    expect([...template.keys()].some((p) => p.startsWith('e2e/') || p === 'playwright.config.ts')).toBe(false)
+    const pkg = JSON.parse(template.get('package.json')!)
+    expect(pkg.scripts.e2e).toBeUndefined()
+    expect(pkg.devDependencies['@playwright/test']).toBeUndefined()
     for (const path of template.keys()) {
       expect(path).not.toMatch(/^scripts\/(seed|agents-live)|^src\/migrations\/|^README\.md$|^AGENTS\.md$|ledger\.jsonl$/)
     }

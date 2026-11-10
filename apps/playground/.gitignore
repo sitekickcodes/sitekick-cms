@@ -50,3 +50,4 @@ node_modules/
 /playwright/.cache/
 .env*
 AGENTS.md
+/e2e/.auth/

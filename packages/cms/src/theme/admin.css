@@ -1695,3 +1695,34 @@ html[data-theme='light'] .rich-text-lexical .fixed-toolbar::before {
     text-align: start;
   }
 }
+
+/* EXCEPTION: on a phone the list's search row (search, then Saved views' preset
+   button) can't fit on one line; let the preset button wrap under the search
+   instead of pushing the page sideways. Found by e2e/widths.spec.ts at 390px. */
+@media (max-width: 600px) {
+  .list-controls__search-row,
+  .list-controls__left {
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+  /* EXCEPTION: same terms. */
+  .list-controls__left .query-preset-bar {
+    max-width: 100%;
+  }
+}
+
+/* EXCEPTION: on a phone the document controls (agent buttons, preview, Publish,
+   the menu) don't fit on one line; let them wrap instead of pushing the page
+   sideways. Found by e2e/widths.spec.ts at 390px. */
+@media (max-width: 600px) {
+  .doc-controls__controls-wrapper {
+    min-width: 0;
+    max-width: 100%;
+  }
+  /* EXCEPTION: same terms. */
+  .doc-controls__controls {
+    flex-wrap: wrap;
+    min-width: 0;
+    row-gap: 8px;
+  }
+}

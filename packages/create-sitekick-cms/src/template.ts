@@ -13,9 +13,11 @@
 
 export type Files = Map<string, string>
 
-/** Playground files that stay in the monorepo: demo seeding, live model checks, its history. */
+/** Playground files that stay in the monorepo: demo seeding, live model checks, the admin suite, its history. */
 const PLAYGROUND_ONLY = [
   /^scripts\/(?!migrate\.ts$|evals\.ts$)/,
+  /^e2e\//,
+  /^playwright\.config\.ts$/,
   /^evals\/ledger\.jsonl$/,
   /^src\/migrations\//,
   /^README\.md$/,
@@ -35,6 +37,10 @@ export function toTemplate(playground: Files, opts: { version: string }): Files 
     pkg.description = 'A Sitekick CMS site.'
     delete pkg.license
     pkg.scripts.dev = pkg.scripts.dev.replace('-p 3100', '-p 3000')
+    // The admin suite tests the playground's demo content; it stays in the monorepo.
+    delete pkg.scripts.e2e
+    delete pkg.scripts['e2e:seed']
+    delete pkg.devDependencies?.['@playwright/test']
     for (const [name, range] of Object.entries<string>(pkg.dependencies)) {
       if (range.startsWith('workspace:')) pkg.dependencies[name] = `^${opts.version}`
     }

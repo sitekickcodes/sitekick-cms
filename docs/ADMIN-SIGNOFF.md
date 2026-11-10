@@ -2,7 +2,16 @@
 
 Run on every Payload bump and before every release of `@sitekick/cms`. Four widths: desktop
 (1440), tablet (1024), phone (390) and small phone (320). The Playwright suite in
-`apps/playground/e2e` automates the checks marked ⚙; the rest are eyes-on.
+`apps/playground/e2e` automates the checks marked ⚙, and CI runs it on every push (the Admin
+suite job: a production build on an empty Postgres, migrated from the first migration and
+seeded). The rest are eyes-on.
+
+Locally: `cd apps/playground && bun run e2e` against the dev server on :3100 (the Neon `dev`
+branch). It seeds its own admin account, demo page and review demo first.
+
+What the suite covers beyond this list: a page from Create New to live (no empty draft on
+open, slug from the title), the board, a visitor sending a form and the submission in the
+admin, a redirect served by the proxy, and a missing page turned into a redirect.
 
 For each screen: no console errors ⚙, no horizontal scroll ⚙, focus visible on every
 control, text never clipped, the sidebar and header stay usable.

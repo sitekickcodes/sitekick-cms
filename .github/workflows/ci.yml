@@ -61,3 +61,56 @@ jobs:
           name: packages
           path: .pack/*.tgz
           retention-days: 7
+
+  admin:
+    # The admin suite (apps/playground/e2e, docs/ADMIN-SIGNOFF.md ⚙) against a production build
+    # of the playground on an empty Postgres: every migration from the first, then the seeds.
+    name: Admin suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: payload
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/payload
+      PAYLOAD_SECRET: ci-admin-suite-only
+      NEXT_PUBLIC_SERVER_URL: http://localhost:3100
+      # The redirects proxy refreshes its table quickly, so a new redirect works within the test.
+      REDIRECTS_TTL_MS: '500'
+    defaults:
+      run:
+        working-directory: apps/playground
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: bun install --frozen-lockfile
+        working-directory: .
+      - name: Migrate an empty database
+        run: bun run migrate
+      - name: Seed
+        run: bun run e2e:seed
+      - name: Build
+        run: bun run build
+      - name: Browser
+        run: bunx playwright install --with-deps chromium-headless-shell
+      - name: Admin suite
+        run: bun run e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: admin-suite-report
+          path: |
+            apps/playground/playwright-report
+            apps/playground/test-results
+          retention-days: 7

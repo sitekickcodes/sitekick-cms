@@ -18,7 +18,9 @@
     "migrate:create": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:create",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "vercel-build": "bun run migrate && bun run generate:importmap && bun run build",
-    "evals": "bun scripts/evals.ts"
+    "evals": "bun scripts/evals.ts",
+    "e2e": "playwright test",
+    "e2e:seed": "bun scripts/e2e-seed.ts && bun scripts/seed-demo.ts && bun scripts/seed-review.ts"
   },
   "dependencies": {
     "@base-ui/react": "1.9.0",
@@ -53,6 +55,7 @@
     "zod": "4.6.7"
   },
   "devDependencies": {
+    "@playwright/test": "1.65.0",
     "@types/node": "24.12.3",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
