@@ -3,7 +3,7 @@ name: Release
 # On every push to main:
 # - changesets waiting (.changeset/*.md): open or update the "Version packages" PR
 # - none waiting (that PR was just merged): publish what npm doesn't have yet (scripts/release.ts)
-# Publishing needs the NPM_TOKEN secret. Until it's set, release.ts says so and stops.
+# Publishing uses npm trusted publishing (OIDC): no npm token, see docs/RELEASING.md.
 on:
   push:
     branches: [main]
@@ -15,7 +15,7 @@ concurrency:
 permissions:
   contents: write
   pull-requests: write
-  id-token: write # npm provenance
+  id-token: write # npm trusted publishing and provenance
 
 jobs:
   release:
@@ -33,6 +33,8 @@ jobs:
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
+      # Trusted publishing needs npm 11.5.1 or later.
+      - run: npm install -g npm@^11.5.1
       - run: bun install --frozen-lockfile
       - uses: changesets/action@v1
         with:
@@ -42,5 +44,4 @@ jobs:
           commit: Version packages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true

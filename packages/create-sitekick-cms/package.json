@@ -1,6 +1,6 @@
 {
   "name": "create-sitekick-cms",
-  "version": "0.1.0-beta.0",
+  "version": "0.1.0-beta.1",
   "description": "Create a Sitekick CMS site: Payload 4, Next.js 16 and the @sitekick packages.",
   "license": "MIT",
   "repository": {

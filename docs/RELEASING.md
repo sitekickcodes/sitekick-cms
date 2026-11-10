@@ -15,7 +15,5 @@ To see what would be published without publishing anything, run `bun run release
 ## Setup
 
 - **npm:** the `sitekick` org exists (owner: johngilesyoder). `0.1.0-beta.0` of all four packages was published on 2026-11-09, with provenance.
-- **Staged publishing:** npm held that first publish until an owner approved each package with 2FA (package page › Staged Packages › Approve). Token publishes keep working that way until npm removes direct token publishing in January 2027.
-- **Still to do:**
-  1. **Trusted publishing.** On each package's npmjs.com page, open Settings › Trusted publishing and choose GitHub Actions: organization `sitekickcodes`, repository `sitekick-cms`, workflow `release.yml`, and allow direct publishing. Then delete the `NPM_TOKEN` secret and revoke the token on npm.
-  2. **Let Actions open PRs** (org-wide): github.com/organizations/sitekickcodes/settings/actions › "Allow GitHub Actions to create and approve pull requests". Without it, the Version packages PR can't be opened.
+- **Trusted publishing:** the Release workflow publishes with npm trusted publishing (OIDC), so there's no npm token anywhere. Each package's npmjs.com Settings › Trusted publishing names GitHub Actions, `sitekickcodes/sitekick-cms`, workflow `release.yml`. Renaming or moving that workflow file breaks publishing until those settings are updated to match.
+- **Still to do:** **Let Actions open PRs** (org-wide): github.com/organizations/sitekickcodes/settings/actions › "Allow GitHub Actions to create and approve pull requests". Without it, the Version packages PR can't be opened.

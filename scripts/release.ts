@@ -10,8 +10,10 @@
  * (`0.2.0-beta.1`) goes out under its tag (`beta`), so `npm install @sitekick/cms` keeps
  * getting the last stable release. In CI it publishes with provenance.
  *
- * Without an npm login (NPM_TOKEN in CI, `npm login` locally) it says so and stops before
- * publishing anything: the @sitekick scope has to exist on npm first. Dry runs need no login.
+ * In GitHub Actions it publishes through npm trusted publishing: npm checks the workflow's
+ * OIDC identity against each package's settings, so there's no token to keep or leak.
+ * Elsewhere, without an npm login (`npm login`), it says so and stops before publishing
+ * anything. Dry runs need no login.
  */
 import { $ } from 'bun'
 import { readdirSync, readFileSync } from 'node:fs'
@@ -40,10 +42,12 @@ if (!pending.length) {
   process.exit(0)
 }
 
-if (!dryRun) {
+// Trusted publishing has no login to check: npm swaps the workflow's OIDC token at publish time.
+const oidc = process.env.GITHUB_ACTIONS === 'true' && Boolean(process.env.ACTIONS_ID_TOKEN_REQUEST_URL)
+if (!dryRun && !oidc) {
   const whoami = await $`npm whoami`.quiet().nothrow()
   if (whoami.exitCode !== 0) {
-    console.log(`Not publishing ${pending.map((m) => `${m.name}@${m.version}`).join(', ')}: no npm login (set NPM_TOKEN in CI, or run npm login).`)
+    console.log(`Not publishing ${pending.map((m) => `${m.name}@${m.version}`).join(', ')}: no npm login (run npm login).`)
     process.exit(0)
   }
 }
