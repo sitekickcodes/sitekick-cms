@@ -4,7 +4,7 @@ The version of [Payload](https://payloadcms.com) that Sitekick installs on day o
 client project: world-class editor UX, agent-ready from the first commit, and AI workflows as
 part of the product.
 
-Status: phase 2, first beta (`0.1.0-beta.0`). Read [`docs/PLAN.md`](docs/PLAN.md) first, then
+Status: phase 2 done, first stable release (`0.1.0`). Read [`docs/PLAN.md`](docs/PLAN.md) first, then
 [`docs/DECISIONS.md`](docs/DECISIONS.md), [`docs/REVIEW-SPEC.md`](docs/REVIEW-SPEC.md) and
 [`docs/ENVIRONMENTS.md`](docs/ENVIRONMENTS.md). Demo: https://sitekick-cms-playground.vercel.app
 
@@ -45,7 +45,7 @@ To try a release before publishing, point the CLI at the tarballs:
 node packages/create-sitekick-cms/.pack/dist/index.js /tmp/try --packages .pack
 ```
 
-Publish each tarball with `npm publish .pack/<file>.tgz --tag beta` (an npm account in the
+Publish each tarball with `npm publish .pack/<file>.tgz` (an npm account in the
 `sitekick` org).
 
 In the monorepo the packages export TypeScript source and the playground transpiles it. The
