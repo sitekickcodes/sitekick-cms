@@ -6,6 +6,7 @@ import { runDraft } from './agents/draft'
 import { runEdit } from './agents/edit'
 import { nameOf, runEnrich } from './agents/enrich'
 import { runTranslate } from './agents/translate'
+import { globalGuides, type Guide } from './guides'
 import type { AgentPayload } from './payload'
 import type { Runner } from './runner'
 import { AgentsDisabledError, agentsDisabled, getRun, startRun } from './runs'
@@ -64,6 +65,13 @@ export type AgentRoutesOptions = {
   runner?: Runner
   /** Keep a promise alive after the response. Default: @vercel/functions' waitUntil when present, else fire-and-forget. */
   background?: (work: Promise<unknown>) => void
+  /**
+   * Design, UX and writing guides for Edit and Draft: the kit's plus the site's own, read per
+   * run so an edited `agent/` file applies without a restart. Usually
+   * `() => loadGuides(join(process.cwd(), 'agent'))` from `@sitekick/agents/guides`.
+   * Default: the kit's global guides.
+   */
+  guides?: Guide[] | (() => Promise<Guide[]>)
 }
 
 /** A language's name as the site labels it (`Français`), else its code. */
@@ -135,7 +143,8 @@ export function createAgentRoutes(options: AgentRoutesOptions): AgentRoutes {
         input,
         triggeredBy: user.id,
       })
-      const common = { runId: run.id, runner: options.runner, triggeredBy: user.id }
+      const guides = typeof options.guides === 'function' ? await options.guides().catch(() => globalGuides) : (options.guides ?? globalGuides)
+      const common = { runId: run.id, runner: options.runner, triggeredBy: user.id, guides }
       const work =
         b.agent === 'enrich'
           ? runEnrich(payload, b.input, common)

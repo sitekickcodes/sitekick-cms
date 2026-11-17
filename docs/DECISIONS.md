@@ -63,3 +63,26 @@ turns, and a half-applied plan when the loop stops early); per-section accept (s
 on each other's order, and a partial layout is a page nobody reviewed). Reason: small,
 checkable output; untouched content is guaranteed untouched; the review is what the editor
 will get.
+
+## D10 — The agentic editor: clients compose in a language we author (2026-11-17)
+
+Clients make their own pages on the page itself: click a section and say what should change,
+type in place, pick from a few rendered options. The agent composes from our blocks, variants
+and tokens; a page that breaks the design system can't be expressed. Requests the vocabulary
+can't meet come to us as drafts and, once approved, join it. Clients get Lists (simple
+collections as data) instead of schema changes. Refines D7: still no free-form canvas, but now
+a visual, page-first editor. Rejected: a Squarespace-style canvas (freedom at the pixel level,
+where a non-designer has no judgment); forms plus a chat dialog as the end state (it works but
+nobody would call it editing a page). Reason: clients can recognise good design but not
+specify it, so the agent does the specifying and they choose.
+
+## D11 — Agents work from layered guides (2026-11-17)
+
+Every agent run carries guides in three layers: the kit's global craft (design, UX, writing,
+page types) shipped in `@sitekick/agents`, the site's own (`agent/` in its repo: brand, voice,
+audience, exemplars, per-block notes) which win where they disagree, and each block's own
+"when to use" note. Always-on guides go in the instructions; the rest are listed and read on
+demand. Prose is judgment; anything that must always hold is a validation in code. Guides are
+covered by evals. Rejected: one long prompt per agent (it grows until it costs and confuses);
+guides in the database (they need review like code, and belong with the blocks they describe);
+a site guide that only adds to the global one (a client's voice must be able to replace ours).

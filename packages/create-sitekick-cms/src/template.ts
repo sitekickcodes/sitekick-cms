@@ -24,11 +24,55 @@ const PLAYGROUND_ONLY = [
   /^AGENTS\.md$/,
 ]
 
+/**
+ * A new site's agent guides start blank: the playground's describe Demo Co., and an agent
+ * would follow them. Comments never reach the agent, and a guide with nothing but a heading
+ * is skipped, so these steer nothing until someone writes them. `brand.md` keeps one true
+ * line, the site's name and description, which `customize` fills in.
+ */
+const AGENT_SCAFFOLDS: Record<string, string> = {
+  'agent/brand.md': `# Brand
+
+Demo Co.: The Sitekick CMS playground: a demo company site.
+
+<!--
+What the organisation is and how it looks, for the agents that edit pages.
+- The look in a few words (calm and editorial, bold and playful…).
+- When to use each surface: light, soft, dark, accent.
+- What photos show, and what they never show.
+-->
+`,
+  'agent/voice.md': `# Voice
+
+<!--
+How the site sounds. Concrete rules beat adjectives.
+- Who "we" and "you" are; formal or casual; contractions or not.
+- Words to use, and words never to use.
+- An example sentence that sounds right.
+-->
+`,
+  'agent/audience.md': `# Audience
+
+<!--
+Who reads the site, what they want, what worries them, and the one thing we want them to do.
+-->
+`,
+  'agent/exemplars.md': `# What good looks like here
+
+<!--
+Point at the best pages and say why: their order of sections, patterns to repeat (eyebrows,
+card styles), the tone of their headings.
+-->
+`,
+}
+
 export function toTemplate(playground: Files, opts: { version: string }): Files {
   const files: Files = new Map()
   for (const [path, text] of playground) {
     if (!PLAYGROUND_ONLY.some((re) => re.test(path))) files.set(path, text)
   }
+  for (const path of [...files.keys()]) if (path.startsWith('agent/') && path !== 'agent/README.md') files.delete(path)
+  for (const [path, text] of Object.entries(AGENT_SCAFFOLDS)) files.set(path, text)
 
   edit(files, 'package.json', (text) => {
     const pkg = JSON.parse(text)
@@ -120,6 +164,7 @@ export function customize(template: Files, opts: Options): Files {
     edit(files, css, (text) => replace(text, '--sk-accent: #0f766e;', `--sk-accent: ${opts.accent};`))
   }
   edit(files, 'DESIGN.md', (text) => text.replaceAll('#0f766e', opts.accent))
+  edit(files, 'agent/brand.md', (text) => replace(text, 'Demo Co.: The Sitekick CMS playground: a demo company site.', `${opts.siteName}: ${opts.description}`))
 
   if (!opts.people) {
     files.delete('src/collections/People.ts')

@@ -174,7 +174,7 @@ Generalised from the civic research agent. Yimby-specific tools stay in Yimby; t
 
 1. **Enrich.** "Research this entity and fill in the profile." Target: any collection with a `website` or `name`. Finds the official site, socials, logo or headshot with credit, a neutral bio. The generalisation of candidate research; works for partners, team members, venues, sponsors.
 2. **Draft.** "Write a post from these notes / this URL / this transcript." Produces title, excerpt, body (Lexical JSON), SEO, suggested cover. Always a draft proposal.
-3. **Edit with words** (phase 2, shipped 2026-11-04). On any page with blocks: "add a FAQ section about parking below the hero, three questions." The agent proposes a section plan, the review shows the change per section beside a preview of the proposed page, the editor accepts or rejects. This is the answer to the visual-editor request. See DECISIONS.md D9.
+3. **Edit with words** (phase 2, shipped 2026-11-04). On any page with blocks: "add a FAQ section about parking below the hero, three questions." The agent proposes a section plan, the review shows the change per section beside a preview of the proposed page, the editor accepts or rejects. It is the first step of the agentic editor (phase 2½). See DECISIONS.md D9, D10.
 4. **Field actions.** Rewrite, shorten, translate, alt text, SEO. Inline, instant, accept-in-place; still logged as proposals with `review: 'none'`.
 
 ---
@@ -226,6 +226,41 @@ Everything below is built and in CI. What's left is outside the code: the AutoSe
 - Site modules (built 2026-11-05): client features live in the site's `src/modules/<name>` and go to `sitekickCMS({ modules })` via `defineModule` (collections, globals, blocks, nav, dashboard cards, palette commands, help articles, plugin escape hatch), applied before the conventions. Packages are never patched from a site; a module used by a second client graduates to a recipe. Playground and new sites carry an Events module as the example (`--no-events` to skip).
 - Evals harness and cost dashboard (shipped 2026-11-05: `@sitekick/agents/evals` with exact checks, an Opus judge and a JSONL ledger, isolated per case on the in-memory stub rather than a Neon branch per model; `bun run evals` in the playground and new sites; `/admin/usage` for admins with an optional monthly budget). Plain AI SDK adapter alongside eve (done: `aiSdkRunner` is the default runner; eve stays a documented stub behind the same `Runner` interface).
 - Last Best Comedy and Yimby stay untouched for now (decided 2026-11-04). Their repos and CMSs are reference only: no branches, commits, deploys or CMS writes. Moving them onto the packages is deferred until John says go, and will be planned with him first.
+
+### Phase 2½ — the agentic editor (from 2026-11-17)
+
+The goal: clients make their own pages, Squarespace-easy, without being able to break the site or leave the brand. Decided 2026-11-17 (DECISIONS.md D10, D11).
+
+**The idea.** Squarespace gives non-designers freedom at the pixel level, which is exactly where they have no judgment. Sitekick inverts it: the client brings intent and taste, the agent composes, and we author the language both of them work in.
+
+1. *The design system is a language, not a set of templates.* We write the vocabulary (sections, variants, tokens) and the grammar (what may sit next to what). The agent is the fluent speaker. A broken page can't be expressed, so it can't be made.
+2. *Clients can't specify design, but they can recognise it.* So the interface offers choices to react to ("show me three"), not controls to operate.
+3. *A soft edge, not a wall.* When the vocabulary can't say something, the request comes to us with a draft attached, and what we approve joins the client's vocabulary for good.
+4. *Safety comes from time, not from locks.* Everything is a draft, everything can be undone, publishing is the only gate.
+
+**The UX.** The page is the interface: click a section and it becomes "this"; type on text to change words; talk to the agent for anything else. Requests can come back as a few rendered options, on the real page with real content. New pages start from a short conversation (what it's for, who it's for, what they should do), and the agent drafts the whole page. The agent is also a critic: it pushes back the way we would ("three calls to action in a row; merge them?"). Data from existing collections is placed as a section ("show the next three events"), with filters and an approved card style, never a query.
+
+**Three tiers of vocabulary.**
+
+| Tier | What | Who makes it |
+|---|---|---|
+| Named blocks | Our designed sections and their variants | Us |
+| Composed sections | The agent assembles a section from a few token-locked primitives (stack, grid, media, text, button), stored as data and validated like everything else | Agent, live, no deploy |
+| New blocks | The agent drafts real code as a PR; we review and it joins the vocabulary | Agent drafts, we approve |
+
+**Data.** Clients don't touch the real schema. They get *Lists*: simple collections from a fixed palette of field types, stored as data, no migrations. A List that outgrows that graduates to a real collection through us.
+
+**Build order.**
+
+0. Agent guides (built 2026-11-17): three layers of judgment the agents load. *Global* craft in `@sitekick/agents` (`packages/agents/skills`: design, UX, writing, page types), compiled into the package. *Site* guides in the client's `agent/` folder (brand, voice, audience, exemplars, `blocks/<slug>.md`), read per run. *Block* guidance on each block (`custom.guide`). Always-on guides go into the instructions; the rest are listed and read with `read_guides` when a task needs them. Edit with words and Draft use them; the evals run with them (`edit/no-stacked-ctas`, `edit/fits-the-site`). Next: *house notes*, plain-words preferences the client edits in the admin (a global; needs a migration).
+1. The page-first editor: the rendered page fills the screen, click a section and speak, type in place, "show me three", accept or discard on the page.
+2. Data-bound sections.
+3. The brand guide as enforced rules, plus the critic.
+4. New page from intent.
+5. Composed sections, and the "request a new block" pipeline.
+6. Lists.
+
+The editor is only as good as the vocabulary: eight blocks hit the wall quickly, so growing blocks and variants runs alongside.
 
 ### Phase 3 — fleet (month 4+)
 - Sitekick Console: every client CMS in one view through their MCP servers.

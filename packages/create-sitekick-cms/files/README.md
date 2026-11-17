@@ -32,6 +32,11 @@ appends the results to `evals/ledger.jsonl`. Run it before and after changing a 
 (`--models anthropic/claude-sonnet-5-5,anthropic/claude-haiku-5-5`) or an agent contract.
 It needs AI Gateway access (`bunx vercel env pull .env.local`) and costs a few cents.
 
+The agents already know general design, UX and writing. What they know about this client
+comes from `agent/`: fill in `brand.md`, `voice.md`, `audience.md` and `exemplars.md` once the
+brand is settled, and add `agent/blocks/<block>.md` to say how this site uses a section.
+`agent/README.md` explains the rules. The next run uses an edited file; no restart.
+
 ## Your own features
 
 Anything this site needs that Sitekick doesn't have goes in `src/modules/<name>/`, as a module
@@ -51,6 +56,7 @@ are never edited from here.
 | `src/app/(frontend)/` | The public site; `globals.css` holds its design tokens |
 | `src/app/(payload)/custom.css` | Admin theme overrides |
 | `DESIGN.md` | The visual rules the blocks and pages follow |
+| `agent/` | What the agents know about this client: brand, voice, audience, exemplars |
 | `src/migrations/` | Database migrations; `bun run migrate:create <name>` after schema changes |
 
 ## Changing the schema

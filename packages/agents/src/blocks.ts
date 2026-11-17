@@ -23,7 +23,7 @@ type FieldConfig = Record<string, unknown> & {
   admin?: { description?: unknown; condition?: (...args: never[]) => unknown; readOnly?: boolean; hidden?: boolean }
   validate?: (...args: never[]) => unknown
 }
-export type BlockConfig = { slug: string; labels?: { singular?: unknown }; fields: FieldConfig[]; admin?: { group?: unknown } }
+export type BlockConfig = { slug: string; labels?: { singular?: unknown }; fields: FieldConfig[]; admin?: { group?: unknown }; custom?: { guide?: unknown } & Record<string, unknown> }
 export type BlockRow = Record<string, unknown> & { blockType: string; id?: string }
 
 const LAYOUT = new Set(['row', 'collapsible'])
@@ -82,10 +82,17 @@ function describeFields(fields: FieldConfig[], indent: string): string[] {
   return lines
 }
 
-/** The block catalogue in prompt form. */
-export function describeBlocks(blocks: BlockConfig[]): string {
+/**
+ * The block catalogue in prompt form. Each block's own guidance (`custom.guide`, shipped with
+ * the block) follows its heading; a site's note for that block (`agent/blocks/<slug>.md`)
+ * replaces it.
+ */
+export function describeBlocks(blocks: BlockConfig[], siteNotes: Record<string, string> = {}): string {
   return blocks
-    .map((b) => [`### ${b.slug} — ${labelText(b.labels?.singular, b.slug)}`, ...describeFields(b.fields, '')].join('\n'))
+    .map((b) => {
+      const note = siteNotes[b.slug] ?? (typeof b.custom?.guide === 'string' ? b.custom.guide : '')
+      return [`### ${b.slug} — ${labelText(b.labels?.singular, b.slug)}`, ...(note ? [`When to use: ${note.trim()}`] : []), ...describeFields(b.fields, '')].join('\n')
+    })
     .join('\n\n')
 }
 

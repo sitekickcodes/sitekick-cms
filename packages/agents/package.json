@@ -19,11 +19,13 @@
     "./admin": "./src/admin.ts",
     "./eve": "./src/adapters/eve.ts",
     "./workflow": "./src/adapters/workflow.ts",
-    "./evals": "./src/evals/index.ts"
+    "./evals": "./src/evals/index.ts",
+    "./guides": "./src/guides/site.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "bun test src"
+    "test": "bun test src",
+    "guides": "bun scripts/build-guides.ts"
   },
   "peerDependencies": {
     "payload": "4.0.0-beta.6",

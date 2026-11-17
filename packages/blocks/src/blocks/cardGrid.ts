@@ -33,6 +33,8 @@ export const cardGrid = (options: FieldOptions = {}): Block => ({
   interfaceName: 'CardGridBlock',
   labels: { singular: 'Card grid', plural: 'Card grids' },
   admin: { group: blockGroups.sections },
+  // Read by agents (Edit with words) when they choose and fill sections; a site's agent/blocks/cardGrid.md replaces it.
+  custom: { guide: 'Three to six parallel items: services, features, team members, steps. Each card a short title and a sentence, all in the same shape. Three or four cards read best; use images on all cards or none.' },
   fields: [
     eyebrowField(),
     headingField(),

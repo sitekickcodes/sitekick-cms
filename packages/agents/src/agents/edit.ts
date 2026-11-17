@@ -2,6 +2,7 @@ import { tool } from 'ai'
 import { z } from 'zod'
 
 import { applySectionPlan, describeBlocks, rowToModel } from '../blocks'
+import { blockGuides, globalGuides, guidesFor, guidesPrompt, readGuidesTool, type Guide } from '../guides'
 import type { BlockConfig, BlockRow, KnownIds, SectionPlan } from '../blocks'
 import type { AgentPayload, Doc } from '../payload'
 import { agentContractFor, createProposal } from '../proposals'
@@ -33,6 +34,8 @@ export type EditOptions = {
   signal?: AbortSignal
   /** The blocks field to edit. Default: the collection's first writable blocks field. */
   field?: string
+  /** Design, UX and writing guides plus the site's own (`loadGuides`). Default: the kit's global guides. */
+  guides?: Guide[]
 }
 
 type BlocksField = Record<string, unknown> & { type: 'blocks'; name: string; blocks: BlockConfig[] }
@@ -87,24 +90,29 @@ export function createEditAgent(
   const sections = page.current.map((row, i) => `[${i}] ${JSON.stringify(rowToModel(page.field.blocks, row))}`).join('\n')
   const pageList = page.pages.map((p) => `- id ${String(p.id)}: ${String(p.title ?? p.slug ?? p.id)}${typeof p.slug === 'string' ? ` (/${p.slug === 'home' ? '' : p.slug})` : ''}`).join('\n')
   const mediaSlugs = [...new Set(page.field.blocks.flatMap((b) => uploadsOf(b.fields)))]
+  const all = opts.guides ?? globalGuides
+  const guides = guidesFor('edit', all)
+  const guidance = guidesPrompt(guides)
   return {
     id: 'edit@1',
     description: 'Changes a page\'s sections from an instruction in plain words.',
-    instructions: INSTRUCTIONS,
+    instructions: guidance ? `${INSTRUCTIONS}\n\n${guidance}` : INSTRUCTIONS,
     model: 'research',
-    limits: { maxSteps: 8, maxCostUsd: 1 },
+    // Two more than the plan and its retries need: reading guides takes a step.
+    limits: { maxSteps: 10, maxCostUsd: 1 },
     finishTools: ['propose_sections'],
     prompt: (input) =>
       [
         `The editor asks: ${input.instruction}`,
         `Page: ${String(page.doc.title ?? page.doc.id)}${typeof page.doc.intro === 'string' && page.doc.intro ? `\nIntro: ${page.doc.intro}` : ''}`,
         `Current sections (${page.field.name}):\n${sections || '(none yet)'}`,
-        `Section types:\n${describeBlocks(page.field.blocks)}`,
+        `Section types:\n${describeBlocks(page.field.blocks, blockGuides(all))}`,
         pageList ? `Pages on this site:\n${pageList}` : '',
       ]
         .filter(Boolean)
         .join('\n\n'),
     tools: () => ({
+      ...readGuidesTool(guides),
       ...(mediaSlugs.length
         ? {
             search_media: tool({

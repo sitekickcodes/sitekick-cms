@@ -12,6 +12,8 @@ const nextConfig: NextConfig = {
     localPatterns: [{ pathname: '/api/media/file/**' }],
     remotePatterns: [{ protocol: 'https', hostname: '*.public.blob.vercel-storage.com' }],
   },
+  // The site's agent guides (agent/*.md) are read at run time by the agents route.
+  outputFileTracingIncludes: { '/api/agents/[op]': ['./agent/**/*.md'] },
   // app/global-not-found.tsx: a 404 for addresses no route matches (two root layouts, site and admin).
   experimental: { globalNotFound: true },
   turbopack: {

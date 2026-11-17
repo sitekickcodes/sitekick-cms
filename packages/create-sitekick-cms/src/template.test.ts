@@ -46,6 +46,15 @@ describe('toTemplate', () => {
     expect(next).not.toContain('turbopack')
     expect(template.get('src/app/(frontend)/globals.css')).toContain("@source '../../../node_modules/@sitekick/blocks/dist'")
   })
+
+  test('agent guides start as blank scaffolds, not the demo company', () => {
+    const agent = [...template.keys()].filter((p) => p.startsWith('agent/')).sort()
+    expect(agent).toEqual(['agent/README.md', 'agent/audience.md', 'agent/brand.md', 'agent/exemplars.md', 'agent/voice.md'])
+    expect(template.get('next.config.ts')).toContain("'/api/agents/[op]': ['./agent/**/*.md']")
+    const brand = customize(template, options).get('agent/brand.md')!
+    expect(brand).toContain("Acme & Co's: Widgets.")
+    expect(brand).not.toContain('Demo Co.')
+  })
 })
 
 describe('customize', () => {

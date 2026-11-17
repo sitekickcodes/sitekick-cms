@@ -1,13 +1,16 @@
 import config from '@payload-config'
 import { createAgentRoutes } from '@sitekick/agents'
+import { loadGuides } from '@sitekick/agents/guides'
+import { join } from 'node:path'
 import { getPayload } from 'payload'
 
 /**
  * The agent kit's HTTP surface for the admin: enqueue an Enrich or Draft
  * run, run a field action (alt text, SEO, rewrite…) inline, or poll a run.
- * Every call needs a signed-in editor; agents never publish.
+ * Every call needs a signed-in editor; agents never publish. Edit and Draft work with
+ * the kit's design and writing guides plus this site's own, in agent/ (read per run).
  */
-const routes = (async () => createAgentRoutes({ payload: await getPayload({ config }) }))()
+const routes = (async () => createAgentRoutes({ payload: await getPayload({ config }), guides: () => loadGuides(join(process.cwd(), 'agent')) }))()
 
 const handler = async (req: Request, { params }: { params: Promise<{ op: string }> }) => (await routes).handle(req, (await params).op)
 

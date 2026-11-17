@@ -3,6 +3,7 @@ import { describe, expect, test } from 'bun:test'
 import type { Runner } from '../runner'
 import { instrumentTools } from '../runner'
 import { execTool, stubPayload } from '../testing/stub-payload'
+import { globalGuides, mergeGuides, parseGuide } from '../guides'
 import { runEdit } from './edit'
 
 const pages = {
@@ -52,6 +53,28 @@ const scripted = (calls: unknown[][]): Runner => ({
 })
 
 describe('runEdit', () => {
+  test('guides: the kit\'s and the site\'s reach the instructions, block notes reach the catalogue', async () => {
+    const { payload, page } = await seeded()
+    const site = [parseGuide('brand', '# Brand\n\nCalm, never salesy.', 'site', { load: 'always' }), parseGuide('blocks/faq', 'Only for visiting questions.', 'site')]
+    let seen: { instructions: string; prompt: string; tools: string[] } | null = null
+    const capture: Runner = {
+      name: 'capture',
+      async run(def, input, ctx) {
+        const tools = typeof def.tools === 'function' ? def.tools(ctx, input) : def.tools
+        seen = { instructions: typeof def.instructions === 'string' ? def.instructions : '', prompt: def.prompt?.(input, ctx) ?? '', tools: Object.keys(tools) }
+        await execTool(tools.propose_sections, { sections: [{ keep: 0 }], summary: 'Nothing to change.' })
+        return { text: '', costUsd: 0, steps: 1, finishReason: 'stop', finished: true, model: 'stub' }
+      },
+    }
+    await runEdit(payload, { targetCollection: 'pages', targetId: page.id, instruction: 'tidy up' }, { runner: capture, guides: mergeGuides(globalGuides, site) })
+    expect(seen!.instructions).toContain('## core')
+    expect(seen!.instructions).toContain('## design/composition')
+    expect(seen!.instructions).toContain('Calm, never salesy.')
+    expect(seen!.instructions).toContain('- page-types/landing: ')
+    expect(seen!.prompt).toContain('### faq — FAQ\nWhen to use: Only for visiting questions.')
+    expect(seen!.tools).toContain('read_guides')
+  })
+
   test('a corrected plan becomes a proposal for the whole layout, with the current one for the diff', async () => {
     const { payload, page } = await seeded()
     const faq = { blockType: 'faq', heading: 'Parking', items: [{ question: 'Where do I park?', answer: 'Behind the hall.' }] }
