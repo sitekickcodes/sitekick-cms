@@ -13,6 +13,8 @@ export const imageText = (options: EditorOptions = {}): Block => ({
   interfaceName: 'ImageTextBlock',
   labels: { singular: 'Image + text', plural: 'Image + text sections' },
   admin: { group: blockGroups.sections },
+  // Read by agents (Edit with words) when they choose and fill sections; a site's agent/blocks/imageText.md replaces it.
+  custom: { guide: 'One idea with a real photo beside it: a place, a person, the product at work. Heading plus two or three sentences. Several in a row should alternate the image side. Leave it out if there is no fitting image.' },
   fields: [
     imageField({ description: 'The photo beside the text. Blank = text only.', ...options }),
     eyebrowField(),

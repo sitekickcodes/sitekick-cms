@@ -9,6 +9,8 @@ export const hero = (options: FieldOptions = {}): Block => ({
   interfaceName: 'HeroBlock',
   labels: { singular: 'Hero', plural: 'Heroes' },
   admin: { group: blockGroups.sections },
+  // Read by agents (Edit with words) when they choose and fill sections; a site's agent/blocks/hero.md replaces it.
+  custom: { guide: 'The opening of a page, always first, at most one. Says what the page is in a short heading (2 to 8 words) and one sentence under it. One primary button, optionally a secondary. Accent or dark surface only for landing pages that need punch; most pages use light.' },
   fields: [
     eyebrowField(),
     {

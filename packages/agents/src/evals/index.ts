@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { runDraft, type DraftInput } from '../agents/draft'
 import { runEdit, type EditInput } from '../agents/edit'
 import { runEnrich, type EnrichInput } from '../agents/enrich'
+import type { Guide } from '../guides'
 import { costFromResult, resolveModel } from '../model'
 import type { CollectionLike, Doc } from '../payload'
 import { getPath } from '../proposals'
@@ -43,7 +44,7 @@ export type EvalCase = {
   /** Documents to seed, by collection. */
   seed?: Record<string, Doc[]>
   /** Start the agent. Use draftCase / enrichCase / editCase instead of writing this. */
-  run: (payload: StubPayload, opts: { model: string; runner?: Runner }) => Promise<{ runId: string | number; proposalId: string | number | null }>
+  run: (payload: StubPayload, opts: { model: string; runner?: Runner; guides?: Guide[] }) => Promise<{ runId: string | number; proposalId: string | number | null }>
   expect?: Record<string, Expectation>
   forbid?: string[]
   judge?: string
@@ -130,6 +131,8 @@ export type RunEvalsOptions = {
   judgeModel?: string
   judge?: JudgeFn
   runner?: Runner
+  /** The guides Edit and Draft work with: the site's, merged with the kit's (`loadGuides`). Default: the kit's. */
+  guides?: Guide[]
   /** JSONL file results are appended to. */
   ledger?: string
   commit?: string
@@ -145,7 +148,7 @@ export async function runEvals(options: RunEvalsOptions): Promise<EvalResult[]> 
   const results: EvalResult[] = []
   for (const model of models) {
     for (const c of options.cases) {
-      const result = await runCase(c, { model, judge, judgeModel, runner: options.runner, commit: options.commit })
+      const result = await runCase(c, { model, judge, judgeModel, runner: options.runner, commit: options.commit, guides: options.guides })
       results.push(result)
       if (options.ledger) {
         mkdirSync(dirname(options.ledger), { recursive: true })
@@ -157,13 +160,13 @@ export async function runEvals(options: RunEvalsOptions): Promise<EvalResult[]> 
   return results
 }
 
-async function runCase(c: EvalCase, { model, judge, judgeModel, runner, commit }: { model: string; judge: JudgeFn; judgeModel: string; runner?: Runner; commit?: string }): Promise<EvalResult> {
+async function runCase(c: EvalCase, { model, judge, judgeModel, runner, commit, guides }: { model: string; judge: JudgeFn; judgeModel: string; runner?: Runner; commit?: string; guides?: Guide[] }): Promise<EvalResult> {
   const started = Date.now()
   const base = { at: new Date().toISOString(), case: c.id, model, ...(commit ? { commit } : {}) }
   const payload = stubPayload({ collections: c.collections })
   for (const [collection, docs] of Object.entries(c.seed ?? {})) for (const doc of docs) payload.store.set(collection, [...(payload.store.get(collection) ?? []), structuredClone(doc)])
   try {
-    const { runId, proposalId } = await c.run(payload, { model, runner })
+    const { runId, proposalId } = await c.run(payload, { model, runner, guides })
     const run = await payload.findByID({ collection: 'runs', id: runId })
     const agentCost = typeof run?.costUsd === 'number' ? run.costUsd : null
     const proposal = proposalId !== null ? await payload.findByID({ collection: 'proposals', id: proposalId }) : null

@@ -83,5 +83,76 @@ export function evalCases(collections: CollectionLike[]): EvalCase[] {
         '- The hero and the address section are kept as they were.',
       ].join('\n'),
     }),
+    editCase({
+      id: 'edit/no-stacked-ctas',
+      description: 'Guides: a request that would hurt the page gets the closest thing that works, and an explanation.',
+      collections,
+      seed: {
+        pages: [
+          {
+            id: 'pg2',
+            title: 'Support',
+            slug: 'support',
+            layout: [
+              { id: 'c1', blockType: 'hero', heading: 'Help when you need a developer', subheading: 'A real person on the other end, no ticket queue.' },
+              { id: 'c2', blockType: 'richText', content: lexical('Support covers fixes, small changes and advice. You email us; we reply the same working day.') },
+              { id: 'c3', blockType: 'cta', heading: 'Need a hand?', buttons: [{ label: 'Start a project', type: 'url', href: '/contact', style: 'primary' }], surface: 'dark' },
+            ],
+          },
+        ],
+      },
+      input: { targetCollection: 'pages', targetId: 'pg2', instruction: 'Add two more call to action sections at the end so people really get in touch.' },
+      expect: {
+        layout: (value: unknown) => {
+          const types = (Array.isArray(value) ? (value as { blockType?: string }[]) : []).map((b) => b.blockType)
+          for (let i = 1; i < types.length; i++) if (types[i] === 'cta' && types[i - 1] === 'cta') return `calls to action stacked: ${types.join(', ')}`
+          if (types.filter((t) => t === 'cta').length > 2) return `${types.filter((t) => t === 'cta').length} calls to action on a three-section page`
+          return true
+        },
+      },
+      judge: [
+        'Edit a short support page whose editor asked for two more call-to-action sections at the end.',
+        '- The guides say one primary action per page and never two calls to action in a row. A good answer does not stack them: it strengthens the existing closing call to action, or adds at most one more mid-page, and its summary says why in one plain sentence.',
+        '- The hero and the text section are kept as they were. Nothing invented (no phone numbers, prices or promises the page does not make).',
+      ].join('\n'),
+    }),
+    editCase({
+      id: 'edit/fits-the-site',
+      description: 'Guides: a new section follows the site\'s patterns and voice.',
+      collections,
+      seed: {
+        pages: [
+          {
+            id: 'pg3',
+            title: 'Build',
+            slug: 'services/build',
+            layout: [
+              { id: 'd1', blockType: 'hero', eyebrow: 'Build', heading: 'Fast sites your team can run', subheading: 'A modern stack and a content model people understand.' },
+              { id: 'd2', blockType: 'imageText', eyebrow: 'The stack', heading: 'Built to last', content: lexical('Next.js, Payload and Vercel: well supported, fast and easy to hand over.') },
+              { id: 'd3', blockType: 'cta', heading: 'Ready when you are', buttons: [{ label: 'Start a project', type: 'url', href: '/contact', style: 'primary' }], surface: 'dark' },
+            ],
+          },
+        ],
+      },
+      input: { targetCollection: 'pages', targetId: 'pg3', instruction: 'Add a section explaining our process before the call to action: discovery, design, build, handover.' },
+      expect: {
+        layout: (value: unknown) => {
+          const blocks = Array.isArray(value) ? (value as Record<string, unknown>[]) : []
+          if (blocks.at(-1)?.blockType !== 'cta') return 'the call to action is no longer last'
+          const added = blocks.find((b) => !b.id)
+          if (!added) return 'no new section'
+          if (typeof added.eyebrow !== 'string' || !added.eyebrow) return 'the new section has no eyebrow (the site guides say most sections have one)'
+          const text = JSON.stringify(added)
+          const hype = /seamless|world-class|cutting-edge|leverage|!/i.exec(text)
+          return hype ? `uses "${hype[0]}", which the voice guide rules out` : true
+        },
+      },
+      judge: [
+        'Add a four-step process section (discovery, design, build, handover) before the closing call to action of a service page.',
+        '- A section type that fits four parallel steps (a card grid fits best), with an eyebrow like the rest of the page, short parallel titles and one plain sentence each.',
+        '- The voice is plain and friendly, no hype; no invented durations, prices or guarantees.',
+        '- The other sections are kept as they were, and the call to action stays last.',
+      ].join('\n'),
+    }),
   ]
 }

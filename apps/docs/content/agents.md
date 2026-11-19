@@ -55,6 +55,22 @@ The result is checked against the block rules, such as one hero and required fie
 sent back to the agent to fix if needed. Facts it can't know are written as
 `[placeholders]` for the editor to fill in, never invented.
 
+## Guides: what the agents know about design and the brand
+
+Agents work from guides, written in plain Markdown:
+
+- **The kit's own**, for every site: how to compose a page, write headings and buttons, keep
+  pages usable, and what a landing, about, contact or event page needs.
+- **The site's**, in its `agent/` folder: `brand.md`, `voice.md`, `audience.md` and
+  `exemplars.md` (the pages to learn from), plus `blocks/<block>.md` for how this site uses a
+  section. They win where they disagree with the kit's. A new site starts with empty
+  scaffolds; fill them in when the brand is settled.
+- **Each section type's own** "when to use it" note.
+
+Edit a file in `agent/` and the next run uses it. Keep the rules concrete, with reasons and
+examples; anything that must never happen belongs in a block's validation instead. The
+evals (`bun run evals`) run with the same guides, so a change to them can be measured.
+
 ## Translate
 
 The agent reads the document in the default language and in the language being written. It

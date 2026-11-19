@@ -2,6 +2,7 @@ import { tool } from 'ai'
 import { z } from 'zod'
 
 import { flattenFields, pickField } from '../fields'
+import { globalGuides, guidesFor, guidesPrompt, readGuidesTool, type Guide } from '../guides'
 import { markdownToLexical } from '../lexical'
 import type { AgentPayload } from '../payload'
 import { createProposal } from '../proposals'
@@ -52,7 +53,7 @@ export type DraftOutput = z.infer<typeof output>
 
 type Collected = { output: DraftOutput | null; pages: Map<string, { receipt: Receipt; text: string }> }
 
-const INSTRUCTIONS = `You draft a post for a content editor from the sources provided: notes, a transcript, or a web page (its text is in your input; you may fetch_page other URLs the editor named). Write in clear, plain English, in the site's neutral voice, for a general reader. Use only facts from the sources; where the sources are silent, leave it out rather than invent. Link to the source URL where a fact came from. Structure: a short opening paragraph, then 2-5 sections with ## headings, lists where they help. The excerpt is one or two sentences, at most 160 characters. The meta title is at most 60 characters, the meta description at most 160. Call finish exactly once with the whole draft.`
+const INSTRUCTIONS = `You draft a post for a content editor from the sources provided: notes, a transcript, or a web page (its text is in your input; you may fetch_page other URLs the editor named). Write in clear, plain English, in the site's voice (see the guides), for the site's readers. Use only facts from the sources; where the sources are silent, leave it out rather than invent. Link to the source URL where a fact came from. Structure: a short opening paragraph, then 2-5 sections with ## headings, lists where they help. The excerpt is one or two sentences, at most 160 characters. The meta title is at most 60 characters, the meta description at most 160. Call finish exactly once with the whole draft.`
 
 export type DraftOptions = {
   runner?: Runner
@@ -62,18 +63,23 @@ export type DraftOptions = {
   model?: string
   fetch?: (url: string, opts?: FetchOptions) => Promise<FetchResult>
   signal?: AbortSignal
+  /** Writing guides plus the site's own (`loadGuides`). Default: the kit's global guides. */
+  guides?: Guide[]
 }
 
 export function createDraftAgent(opts: DraftOptions, state: Collected, sources: string): AgentDefinition<DraftInput> {
   const fetchPage = opts.fetch ?? fetchWithReceipt
+  const guides = guidesFor('draft', opts.guides ?? globalGuides)
+  const guidance = guidesPrompt(guides)
   return {
     id: 'draft@1',
     description: 'Writes a post (title, excerpt, body, SEO) from notes, a URL or a transcript.',
-    instructions: INSTRUCTIONS,
+    instructions: guidance ? `${INSTRUCTIONS}\n\n${guidance}` : INSTRUCTIONS,
     model: 'research',
     limits: { maxSteps: 8, maxCostUsd: 1 },
     prompt: (input) => `Target collection: ${input.targetCollection}\n${input.title ? `Working title: ${input.title}\n` : ''}\nSources:\n${sources}`,
     tools: () => ({
+      ...readGuidesTool(guides),
       fetch_page: tool({
         description: 'Fetch another public page the editor referred to, with a receipt.',
         inputSchema: z.object({ url: z.url() }),

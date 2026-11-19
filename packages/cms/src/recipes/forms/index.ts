@@ -26,6 +26,8 @@ export const FORM_BLOCK: Block = {
   slug: 'formBlock',
   labels: { singular: 'Form', plural: 'Form sections' },
   admin: { group: 'Calls to action' },
+  // Read by agents (Edit with words); a site's agent/blocks/formBlock.md replaces it.
+  custom: { guide: 'An existing form from Forms, embedded in the page: contact, sign-up, enquiry. Use it where the page asks the reader to send something, usually near the end, instead of a call to action pointing elsewhere. A short heading and one line saying what happens after they send it. Only link a form that already exists.' },
   fields: [
     { name: 'form', type: 'relationship', relationTo: FORMS_SLUG as never, required: true, admin: { description: 'Build forms under Forms in the sidebar.' } },
     { name: 'heading', type: 'text' },

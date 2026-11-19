@@ -10,6 +10,8 @@ export const faq = (options: EditorOptions = {}): Block => ({
   interfaceName: 'FaqBlock',
   labels: { singular: 'FAQ', plural: 'FAQ sections' },
   admin: { group: blockGroups.sections },
+  // Read by agents (Edit with words) when they choose and fill sections; a site's agent/blocks/faq.md replaces it.
+  custom: { guide: 'Answers to the questions readers actually ask, often near the end before the closing call to action. Three to eight questions, each answer a few sentences. Good for price, time, eligibility and practical details.' },
   fields: [
     eyebrowField(),
     headingField(),

@@ -186,6 +186,34 @@ code, links, bullet and numbered lists, quotes). Field map: `title`, `excerpt|su
 without `targetId`; accepting creates the document. The cover phrase is in the
 proposal summary.
 
+## Guides
+
+Agents bring judgment as well as tools. Edit with words and Draft load *guides*: Markdown
+in three layers (D11).
+
+| Layer | Where | Holds |
+|---|---|---|
+| Global | `skills/` in this package, compiled into `src/guides/global.ts` | Craft for any site: `core`, `design/*`, `ux/*`, `writing/*`, `page-types/*` |
+| Site | The site's `agent/` folder | `brand.md`, `voice.md`, `audience.md`, `exemplars.md`, `blocks/<slug>.md` |
+| Block | `custom.guide` on each block | When to use it; a site's `blocks/<slug>.md` replaces it |
+
+A guide has frontmatter (`description`, `load: always | on-demand`, `agents: [edit]`).
+Always-on guides go into the instructions, the site's last; the rest are listed by name and
+description, and the agent reads what it needs with `read_guides`. A site guide with the
+same name as a global one replaces it. Top-level site files are always on, subfolders on
+demand; a file with nothing but a heading and comments is skipped.
+
+```ts
+import { loadGuides } from '@sitekick/agents/guides' // Node only
+createAgentRoutes({ payload, guides: () => loadGuides(join(process.cwd(), 'agent')) })
+runEdit(payload, input, { guides: await loadGuides('agent') }) // or Draft; default: global only
+runEvals({ cases, guides: await loadGuides('agent') })
+```
+
+On Vercel the route needs the files in its bundle:
+`outputFileTracingIncludes: { '/api/agents/[op]': ['./agent/**/*.md'] }` in `next.config.ts`.
+After editing `skills/`, run `bun run guides`; a test fails when `global.ts` is stale.
+
 ## Edit with words
 
 Input `{ targetCollection, targetId, instruction }`, e.g. "add a FAQ about parking below
@@ -194,7 +222,8 @@ contract's `writable` (`layout` on Pages). The agent reads the latest draft:
 
 - the current sections, numbered, as the model reads them (`rowToModel`: rich text as
   Markdown, uploads and relationships as ids, no row ids or blank values)
-- the block catalogue (`describeBlocks`: fields, types, options, limits, descriptions)
+- the block catalogue (`describeBlocks`: each block's "when to use" note, fields, types, options, limits, descriptions)
+- the guides (see Guides): always-on ones in its instructions, `read_guides` for the rest
 - the site's pages for links, and `search_media` for images
 
 It calls `propose_sections` with every section in its new order:

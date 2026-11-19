@@ -12,6 +12,8 @@ export const stats = (): Block => ({
   interfaceName: 'StatsBlock',
   labels: { singular: 'Stats', plural: 'Stats sections' },
   admin: { group: blockGroups.sections },
+  // Read by agents (Edit with words) when they choose and fill sections; a site's agent/blocks/stats.md replaces it.
+  custom: { guide: 'Proof in numbers: 2 to 4 real figures with short labels ("120 trees planted"). Only facts the editor gave or the site already states; never invent a number. Works best after a claim it backs up.' },
   fields: [
     eyebrowField(),
     headingField(),

@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url'
 
 import type { CollectionLike } from '@sitekick/agents'
 import { formatSummary, runEvals, summarize } from '@sitekick/agents/evals'
+import { loadGuides } from '@sitekick/agents/guides'
 
 import configPromise from '../src/payload.config'
 import { evalCases } from '../evals/cases'
@@ -36,6 +37,8 @@ const commit = (() => {
 const results = await runEvals({
   cases,
   models: arg('models')?.split(',').map((m) => m.trim()).filter(Boolean),
+  // The same guides the admin's runs use: the kit's plus this site's agent/ folder.
+  guides: await loadGuides(fileURLToPath(new URL('../agent', import.meta.url))),
   ledger: fileURLToPath(new URL('../evals/ledger.jsonl', import.meta.url)),
   commit,
   onResult: (r) => {
